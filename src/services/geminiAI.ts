@@ -53,7 +53,7 @@ export class PersonalizedLessonGenerator {
         type: "COMPRENSIÓN",
         instruction: "Lee el texto y responde la pregunta",
         format: "Short English text → English comprehension question",
-        example: "Text: 'Maria works for Netflix creating content.' Question: What does Maria do? → A) creates content B) watches shows C) sells subscriptions D) fixes bugs"
+        example: "Text: 'Ana is in a Zoom meeting with her team. She has been working remotely since 2020.' Question: Has Ana finished the Zoom meeting? → A) No, she's still in it B) Yes, she finished C) She never started D) She's starting now"
       }
     ];
 
@@ -97,7 +97,7 @@ ${selectedType.example}
 
            ESTRUCTURA DE RESPUESTA (JSON válido):
            {
-             "question": "[Pregunta aquí - puede estar en inglés o español según el tipo]",
+             "question": "[Para COMPRENSIÓN: incluir texto completo + pregunta. Para otros: solo pregunta]",
              "instruction": "${selectedType.instruction}",
              "options": ["opción 1", "opción 2", "opción 3", "opción 4"],
              "correctAnswer": 0,
@@ -112,6 +112,11 @@ ${selectedType.example}
            - Las opciones NO deben tener letras A), B), C), D)
            - Solo la palabra/frase directa
            - El componente agregará las letras automáticamente
+           
+           ⚠️ CRÍTICO PARA COMPRENSIÓN:
+           - Si es tipo COMPRENSIÓN, la pregunta DEBE incluir el texto completo a leer
+           - Formato: "Text: 'Ana is in a Zoom meeting with her team...' Question: Has Ana finished the meeting?"
+           - NO generar solo la pregunta sin el texto de contexto
 
            Responde SOLO el JSON, sin texto adicional:`;
 
