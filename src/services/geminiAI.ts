@@ -21,6 +21,11 @@ export class PersonalizedLessonGenerator {
     topic: string;
     exerciseNumber: number;
     userWeaknesses?: string[];
+    userStrengths?: string[];
+    completedLessons?: number;
+    currentAccuracy?: number;
+    currentStreak?: number;
+    usedTopics?: string[];
     previousErrors?: string[];
     timestamp?: number;
   }): Promise<GeneratedExercise> {
@@ -64,13 +69,18 @@ export class PersonalizedLessonGenerator {
 
 MISIÓN: Crear UN ejercicio de opción múltiple COMPLETAMENTE ORIGINAL y EDUCATIVO.
 
-CONTEXTO DEL ESTUDIANTE:
-- Nivel: ${params.level}
+CONTEXTO COMPLETO DEL ESTUDIANTE:
+- Nivel actual: ${params.level}
 - Tema específico: ${params.topic}
 - Ejercicio número: ${params.exerciseNumber} de 8
+- Lecciones completadas: ${params.completedLessons || 0}
+- Precisión actual: ${Math.round((params.currentAccuracy || 0) * 100)}%
+- Racha actual: ${params.currentStreak || 0} días
 - Tipo de ejercicio: ${exerciseType}
 - Contexto: ${context}
-- Debilidades: ${params.userWeaknesses?.join(", ") || "ninguna"}
+- DEBILIDADES: ${params.userWeaknesses?.join(", ") || "ninguna identificada"}
+- FORTALEZAS: ${params.userStrengths?.join(", ") || "ninguna identificada"}
+- Temas ya usados en esta sesión: ${params.usedTopics?.join(", ") || "ninguno"}
 - Timestamp único: ${params.timestamp || Date.now()}
 
 INSTRUCCIONES CRÍTICAS - CUMPLE TODAS:
@@ -78,12 +88,18 @@ INSTRUCCIONES CRÍTICAS - CUMPLE TODAS:
 2. TEMA ESPECÍFICO: Integra "${params.topic}" de forma NATURAL en el contexto "${context}"
 3. NIVEL APROPIADO: Vocabulario y gramática exactos para nivel ${params.level}
 4. TIPO DE EJERCICIO: Enfócate en "${exerciseType}"
-5. VARIEDAD ESTRUCTURAL: Usa diferentes personas (I/you/he/she/we/they) y tiempos verbales
-6. RESPUESTAS INTELIGENTES: 
+5. ADAPTACIÓN AL ESTUDIANTE:
+   - Si precisión >80%: Aumenta ligeramente la dificultad
+   - Si precisión <60%: Enfócate en conceptos básicos
+   - EVITA temas ya usados: ${params.usedTopics?.join(", ") || "ninguno"}
+   - REFUERZA debilidades: ${params.userWeaknesses?.join(", ") || "ninguna"}
+   - NO repitas fortalezas obvias: ${params.userStrengths?.join(", ") || "ninguna"}
+6. VARIEDAD ESTRUCTURAL: Usa diferentes personas (I/you/he/she/we/they) y tiempos verbales
+7. RESPUESTAS INTELIGENTES: 
    - 1 respuesta CLARAMENTE correcta (puede estar en cualquier posición A/B/C/D)
    - 3 respuestas incorrectas que sean errores TÍPICOS de hispanohablantes
-7. EXPLICACIÓN EDUCATIVA: Explica POR QUÉ es correcta y por qué las otras están mal
-8. CONTEXTO REALISTA: Usa situaciones de la vida real del contexto "${context}"
+8. EXPLICACIÓN EDUCATIVA: Explica POR QUÉ es correcta y por qué las otras están mal
+9. CONTEXTO REALISTA: Usa situaciones de la vida real del contexto "${context}"
 
 EJEMPLOS DE VARIACIÓN OBLIGATORIA:
 - Preguntas afirmativas: "She walks to school every day."

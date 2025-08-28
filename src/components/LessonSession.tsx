@@ -94,13 +94,19 @@ const LessonSessionComponent: React.FC<LessonSessionProps> = ({
 
       const generator = new PersonalizedLessonGenerator(apiKey);
 
-      // Prompt con VARIABILIDAD para evitar repetición
+      // Contexto COMPLETO del progreso del usuario para IA personalizada
       const exerciseContext = {
         level: userProgress.level,
         topic: selectedTopic,
         exerciseNumber: exerciseNumber,
         userWeaknesses: userProgress.weakAreas || [],
-        timestamp: Date.now(), // Para asegurar unicidad
+        userStrengths: userProgress.strengths || [],
+        completedLessons: userProgress.completedLessons || 0,
+        currentAccuracy: userProgress.accuracy || 0,
+        currentStreak: userProgress.streak || 0,
+        usedTopics: usedTopics, // Temas ya usados en esta sesión
+        previousErrors: [], // TODO: Obtener de Firebase
+        timestamp: Date.now(),
       };
 
       const exercise = await generator.generateMultipleChoiceExercise(
