@@ -12,6 +12,7 @@ interface LessonSessionProps {
   userProgress: any;
   onSessionComplete: (results: any) => void;
   onExit: () => void;
+  userId?: string;
 }
 
 const LessonSessionFixed: React.FC<LessonSessionProps> = ({
@@ -19,6 +20,7 @@ const LessonSessionFixed: React.FC<LessonSessionProps> = ({
   userProgress,
   onSessionComplete,
   onExit,
+  userId,
 }) => {
   // Estados SIMPLES
   const [exerciseNumber, setExerciseNumber] = useState(1);
@@ -216,7 +218,7 @@ const LessonSessionFixed: React.FC<LessonSessionProps> = ({
     
     const finalAccuracy = correctCount / totalExercises;
 
-    const recentSessionsKey = `recent_sessions_${userProgress.userId || 'anonymous'}`;
+    const recentSessionsKey = `recent_sessions_${userId || 'anonymous'}`;
     const recentSessions = JSON.parse(localStorage.getItem(recentSessionsKey) || "[]");
     
     const updatedSessions = [...recentSessions, finalAccuracy].slice(-10);

@@ -179,7 +179,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user }) => {
     const minimumProgress = Math.min((userProgress.completedLessons * 8) / 120, 0.9); // Máximo 90%
     ImprovedLevelSystem.ensureMinimumProgress(userProgress.level, minimumProgress);
     
-    const recentSessionsKey = `recent_sessions_${userProgress.userId || user.uid || 'anonymous'}`;
+    const recentSessionsKey = `recent_sessions_${user.uid || 'anonymous'}`;
     const recentSessions = JSON.parse(localStorage.getItem(recentSessionsKey) || "[0.5, 0.6, 0.7]");
     
     console.log('🔍 DEBUG PROGRESO:', {
