@@ -3,6 +3,7 @@ import MultipleChoice from "./MultipleChoice";
 import { getUniqueExercises, shuffleExerciseOptions, Exercise, cleanOldExerciseHistory } from "../data/exercises";
 import { IntelligentLearningSystem } from "../services/intelligentLearning";
 import { SmartAISystem, SmartExercise } from "../services/smartAI";
+import { ExerciseTracker } from "../services/exerciseTracker";
 
 interface LessonSessionProps {
   apiKey: string;
@@ -65,31 +66,65 @@ const LessonSessionFixed: React.FC<LessonSessionProps> = ({
     initializeIntelligentSession();
   }, [userProgress.level, userProgress.userId]);
 
-  // GENERAR EJERCICIO INTELIGENTE
+  // GENERAR EJERCICIO INTELIGENTE CON ANTI-REPETICIÓN ROBUSTO
   const generateIntelligentExercise = async (exerciseNum: number) => {
     setIsGenerating(true);
     
     try {
-      console.log(`🤖 GENERANDO EJERCICIO INTELIGENTE ${exerciseNum}/8`);
+      console.log(`🤖 GENERANDO EJERCICIO ÚNICO ${exerciseNum}/8`);
       
-      const smartExercise = await SmartAISystem.generateSmartExercise({
-        userId: userProgress.userId || 'anonymous',
-        userLevel: userProgress.level,
-        apiKey: apiKey,
-        sessionNumber: exerciseNum,
-        weakTopics: userWeaknesses,
-        strengths: userProgress.strengths || [],
-        preferredDifficulty: 'medium'
-      });
+      // DEBUG: Ver ejercicios ya usados
+      ExerciseTracker.debugUsedExercises(userProgress.level);
+      
+      // Limpiar historial si es necesario
+      ExerciseTracker.cleanupIfNeeded(userProgress.level, 40);
+      
+      let attempts = 0;
+      let smartExercise: SmartExercise;
+      
+      // INTENTAR HASTA 5 VECES GENERAR EJERCICIO ÚNICO
+      do {
+        attempts++;
+        console.log(`🔄 Intento ${attempts} de generar ejercicio único`);
+        
+        smartExercise = await SmartAISystem.generateSmartExercise({
+          userId: userProgress.userId || 'anonymous',
+          userLevel: userProgress.level,
+          apiKey: apiKey,
+          sessionNumber: exerciseNum,
+          weakTopics: userWeaknesses,
+          strengths: userProgress.strengths || [],
+          preferredDifficulty: 'medium'
+        });
+        
+        // Verificar si ya fue usado
+        const isUsed = ExerciseTracker.isExerciseUsed(userProgress.level, smartExercise.id);
+        
+        if (!isUsed) {
+          console.log(`✅ EJERCICIO ÚNICO ENCONTRADO: ${smartExercise.id}`);
+          break;
+        } else {
+          console.log(`⚠️ EJERCICIO YA USADO: ${smartExercise.id}, reintentando...`);
+        }
+        
+        // Si hemos intentado muchas veces, hacer reset
+        if (attempts >= 5) {
+          console.log("🔄 DEMASIADOS INTENTOS - HACIENDO RESET DE HISTORIAL");
+          ExerciseTracker.resetUsedExercises(userProgress.level);
+          break;
+        }
+        
+      } while (attempts < 5);
       
       setCurrentExercise(smartExercise);
       setCurrentTopic(smartExercise.topic);
       
-      console.log(`✅ EJERCICIO INTELIGENTE GENERADO:`, {
+      console.log(`✅ EJERCICIO CARGADO:`, {
         id: smartExercise.id,
         source: smartExercise.source,
         topic: smartExercise.topic,
-        difficulty: smartExercise.difficulty
+        difficulty: smartExercise.difficulty,
+        attempts: attempts
       });
       
     } catch (error) {
@@ -137,21 +172,19 @@ const LessonSessionFixed: React.FC<LessonSessionProps> = ({
       }
     }
 
-    // Marcar ejercicio como usado localmente
+    // MARCAR EJERCICIO COMO USADO CON SISTEMA ROBUSTO
     if (currentExercise) {
-      const savedUsedIds = localStorage.getItem(`used_exercises_${userProgress.level}`) || "[]";
-      const usedIds = JSON.parse(savedUsedIds);
-      const newUsedIds = [...usedIds, currentExercise.id];
-      localStorage.setItem(`used_exercises_${userProgress.level}`, JSON.stringify(newUsedIds));
+      ExerciseTracker.markExerciseAsUsed(userProgress.level, currentExercise.id);
     }
 
+    // AVANZAR MÁS RÁPIDO - Solo 1 segundo de pausa
     setTimeout(() => {
       if (exerciseNumber >= totalExercises) {
         completeSession();
       } else {
         setExerciseNumber((prev) => prev + 1);
       }
-    }, 2000);
+    }, 1000); // ✅ REDUCIDO DE 2000 A 1000ms
   }, [exerciseNumber, totalExercises, currentExercise, userProgress.level, userProgress.userId, currentTopic, sessionId]);
 
   // Completar sesión

@@ -91,7 +91,7 @@ export const EXERCISE_BANK: Exercise[] = [
     instruction: "Completa la oración",
     options: ["lives", "is living", "has lived", "lived"],
     correctAnswer: 2,
-    explanation: "Con 'since' usamos Present Perfect: has lived",
+    explanation: "🏠 SITUACIÓN REAL: Ella vive aquí desde 2020 y TODAVÍA vive aquí ahora.\n\n🔑 PALABRA CLAVE: 'SINCE' (desde)\n• SINCE + fecha específica = Present Perfect SIEMPRE\n• SINCE 2020, SINCE Monday, SINCE January\n\n✅ CORRECTO: 'She HAS LIVED here since 2020'\n= Ella ha vivido aquí desde 2020 (y sigue viviendo)\n\n❌ INCORRECTO:\n• 'She lives' = Solo presente, no menciona cuándo empezó\n• 'She is living' = Temporal, no permanente\n• 'She lived' = Pasado terminado, ya no vive ahí\n\n💡 TRUCO FÁCIL:\n¿Ves SINCE? → Usa HAS/HAVE + participio pasado\n¿Ves FOR? → También Present Perfect\n\n🎯 MÁS EJEMPLOS:\n• I have worked here since 2019\n• They have been married since 2015\n• We have lived in Spain since last year",
     xpReward: 10
   },
   {
