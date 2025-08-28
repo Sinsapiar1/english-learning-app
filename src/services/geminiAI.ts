@@ -33,25 +33,25 @@ export class PersonalizedLessonGenerator {
     const exerciseTypes = [
       {
         type: "VOCABULARIO",
-        instruction: "¿Qué significa esta palabra en inglés?",
+        instruction: "What does this English word mean?",
         format: "English word → Spanish options",
         example: "What does 'stream' mean in 'I stream Netflix'? → A) transmitir B) río C) correr D) gritar"
       },
       {
         type: "GRAMÁTICA", 
-        instruction: "Completa la oración con la opción correcta",
+        instruction: "Complete the sentence with the correct option",
         format: "English sentence with blank → English grammar options",
         example: "I _____ working from home since 2020. → A) have been B) am C) was D) will be"
       },
       {
         type: "TRADUCCIÓN",
-        instruction: "Selecciona la traducción correcta al inglés",
+        instruction: "Select the correct English translation",
         format: "Spanish phrase → English translation options",
-        example: "¿Cómo se dice 'me gusta tu post'? → A) I like your post B) I love your post C) I want your post D) I see your post"
+        example: "How do you say 'me gusta tu post' in English? → A) I like your post B) I love your post C) I want your post D) I see your post"
       },
       {
         type: "COMPRENSIÓN",
-        instruction: "Lee el texto y responde la pregunta",
+        instruction: "Read the text and answer the question",
         format: "Short English text → English comprehension question",
         example: "Text: 'Ana is in a Zoom meeting with her team. She has been working remotely since 2020.' Question: Has Ana finished the Zoom meeting? → A) No, she's still in it B) Yes, she finished C) She never started D) She's starting now"
       }
@@ -83,11 +83,12 @@ CONTEXTO OBLIGATORIO: ${selectedContext}
 TEMA: ${params.topic}
 
 INSTRUCCIONES CRÍTICAS:
-🇪🇸 TODA la explicación debe estar en ESPAÑOL PERFECTO
+🇬🇧 PREGUNTA e INSTRUCCIÓN deben estar en INGLÉS (es una app para aprender inglés)
+🇪🇸 SOLO la explicación debe estar en ESPAÑOL PERFECTO
 🎯 Tipo de ejercicio: ${selectedType.type}
 📱 Usar vocabulario moderno del contexto: ${selectedContext}
 👶 Explicación para principiantes absolutos en español
-❌ PROHIBIDO usar inglés en la explicación
+❌ PROHIBIDO generar preguntas en español (excepto para ejercicios de traducción)
 
 FORMATO REQUERIDO:
 ${selectedType.format}
@@ -105,10 +106,18 @@ ${selectedType.example}
            }
 
            IMPORTANTE: 
+           🇬🇧 IDIOMA DE PREGUNTAS:
+           - PREGUNTA: Siempre en INGLÉS (es una app para aprender inglés)
+           - INSTRUCCIÓN: Siempre en INGLÉS (usar las definidas arriba)
+           - OPCIONES: Depende del tipo (inglés para gramática/comprensión, español para vocabulario)
+           
+           🇪🇸 IDIOMA DE EXPLICACIONES:
            - La explicación DEBE empezar con un emoji y estar completamente en español
            - Incluir ejemplos adicionales en español
            - Explicar por qué las otras opciones están mal
            - Usar un tono amigable y pedagógico
+           
+           📋 FORMATO:
            - Las opciones NO deben tener letras A), B), C), D)
            - Solo la palabra/frase directa
            - El componente agregará las letras automáticamente
