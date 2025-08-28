@@ -64,72 +64,23 @@ export class PersonalizedLessonGenerator {
       exerciseTypes[Math.floor(Math.random() * exerciseTypes.length)];
     const context = contexts[Math.floor(Math.random() * contexts.length)];
 
-    // Prompt MEJORADO con alta variabilidad y especificidad
-    const prompt = `Eres un profesor EXPERTO de inglés para hispanohablantes con 20 años de experiencia. Tu especialidad es crear ejercicios ÚNICOS y EDUCATIVOS.
+    // Prompt SIMPLIFICADO para evitar fallos
+    const prompt = `Crea UN ejercicio de inglés nivel ${params.level} sobre "${params.topic}".
 
-MISIÓN: Crear UN ejercicio de opción múltiple COMPLETAMENTE ORIGINAL y EDUCATIVO.
+INSTRUCCIONES:
+1. Crea pregunta ÚNICA sobre "${params.topic}" nivel ${params.level}
+2. 4 opciones: A, B, C, D
+3. 1 correcta, 3 incorrectas
+4. Explicación en español
 
-CONTEXTO COMPLETO DEL ESTUDIANTE:
-- Nivel actual: ${params.level}
-- Tema específico: ${params.topic}
-- Ejercicio número: ${params.exerciseNumber} de 8
-- Lecciones completadas: ${params.completedLessons || 0}
-- Precisión actual: ${Math.round((params.currentAccuracy || 0) * 100)}%
-- Racha actual: ${params.currentStreak || 0} días
-- Tipo de ejercicio: ${exerciseType}
-- Contexto: ${context}
-- DEBILIDADES: ${params.userWeaknesses?.join(", ") || "ninguna identificada"}
-- FORTALEZAS: ${params.userStrengths?.join(", ") || "ninguna identificada"}
-- Temas ya usados en esta sesión: ${params.usedTopics?.join(", ") || "ninguno"}
-- Timestamp único: ${params.timestamp || Date.now()}
-
-INSTRUCCIONES CRÍTICAS - CUMPLE TODAS:
-1. ORIGINALIDAD TOTAL: Nunca repitas estructuras previas como "Have you ___" o "I ___"
-2. TEMA ESPECÍFICO: Integra "${params.topic}" de forma NATURAL en el contexto "${context}"
-3. NIVEL APROPIADO: Vocabulario y gramática exactos para nivel ${params.level}
-4. TIPO DE EJERCICIO: Enfócate en "${exerciseType}"
-5. ADAPTACIÓN AL ESTUDIANTE:
-   - Si precisión >80%: Aumenta ligeramente la dificultad
-   - Si precisión <60%: Enfócate en conceptos básicos
-   - EVITA temas ya usados: ${params.usedTopics?.join(", ") || "ninguno"}
-   - REFUERZA debilidades: ${params.userWeaknesses?.join(", ") || "ninguna"}
-   - NO repitas fortalezas obvias: ${params.userStrengths?.join(", ") || "ninguna"}
-6. VARIEDAD ESTRUCTURAL: Usa diferentes personas (I/you/he/she/we/they) y tiempos verbales
-7. RESPUESTAS INTELIGENTES: 
-   - 1 respuesta CLARAMENTE correcta (puede estar en cualquier posición A/B/C/D)
-   - 3 respuestas incorrectas que sean errores TÍPICOS de hispanohablantes
-8. EXPLICACIÓN EDUCATIVA: Explica POR QUÉ es correcta y por qué las otras están mal
-9. CONTEXTO REALISTA: Usa situaciones de la vida real del contexto "${context}"
-
-EJEMPLOS DE VARIACIÓN OBLIGATORIA:
-- Preguntas afirmativas: "She walks to school every day."
-- Preguntas negativas: "They haven't finished yet." 
-- Preguntas interrogativas: "Where do you work?"
-- Frases con contexto: "In the restaurant, the waiter brought us menus."
-- Diálogos cortos: "A: What time is it? B: It's 3 o'clock."
-- Comparaciones: "This book is more interesting than that one."
-- Condicionales: "If it rains, we will stay home."
-- Pasado simple: "Yesterday, I visited my grandmother."
-- Futuro: "Next week, we are going to travel."
-- Presente continuo: "Right now, she is studying for her exam."
-
-TEMAS ESPECÍFICOS PARA ${params.topic}:
-- Crea ejercicios que realmente usen ${params.topic} de forma natural
-- NO uses siempre la misma estructura gramatical
-- Ejercicio #${params.exerciseNumber}: debe ser único y diferente
-
-FORMATO JSON OBLIGATORIO - Responde ÚNICAMENTE este JSON válido:
+Responde SOLO este JSON:
 {
-  "question": "Pregunta contextualizada usando ${params.topic} en ${context}",
-  "instruction": "Instrucción clara y específica para el estudiante",
+  "question": "Tu pregunta aquí",
+  "instruction": "Instrucción para el estudiante", 
   "options": ["opción A", "opción B", "opción C", "opción D"],
   "correctAnswer": 0,
-  "explanation": "Explicación educativa: Por qué esta respuesta es correcta y por qué las otras 3 están mal. Incluye regla gramatical específica.",
-  "xpReward": 10,
-  "difficulty": "${params.level}",
-  "topic": "${params.topic}",
-  "context": "${context}",
-  "exerciseType": "${exerciseType}"
+  "explanation": "Por qué es correcta esta respuesta",
+  "xpReward": 10
 }`;
 
     try {
@@ -144,6 +95,8 @@ FORMATO JSON OBLIGATORIO - Responde ÚNICAMENTE este JSON válido:
 
       console.log("🤖 INICIANDO GENERACIÓN IA - Ejercicio #" + params.exerciseNumber);
       console.log("📝 Tema:", params.topic, "| Nivel:", params.level);
+      console.log("🔑 API Key configurada:", !!this.genAI);
+      console.log("📝 Prompt enviado:", prompt);
       
       const result = await model.generateContent(prompt);
       const text = result.response.text();
@@ -201,8 +154,22 @@ FORMATO JSON OBLIGATORIO - Responde ÚNICAMENTE este JSON válido:
         xpReward: exerciseData.xpReward || 10,
       };
     } catch (error) {
-      console.error("🚨 IA FAILED - Using fallback exercise:", error);
-      console.log("📊 Exercise params:", params);
+      console.error("🚨🚨🚨 IA COMPLETAMENTE FALLIDA 🚨🚨🚨");
+      console.error("❌ Error completo:", error);
+      console.error("📊 Parámetros enviados:", params);
+      console.error("🔑 API Key existe?", !!this.genAI);
+      console.error("📝 Prompt length:", prompt.length);
+      
+      // Log del error específico
+      if (error.message.includes("API key")) {
+        console.error("🔑 PROBLEMA DE API KEY");
+      } else if (error.message.includes("JSON")) {
+        console.error("📋 PROBLEMA DE FORMATO JSON");
+      } else if (error.message.includes("quota")) {
+        console.error("💳 PROBLEMA DE CUOTA/LÍMITES");
+      } else {
+        console.error("❓ ERROR DESCONOCIDO:", error.message);
+      }
 
       // Fallbacks únicos por ejercicio y tema
       const uniqueFallbacks = this.getUniqueFallback(
