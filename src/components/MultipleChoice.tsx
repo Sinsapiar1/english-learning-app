@@ -32,14 +32,13 @@ const MultipleChoice: React.FC<MultipleChoiceProps> = memo(({
     setShowResult(true);
     setAnswered(true);
 
-    // Llamar callback después de 2 segundos
-    setTimeout(() => {
-      onAnswer(isCorrect, xpEarned);
-    }, 2000);
-  }, [selectedAnswer, question.isError, question.correctAnswer, onAnswer]);
+    // NO MÁS TIMEOUT AUTOMÁTICO - Solo avanza con botón manual
+  }, [selectedAnswer, question.isError, question.correctAnswer]);
 
   const handleNext = useCallback(() => {
-    onAnswer(selectedAnswer === question.correctAnswer, 0);
+    const isCorrect = selectedAnswer === question.correctAnswer;
+    const xpEarned = isCorrect ? 10 : 3; // XP correcto al avanzar manualmente
+    onAnswer(isCorrect, xpEarned);
   }, [selectedAnswer, question.correctAnswer, onAnswer]);
 
   // Si es un error, mostrar estado de carga
