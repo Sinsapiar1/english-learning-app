@@ -7,6 +7,8 @@ import LessonSessionComponent from "./LessonSessionFixed";
 import { useAPIKey } from "../hooks/useAPIKey";
 import { UserProgress } from "../services/adaptiveLearning";
 import { IntelligentLearningSystem } from "../services/intelligentLearning";
+import LevelUpCelebration from './LevelUpCelebration';
+import { ImprovedLevelSystem } from '../services/levelProgression';
 
 interface DashboardProps {
   user: User;
@@ -33,6 +35,8 @@ const Dashboard: React.FC<DashboardProps> = ({ user }) => {
   const [personalizedRecommendations, setPersonalizedRecommendations] = useState<any>(null);
   const [learningAnalytics, setLearningAnalytics] = useState<any>(null);
   const [isLoadingIntelligence, setIsLoadingIntelligence] = useState(false);
+  const [showLevelUpCelebration, setShowLevelUpCelebration] = useState(false);
+  const [celebrationLevel, setCelebrationLevel] = useState<string>('');
 
   // Cargar progreso del usuario desde localStorage
   useEffect(() => {
@@ -110,30 +114,146 @@ const Dashboard: React.FC<DashboardProps> = ({ user }) => {
   };
 
   const handleSessionComplete = (sessionResults: any) => {
+    console.log("📊 SESSION RESULTS:", sessionResults);
+    
     const newProgress = {
       ...userProgress,
       xp: userProgress.xp + sessionResults.xpEarned,
       accuracy: (userProgress.accuracy + sessionResults.accuracy) / 2,
       completedLessons: userProgress.completedLessons + 1,
-      level: sessionResults.levelUp
-        ? sessionResults.newLevel
-        : userProgress.level,
+      level: sessionResults.levelUp ? sessionResults.newLevel : userProgress.level,
     };
 
     saveUserProgress(newProgress);
     setShowLessonSession(false);
 
     if (sessionResults.levelUp) {
-      // Mostrar celebración de nivel up
-      setTimeout(() => {
-        alert(`🎉 ¡FELICIDADES! Subiste al nivel ${sessionResults.newLevel}!`);
-      }, 500);
+      console.log("🎉 LEVEL UP DETECTED:", sessionResults.newLevel);
+      setCelebrationLevel(sessionResults.newLevel);
+      setShowLevelUpCelebration(true);
     }
   };
 
   const handleApiKeySet = (key: string) => {
     saveApiKey(key);
     setShowAPISetup(false);
+  };
+
+  const renderLevelProgress = () => {
+    const recentSessionsKey = `recent_sessions_${user.uid}`;
+    const recentSessions = JSON.parse(localStorage.getItem(recentSessionsKey) || "[0.5, 0.6, 0.7]");
+    
+    const levelProgress = ImprovedLevelSystem.calculateLevelProgress({
+      currentLevel: userProgress.level,
+      accuracy: userProgress.accuracy,
+      totalExercises: userProgress.completedLessons * 8,
+      xp: userProgress.xp,
+      recentSessions: recentSessions
+    });
+
+    return (
+      <div className={`rounded-2xl p-6 mb-8 border-2 ${
+        levelProgress.canLevelUp 
+          ? 'bg-gradient-to-r from-green-50 to-emerald-50 border-green-300' 
+          : 'bg-gradient-to-r from-blue-50 to-purple-50 border-blue-300'
+      }`}>
+        
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <h3 className={`text-xl font-bold ${
+              levelProgress.canLevelUp ? 'text-green-800' : 'text-blue-800'
+            }`}>
+              📈 Progreso hacia {levelProgress.nextLevel}
+            </h3>
+            <p className={`text-sm ${
+              levelProgress.canLevelUp ? 'text-green-700' : 'text-blue-700'
+            }`}>
+              {levelProgress.motivationalMessage}
+            </p>
+          </div>
+          
+          <div className="flex items-center gap-4">
+            <div className="text-center">
+              <div className="bg-white px-4 py-2 rounded-full shadow-sm border">
+                <span className="font-bold text-lg text-gray-800">{userProgress.level}</span>
+              </div>
+              <span className="text-xs text-gray-600 mt-1 block">Actual</span>
+            </div>
+            <div className="text-2xl">→</div>
+            <div className="text-center">
+              <div className={`px-4 py-2 rounded-full shadow-sm border-2 ${
+                levelProgress.canLevelUp 
+                  ? 'bg-green-500 text-white border-green-600' 
+                  : 'bg-gray-100 text-gray-600 border-gray-300'
+              }`}>
+                <span className="font-bold text-lg">{levelProgress.nextLevel}</span>
+              </div>
+              <span className="text-xs text-gray-600 mt-1 block">Siguiente</span>
+            </div>
+          </div>
+        </div>
+
+        <div className="mb-4">
+          <div className="flex justify-between items-center mb-2">
+            <span className="text-sm font-medium text-gray-700">Progreso General</span>
+            <span className="text-sm font-bold text-gray-800">{levelProgress.progressPercentage}%</span>
+          </div>
+          <div className="bg-gray-200 rounded-full h-4 overflow-hidden">
+            <div 
+              className={`h-4 rounded-full transition-all duration-1000 ${
+                levelProgress.canLevelUp 
+                  ? 'bg-gradient-to-r from-green-400 to-green-500' 
+                  : levelProgress.progressPercentage > 70
+                  ? 'bg-gradient-to-r from-orange-400 to-orange-500'
+                  : 'bg-gradient-to-r from-blue-400 to-purple-500'
+              }`}
+              style={{ width: `${levelProgress.progressPercentage}%` }}
+            >
+              {levelProgress.progressPercentage > 10 && (
+                <div className="h-full flex items-center justify-center">
+                  <span className="text-white text-xs font-bold">
+                    {levelProgress.progressPercentage > 90 ? '¡Casi!' : `${levelProgress.progressPercentage}%`}
+                  </span>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {levelProgress.canLevelUp ? (
+          <div className="bg-green-100 rounded-lg p-4 mb-4">
+            <h4 className="font-semibold text-green-800 mb-2 flex items-center">
+              🎉 ¡Listo para subir de nivel!
+            </h4>
+            <p className="text-green-700 text-sm mb-3">
+              Has cumplido todos los requisitos. Completa una sesión más para subir oficialmente a {levelProgress.nextLevel}.
+            </p>
+            <button
+              onClick={() => setShowLessonSession(true)}
+              className="bg-green-500 text-white px-6 py-2 rounded-full font-semibold hover:bg-green-600 transition-colors shadow-lg"
+            >
+              🚀 ¡SUBIR DE NIVEL AHORA!
+            </button>
+          </div>
+        ) : (
+          <div className="bg-blue-50 rounded-lg p-4">
+            <h4 className="font-semibold text-blue-800 mb-2">
+              📋 Para subir a {levelProgress.nextLevel} necesitas:
+            </h4>
+            <div className="grid grid-cols-1 gap-2">
+              {levelProgress.missingRequirements.slice(0, 3).map((req, index) => (
+                <div key={index} className="flex items-center text-sm text-blue-700">
+                  <span className="w-4 h-4 rounded-full bg-blue-200 flex items-center justify-center text-xs font-bold text-blue-800 mr-2">
+                    {index + 1}
+                  </span>
+                  {req}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+    );
   };
 
   const handleLogout = () => {
@@ -268,31 +388,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user }) => {
             )}
           </div>
 
-          {/* Progreso de Nivel */}
-          <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-2xl p-6 mb-8">
-            <div className="flex items-center justify-between mb-4">
-              <div>
-                <h3 className="text-lg font-semibold text-gray-800">
-                  Progreso de Nivel {userProgress.level}
-                </h3>
-                <p className="text-sm text-gray-600">
-                  {userProgress.xp} / {getXPforNextLevel()} XP
-                </p>
-              </div>
-              <div className="text-right">
-                <p className="text-2xl font-bold text-purple-600">
-                  {Math.round(getProgressToNextLevel())}%
-                </p>
-                <p className="text-xs text-gray-500">al siguiente nivel</p>
-              </div>
-            </div>
-            <div className="bg-gray-200 rounded-full h-3">
-              <div
-                className="bg-gradient-to-r from-blue-500 to-purple-600 h-3 rounded-full transition-all duration-1000"
-                style={{ width: `${Math.min(getProgressToNextLevel(), 100)}%` }}
-              ></div>
-            </div>
-          </div>
+          {renderLevelProgress()}
 
           {/* API Key Status */}
           {hasApiKey ? (
@@ -526,6 +622,16 @@ const Dashboard: React.FC<DashboardProps> = ({ user }) => {
           </div>
         </div>
       </main>
+      
+      {showLevelUpCelebration && (
+        <LevelUpCelebration
+          newLevel={celebrationLevel}
+          onClose={() => {
+            setShowLevelUpCelebration(false);
+            setCelebrationLevel('');
+          }}
+        />
+      )}
     </div>
   );
 };

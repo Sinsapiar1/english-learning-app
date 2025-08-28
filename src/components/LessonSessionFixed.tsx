@@ -5,6 +5,7 @@ import { IntelligentLearningSystem } from "../services/intelligentLearning";
 import { SmartAISystem, SmartExercise } from "../services/smartAI";
 import { ExerciseTracker } from "../services/exerciseTracker";
 import { ContentHashTracker } from "../services/contentHashTracker";
+import { ImprovedLevelSystem } from '../services/levelProgression';
 
 interface LessonSessionProps {
   apiKey: string;
@@ -207,21 +208,67 @@ const LessonSessionFixed: React.FC<LessonSessionProps> = ({
     
     const finalAccuracy = correctCount / totalExercises;
 
+    const recentSessionsKey = `recent_sessions_${userProgress.userId || 'anonymous'}`;
+    const recentSessions = JSON.parse(localStorage.getItem(recentSessionsKey) || "[]");
+    
+    const updatedSessions = [...recentSessions, finalAccuracy].slice(-10);
+    localStorage.setItem(recentSessionsKey, JSON.stringify(updatedSessions));
+
+    const levelProgress = ImprovedLevelSystem.calculateLevelProgress({
+      currentLevel: userProgress.level,
+      accuracy: (userProgress.accuracy + finalAccuracy) / 2,
+      totalExercises: (userProgress.completedLessons + 1) * 8,
+      xp: userProgress.xp + totalXP,
+      recentSessions: updatedSessions
+    });
+
+    console.log("📊 NIVEL PROGRESS:", levelProgress);
+
+    const levelUp = levelProgress.canLevelUp && levelProgress.nextLevel !== userProgress.level;
+
     const results = {
       exercisesCompleted: totalExercises,
       correctAnswers: correctCount,
       totalAnswers: totalExercises,
       accuracy: finalAccuracy,
       xpEarned: totalXP,
-      levelUp: finalAccuracy >= 0.8 && userProgress.completedLessons >= 5,
+      levelUp: levelUp,
+      newLevel: levelUp ? levelProgress.nextLevel : userProgress.level,
+      levelProgress: levelProgress,
+      
+      sessionData: {
+        topicsStudied: [currentTopic],
+        averageResponseTime: 5,
+        difficulty: userProgress.level,
+        timestamp: new Date().toISOString()
+      }
     };
 
     setSessionComplete(true);
 
+    const detailedProgress = {
+      ...userProgress,
+      accuracy: (userProgress.accuracy + finalAccuracy) / 2,
+      completedLessons: userProgress.completedLessons + 1,
+      xp: userProgress.xp + totalXP,
+      level: levelUp ? levelProgress.nextLevel : userProgress.level,
+      lastSession: {
+        date: new Date().toISOString(),
+        accuracy: finalAccuracy,
+        xpEarned: totalXP,
+        exercisesCompleted: totalExercises,
+        topicsStudied: [currentTopic]
+      },
+      levelProgress: levelProgress
+    };
+
+    localStorage.setItem("user_progress", JSON.stringify(detailedProgress));
+
     setTimeout(() => {
       onSessionComplete(results);
     }, 3000);
-  }, [sessionComplete, correctCount, totalExercises, totalXP, userProgress.completedLessons, onSessionComplete]);
+
+  }, [sessionComplete, correctCount, totalExercises, totalXP, userProgress, currentTopic, onSessionComplete]);
 
   // Pantalla de resultados
   if (sessionComplete) {
