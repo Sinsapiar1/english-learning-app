@@ -59,7 +59,7 @@ const LessonSessionFixed: React.FC<LessonSessionProps> = ({
           const weaknesses = await IntelligentLearningSystem.analyzeUserWeaknesses(userProgress.userId);
           setUserWeaknesses(weaknesses);
           console.log("📉 DEBILIDADES IDENTIFICADAS:", weaknesses);
-        } catch (error) {
+        } catch (error: any) {
           console.warn("⚠️ Error obteniendo debilidades:", error);
         }
       }
@@ -104,8 +104,8 @@ const LessonSessionFixed: React.FC<LessonSessionProps> = ({
           setCurrentTopic(smartExercise.topic);
           return; // ✅ Éxito con IA mejorada
           
-        } catch (error) {
-          if (error.message === "IA_EXHAUSTED") {
+        } catch (error: any) {
+          if (error?.message === "IA_EXHAUSTED") {
             console.log("⚠️ IA agotada, usando método existente como fallback");
           } else {
             console.warn("⚠️ IA mejorada falló, intentando método original:", error);
@@ -132,7 +132,7 @@ const LessonSessionFixed: React.FC<LessonSessionProps> = ({
           setCurrentExercise(smartExercise);
           setCurrentTopic(smartExercise.topic);
           return;
-        } catch (error) {
+        } catch (error: any) {
           console.warn("⚠️ IA método original falló, usando ejercicio de emergencia:", error);
         }
       }
@@ -180,7 +180,7 @@ const LessonSessionFixed: React.FC<LessonSessionProps> = ({
         });
         
         console.log("📊 INTERACCIÓN REGISTRADA EN FIREBASE");
-      } catch (error) {
+      } catch (error: any) {
         console.error("❌ Error registrando interacción:", error);
       }
     }

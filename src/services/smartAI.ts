@@ -76,7 +76,7 @@ export class SmartAISystem {
           console.log("✅ EJERCICIO GENERADO POR IA - ÉXITO!");
           return aiExercise;
         }
-      } catch (error) {
+      } catch (error: any) {
         console.warn(`⚠️ IA falló intento ${attempts}:`, error);
       }
       
@@ -136,7 +136,7 @@ export class SmartAISystem {
       // Mezclar opciones
       return shuffleSmartExerciseOptions(smartExercise);
       
-    } catch (error) {
+    } catch (error: any) {
       console.error("❌ Error generando ejercicio IA:", error);
       return null;
     }
@@ -328,7 +328,7 @@ export class SmartAISystem {
           console.log("✅ IA EXITOSA - Ejercicio único generado");
           return aiExercise;
         }
-      } catch (error) {
+      } catch (error: any) {
         console.warn(`⚠️ IA intento ${attempts} falló:`, error);
         if (attempts < maxAttempts) {
           await new Promise(resolve => setTimeout(resolve, 1000 * attempts)); // Backoff

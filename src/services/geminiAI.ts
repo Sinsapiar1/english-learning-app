@@ -110,7 +110,7 @@ JSON REQUERIDO:
         xpReward: 10,
       };
 
-    } catch (error) {
+    } catch (error: any) {
       console.error("🚨 ERROR IA MEJORADA:", error);
       throw error; // Dejar que el sistema existente maneje el error
     }
