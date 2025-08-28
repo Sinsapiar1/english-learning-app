@@ -61,20 +61,33 @@ CONTEXTO DEL ESTUDIANTE:
 
 INSTRUCCIONES CRÍTICAS:
 - Crea una pregunta COMPLETAMENTE DIFERENTE de ejercicios anteriores
-- Usa vocabulario y estructuras variadas del nivel ${params.level}
-- El ejercicio debe ser sobre "${params.topic}" pero con un enfoque único
-- 4 opciones de respuesta (A, B, C, D)
-- Una respuesta claramente correcta
+- NUNCA repitas estructuras como "Have you ___" o "I have ___"
+- Usa vocabulario y estructuras MUY variadas del nivel ${params.level}
+- El ejercicio debe ser sobre "${params.topic}" con enfoque ÚNICO cada vez
+- 4 opciones de respuesta (A, B, C, D) - MEZCLA el orden de la correcta
+- Una respuesta claramente correcta (NO siempre en posición A)
 - Las incorrectas deben ser errores típicos de hispanohablantes
 - Explicación detallada en español
-- Varía la estructura de la pregunta (no siempre "I ___ ...")
+- VARÍA COMPLETAMENTE la estructura (evita patrones repetitivos)
+- Usa diferentes personas (I, you, he, she, we, they)
+- Cambia contextos (casa, trabajo, escuela, viajes, etc.)
 
-EJEMPLOS DE VARIACIÓN:
-- Preguntas afirmativas: "She ___ to school every day."
-- Preguntas negativas: "They ___ not finished yet." 
-- Preguntas interrogativas: "___ you ever been to London?"
-- Frases con contexto: "In the restaurant, I ___ a salad."
-- Diálogos cortos: "A: Where is John? B: He ___ working."
+EJEMPLOS DE VARIACIÓN OBLIGATORIA:
+- Preguntas afirmativas: "She walks to school every day."
+- Preguntas negativas: "They haven't finished yet." 
+- Preguntas interrogativas: "Where do you work?"
+- Frases con contexto: "In the restaurant, the waiter brought us menus."
+- Diálogos cortos: "A: What time is it? B: It's 3 o'clock."
+- Comparaciones: "This book is more interesting than that one."
+- Condicionales: "If it rains, we will stay home."
+- Pasado simple: "Yesterday, I visited my grandmother."
+- Futuro: "Next week, we are going to travel."
+- Presente continuo: "Right now, she is studying for her exam."
+
+TEMAS ESPECÍFICOS PARA ${params.topic}:
+- Crea ejercicios que realmente usen ${params.topic} de forma natural
+- NO uses siempre la misma estructura gramatical
+- Ejercicio #${params.exerciseNumber}: debe ser único y diferente
 
 FORMATO JSON (responde SOLO el JSON, sin texto adicional):
 {
@@ -125,12 +138,28 @@ FORMATO JSON (responde SOLO el JSON, sin texto adicional):
         throw new Error("Invalid exercise structure from AI");
       }
 
+      // Mezclar opciones para que la respuesta correcta no siempre sea la primera
+      const correctAnswerIndex = exerciseData.correctAnswer || 0;
+      const correctAnswerText = exerciseData.options[correctAnswerIndex];
+      
+      // Crear array de opciones mezcladas
+      const shuffledOptions = [...exerciseData.options];
+      
+      // Algoritmo Fisher-Yates para mezclar
+      for (let i = shuffledOptions.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [shuffledOptions[i], shuffledOptions[j]] = [shuffledOptions[j], shuffledOptions[i]];
+      }
+      
+      // Encontrar nueva posición de la respuesta correcta
+      const newCorrectAnswer = shuffledOptions.findIndex(option => option === correctAnswerText);
+
       return {
         question: exerciseData.question,
         instruction:
           exerciseData.instruction || "Selecciona la respuesta correcta",
-        options: exerciseData.options,
-        correctAnswer: exerciseData.correctAnswer || 0,
+        options: shuffledOptions,
+        correctAnswer: newCorrectAnswer,
         explanation: exerciseData.explanation || "Explicación no disponible",
         xpReward: exerciseData.xpReward || 10,
       };
