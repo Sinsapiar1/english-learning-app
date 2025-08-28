@@ -163,18 +163,49 @@ const Dashboard: React.FC<DashboardProps> = ({ user }) => {
   };
 
   const handleSessionComplete = (sessionResults: any) => {
-    console.log("📊 SESIÓN COMPLETADA:", sessionResults);
+    console.log("📊 SESIÓN COMPLETADA - RESULTADOS:", sessionResults);
     
-    const newProgress = {
-      ...userProgress,
-      xp: userProgress.xp + sessionResults.xpEarned,
-      accuracy: (userProgress.accuracy + sessionResults.accuracy) / 2,
-      completedLessons: userProgress.completedLessons + 1,
-      level: sessionResults.levelUp ? sessionResults.newLevel : userProgress.level,
-    };
-
-    saveUserProgress(newProgress);
-    setShowLessonSession(false);
+    try {
+      // ✅ ACTUALIZAR PROGRESO LEGACY CORRECTAMENTE
+      const newAccuracy = (userProgress.accuracy + sessionResults.accuracy) / 2;
+      const newProgress = {
+        ...userProgress,
+        xp: userProgress.xp + (sessionResults.xpEarned || 0),
+        accuracy: Math.max(userProgress.accuracy, sessionResults.accuracy), // ✅ SOLO SUBE
+        completedLessons: userProgress.completedLessons + 1,
+        level: sessionResults.levelUp ? sessionResults.newLevel : userProgress.level,
+      };
+      
+      console.log("💾 GUARDANDO PROGRESO ACTUALIZADO:", newProgress);
+      saveUserProgress(newProgress);
+      
+      // ✅ ACTUALIZAR RECENT SESSIONS CORRECTAMENTE
+      const userId = user?.uid || 'anonymous';
+      const recentSessionsKey = `recent_sessions_${userId}`;
+      const currentSessions = JSON.parse(localStorage.getItem(recentSessionsKey) || "[]");
+      const updatedSessions = [...currentSessions, sessionResults.accuracy].slice(-10);
+      localStorage.setItem(recentSessionsKey, JSON.stringify(updatedSessions));
+      
+      console.log("📈 RECENT SESSIONS ACTUALIZADAS:", updatedSessions);
+      
+      // ✅ RECALCULAR PROGRESO CON DATOS CORRECTOS
+      const progressData = ImprovedLevelSystem.calculateLevelProgress({
+        currentLevel: newProgress.level,
+        accuracy: newProgress.accuracy,
+        totalExercises: newProgress.completedLessons * 8,
+        xp: newProgress.xp,
+        recentSessions: updatedSessions
+      });
+      
+      console.log("📊 PROGRESO CALCULADO:", progressData);
+      
+      console.log("✅ PROGRESO GUARDADO EXITOSAMENTE");
+      
+    } catch (error) {
+      console.error("❌ ERROR ACTUALIZANDO PROGRESO:", error);
+    } finally {
+      setShowLessonSession(false);
+    }
 
     if (sessionResults.levelUp) {
       console.log("🎉 LEVEL UP DETECTED:", sessionResults.newLevel);

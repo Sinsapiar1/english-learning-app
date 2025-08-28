@@ -56,6 +56,14 @@ const MultipleChoice: React.FC<MultipleChoiceProps> = memo(({
     );
   }
 
+  // ✅ AGREGAR DEBUGGING TEMPORAL PARA VER SI LAS OPCIONES ESTÁN MEZCLADAS
+  console.log("🎯 QUESTION DEBUG:", {
+    id: question.id,
+    options: question.options,
+    correctAnswer: question.correctAnswer,
+    correctText: question.options[question.correctAnswer]
+  });
+
   return (
     <div className="bg-white rounded-xl p-6 shadow-lg max-w-2xl mx-auto">
       {/* Pregunta */}

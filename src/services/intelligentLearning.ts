@@ -209,42 +209,52 @@ export class IntelligentLearningSystem {
     
     while (retryCount < FIREBASE_CONFIG.retryAttempts) {
       try {
-        const fullInteraction: ExerciseInteraction = {
+        // ✅ LIMPIAR CAMPOS UNDEFINED ANTES DE GUARDAR
+        const cleanInteraction: ExerciseInteraction = {
           ...interaction,
-          timestamp: new Date()
+          timestamp: new Date(),
+          // ✅ LIMPIAR CAMPOS UNDEFINED
+          errorType: interaction.errorType, // ✅ mantener undefined si no existe
+          hintsUsed: interaction.hintsUsed || 0,
+          confidence: interaction.confidence || 'medium',
+          responseTime: interaction.responseTime || 5,
+          selectedAnswer: interaction.selectedAnswer || 0
         };
         
-        // Timeout wrapper para evitar conexiones colgadas
+        // ✅ REMOVER CAMPOS NULL/UNDEFINED COMPLETAMENTE
+        const finalInteraction = Object.fromEntries(
+          Object.entries(cleanInteraction).filter(([_, value]) => value !== null && value !== undefined)
+        );
+        
+        console.log("🧹 INTERACTION CLEANED:", finalInteraction);
+        
         const timeoutPromise = new Promise((_, reject) =>
           setTimeout(() => reject(new Error('Firebase timeout')), FIREBASE_CONFIG.timeout)
         );
         
-        // Guardar interacción con timeout
         await Promise.race([
-          addDoc(collection(db, 'exercise_interactions'), fullInteraction),
+          addDoc(collection(db, 'exercise_interactions'), finalInteraction),
           timeoutPromise
         ]);
         
-        // Actualizar perfil del usuario
-        await this.updateLearningProfile(interaction.userId, fullInteraction);
+        await this.updateLearningProfile(interaction.userId, cleanInteraction);
         
-        console.log("✅ Interacción registrada:", fullInteraction.exerciseId);
-        return; // Éxito, salir del loop
+        console.log("✅ Interacción guardada sin errores:", interaction.exerciseId);
+        return;
         
       } catch (error) {
         retryCount++;
         console.warn(`⚠️ Intento ${retryCount}/${FIREBASE_CONFIG.retryAttempts} falló:`, error);
         
         if (retryCount >= FIREBASE_CONFIG.retryAttempts) {
-          console.log("⚠️ Firebase no disponible - usando solo localStorage (app funciona normal)");
+          console.log("⚠️ Firebase no disponible - usando solo localStorage");
           
-          // FALLBACK: Guardar localmente
-          const fallbackInteraction: ExerciseInteraction = {
+          const fallbackInteraction = {
             ...interaction,
-            timestamp: new Date()
+            timestamp: new Date(),
+            errorType: interaction.errorType
           };
           OfflineMode.saveToLocalStorage(`interaction_${interaction.exerciseId}_${Date.now()}`, fallbackInteraction);
-          console.log("💾 Interacción guardada offline para sincronización posterior");
           return;
         }
         

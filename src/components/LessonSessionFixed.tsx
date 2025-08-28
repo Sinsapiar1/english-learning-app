@@ -342,21 +342,33 @@ const LessonSessionFixed: React.FC<LessonSessionProps> = ({
       }
     ];
     
-    const randomExercise = emergencyExercises[Math.floor(Math.random() * emergencyExercises.length)];
+    const baseExercise = emergencyExercises[Math.floor(Math.random() * emergencyExercises.length)];
+    
+    // ✅ MEZCLAR OPCIONES OBLIGATORIAMENTE
+    const correctAnswerText = baseExercise.options[baseExercise.correctAnswer];
+    const shuffledOptions = [...baseExercise.options].sort(() => Math.random() - 0.5);
+    const newCorrectAnswer = shuffledOptions.findIndex(option => option === correctAnswerText);
+    
+    console.log("🔀 EMERGENCY EXERCISE SHUFFLE:", {
+      original: baseExercise.options,
+      shuffled: shuffledOptions,
+      oldCorrect: baseExercise.correctAnswer,
+      newCorrect: newCorrectAnswer
+    });
     
     return {
       id: `emergency_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-      question: randomExercise.question,
-      instruction: "Selecciona la respuesta más apropiada",
-      options: randomExercise.options,
-      correctAnswer: randomExercise.correctAnswer,
-      explanation: randomExercise.explanation,
-      xpReward: 8,
-      topic: randomExercise.topic,
+      question: baseExercise.question,
+      instruction: "Selecciona la respuesta correcta",
+      options: shuffledOptions, // ✅ OPCIONES MEZCLADAS
+      correctAnswer: newCorrectAnswer, // ✅ NUEVA POSICIÓN CORRECTA
+      explanation: baseExercise.explanation,
+      xpReward: 10,
+      topic: baseExercise.topic,
       level: level,
       source: 'emergency',
-      difficulty: 'medium',
-      learningFocus: [randomExercise.topic]
+      difficulty: 'easy',
+      learningFocus: [baseExercise.topic]
     };
   };
 

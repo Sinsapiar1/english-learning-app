@@ -96,10 +96,38 @@ JSON REQUERIDO:
         exerciseData.explanation = `🎯 NIVEL ${params.level}: ${exerciseData.explanation}. Esta estructura es muy común en inglés moderno.`;
       }
 
-      // Mezclar opciones (MANTENER lógica existente)
-      const correctAnswerText = exerciseData.options[exerciseData.correctAnswer];
-      const shuffledOptions = [...exerciseData.options].sort(() => Math.random() - 0.5);
+      // MEZCLAR OPCIONES FORZADAMENTE
+      const correctAnswerText = exerciseData.options[exerciseData.correctAnswer || 0];
+      const shuffledOptions = [...exerciseData.options];
+
+      // ✅ ALGORITMO FISHER-YATES PARA MEJOR MEZCLADO
+      for (let i = shuffledOptions.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [shuffledOptions[i], shuffledOptions[j]] = [shuffledOptions[j], shuffledOptions[i]];
+      }
+
       const newCorrectAnswer = shuffledOptions.findIndex(option => option === correctAnswerText);
+
+      console.log("🔀 AI SHUFFLE RESULT:", {
+        original: exerciseData.options,
+        correctWas: correctAnswerText,
+        shuffled: shuffledOptions,
+        newCorrectIndex: newCorrectAnswer,
+        newCorrectText: shuffledOptions[newCorrectAnswer]
+      });
+
+      // ✅ VERIFICAR QUE EL MEZCLADO FUNCIONÓ
+      if (newCorrectAnswer === -1) {
+        console.error("❌ SHUFFLE ERROR - usando original");
+        return {
+          question: exerciseData.question,
+          instruction: exerciseData.instruction || "Selecciona la respuesta correcta",
+          options: exerciseData.options,
+          correctAnswer: exerciseData.correctAnswer || 0,
+          explanation: exerciseData.explanation,
+          xpReward: 10,
+        };
+      }
 
       return {
         question: exerciseData.question,
