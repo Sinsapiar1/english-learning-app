@@ -1,13 +1,16 @@
 import React, { useState, useCallback, memo } from "react";
 
 interface Question {
-  id: number;
+  id: string | number;
   question: string;
   options: string[];
   correctAnswer: number;
   explanation?: string;
   isError?: boolean;
   instruction?: string;
+  topic?: string;
+  level?: string;
+  xpReward?: number;
 }
 
 interface MultipleChoiceProps {
@@ -37,9 +40,9 @@ const MultipleChoice: React.FC<MultipleChoiceProps> = memo(({
 
   const handleNext = useCallback(() => {
     const isCorrect = selectedAnswer === question.correctAnswer;
-    const xpEarned = isCorrect ? 10 : 3; // XP correcto al avanzar manualmente
+    const xpEarned = isCorrect ? (question.xpReward || 10) : 3; // XP del ejercicio o default
     onAnswer(isCorrect, xpEarned);
-  }, [selectedAnswer, question.correctAnswer, onAnswer]);
+  }, [selectedAnswer, question.correctAnswer, question.xpReward, onAnswer]);
 
   // Si es un error, mostrar estado de carga
   if (question.isError) {
