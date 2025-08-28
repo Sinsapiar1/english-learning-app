@@ -130,8 +130,8 @@ export class ContentHashTracker {
     const set1 = new Set(words1.filter(word => word.length > 2)); // Ignorar palabras muy cortas
     const set2 = new Set(words2.filter(word => word.length > 2));
     
-    const intersection = new Set([...set1].filter(x => set2.has(x)));
-    const union = new Set([...set1, ...set2]);
+    const intersection = new Set(Array.from(set1).filter(x => set2.has(x)));
+    const union = new Set([...Array.from(set1), ...Array.from(set2)]);
     
     return union.size > 0 ? intersection.size / union.size : 0;
   }
