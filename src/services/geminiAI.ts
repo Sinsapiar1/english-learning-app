@@ -64,22 +64,32 @@ export class PersonalizedLessonGenerator {
       exerciseTypes[Math.floor(Math.random() * exerciseTypes.length)];
     const context = contexts[Math.floor(Math.random() * contexts.length)];
 
-    // Prompt SIMPLIFICADO para evitar fallos
-    const prompt = `Crea UN ejercicio de inglés nivel ${params.level} sobre "${params.topic}".
+    // PROMPT ULTRA-CREATIVO PARA EJERCICIOS ÚNICOS
+    const prompt = `Crea ejercicio COMPLETAMENTE ÚNICO nivel ${params.level} sobre "${params.topic}".
 
-INSTRUCCIONES:
-1. Crea pregunta ÚNICA sobre "${params.topic}" nivel ${params.level}
-2. 4 opciones: A, B, C, D
-3. 1 correcta, 3 incorrectas
-4. Explicación en español
+🚨 PROHIBIDO ABSOLUTO:
+- "since 2020", "every morning", "lived here", "worked there"
+- Frases de libros de texto típicas
+- Ejemplos aburridos y repetitivos
 
-Responde SOLO este JSON:
+✅ OBLIGATORIO:
+- Usa marcas modernas: Netflix, Spotify, Instagram, TikTok, Uber, Amazon
+- Situaciones reales: trabajo remoto, redes sociales, apps, viajes
+- Contextos interesantes y memorables
+- Nombres propios y lugares específicos
+
+EJEMPLOS CREATIVOS para ${params.topic}:
+- "My Netflix subscription _____ automatically last month"
+- "The Uber driver _____ completely lost in downtown"
+- "Instagram _____ my story because of copyright"
+
+Responde SOLO JSON (sin explicaciones):
 {
-  "question": "Tu pregunta aquí",
-  "instruction": "Instrucción para el estudiante", 
+  "question": "Situación moderna y única aquí",
+  "instruction": "Instrucción específica", 
   "options": ["opción A", "opción B", "opción C", "opción D"],
   "correctAnswer": 0,
-  "explanation": "Por qué es correcta esta respuesta",
+  "explanation": "Explicación detallada en español",
   "xpReward": 10
 }`;
 

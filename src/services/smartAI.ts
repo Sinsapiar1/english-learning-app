@@ -44,26 +44,38 @@ function shuffleSmartExerciseOptions(exercise: SmartExercise): SmartExercise {
 
 export class SmartAISystem {
   
-  // GENERAR EJERCICIO INTELIGENTE (IA + FALLBACK)
+  // FORZAR GENERACIÓN DE IA - NO MÁS EJERCICIOS ESTÁTICOS
   static async generateSmartExercise(request: SmartExerciseRequest): Promise<SmartExercise> {
-    console.log("🧠 GENERANDO EJERCICIO INTELIGENTE...");
+    console.log("🤖 FORZANDO GENERACIÓN DE IA - NO MÁS ESTÁTICOS");
     
-    // 1. INTENTAR IA PRIMERO (si hay API key)
-    if (request.apiKey) {
+    // FORZAR IA SIEMPRE - NO PERMITIR FALLBACK A ESTÁTICOS
+    if (!request.apiKey) {
+      throw new Error("🚨 API KEY REQUERIDA - No se permiten ejercicios estáticos");
+    }
+    
+    let attempts = 0;
+    const maxAttempts = 10; // Más intentos para forzar IA
+    
+    while (attempts < maxAttempts) {
+      attempts++;
+      console.log(`🔄 INTENTO ${attempts}/${maxAttempts} - FORZANDO IA`);
+      
       try {
         const aiExercise = await this.generateAIExercise(request);
         if (aiExercise) {
-          console.log("✅ EJERCICIO GENERADO POR IA");
+          console.log("✅ EJERCICIO GENERADO POR IA - ÉXITO!");
           return aiExercise;
         }
       } catch (error) {
-        console.warn("⚠️ IA falló, usando ejercicios curados:", error);
+        console.warn(`⚠️ IA falló intento ${attempts}:`, error);
       }
+      
+      // Esperar un poco antes del siguiente intento
+      await new Promise(resolve => setTimeout(resolve, 1000));
     }
     
-    // 2. FALLBACK INTELIGENTE CON EJERCICIOS CURADOS
-    console.log("📚 USANDO EJERCICIOS CURADOS INTELIGENTES");
-    return await this.generateCuratedExercise(request);
+    // Si llegamos aquí, la IA falló completamente
+    throw new Error("🚨 IA COMPLETAMENTE FALLIDA después de " + maxAttempts + " intentos");
   }
   
   // GENERAR EJERCICIO CON IA

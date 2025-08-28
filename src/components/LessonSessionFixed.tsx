@@ -59,6 +59,15 @@ const LessonSessionFixed: React.FC<LessonSessionProps> = ({
         }
       }
       
+      // VERIFICAR API KEY ANTES DE EMPEZAR
+      if (!apiKey) {
+        console.error("🚨 NO HAY API KEY - REDIRIGIR A CONFIGURACIÓN");
+        alert("⚠️ Necesitas configurar tu API Key de Google AI para usar ejercicios con IA. Ve a Configuración.");
+        return;
+      }
+      
+      console.log("🔑 API KEY DISPONIBLE - FORZANDO IA");
+      
       // Cargar primer ejercicio inteligente
       await generateIntelligentExercise(1);
     };
@@ -177,14 +186,14 @@ const LessonSessionFixed: React.FC<LessonSessionProps> = ({
       ExerciseTracker.markExerciseAsUsed(userProgress.level, currentExercise.id);
     }
 
-    // AVANZAR MÁS RÁPIDO - Solo 1 segundo de pausa
+    // AVANZAR INMEDIATAMENTE - SIN PAUSA INNECESARIA
     setTimeout(() => {
       if (exerciseNumber >= totalExercises) {
         completeSession();
       } else {
         setExerciseNumber((prev) => prev + 1);
       }
-    }, 1000); // ✅ REDUCIDO DE 2000 A 1000ms
+    }, 200); // ✅ SÚPER RÁPIDO - Solo 0.2 segundos
   }, [exerciseNumber, totalExercises, currentExercise, userProgress.level, userProgress.userId, currentTopic, sessionId]);
 
   // Completar sesión
