@@ -24,31 +24,45 @@ export class PersonalizedLessonGenerator {
     previousErrors?: string[];
     timestamp?: number;
   }): Promise<GeneratedExercise> {
-    // Crear variabilidad en el prompt para evitar repetición
+    // TIPOS DE EJERCICIOS EXPANDIDOS para mayor variedad
     const exerciseTypes = [
-      "completar la oración",
-      "elegir la forma correcta",
-      "identificar el tiempo verbal",
+      "completar la oración con la palabra correcta",
+      "elegir la forma gramatical correcta",
+      "identificar el tiempo verbal apropiado",
       "seleccionar la preposición correcta",
-      "encontrar el error",
-      "traducir correctamente",
+      "encontrar y corregir el error",
+      "elegir la traducción más natural",
+      "completar el diálogo de forma natural",
+      "ordenar las palabras correctamente",
+      "elegir el sinónimo apropiado",
+      "seleccionar la respuesta lógica",
+      "completar la expresión idiomática",
+      "elegir el registro formal/informal correcto"
     ];
 
     const contexts = [
-      "en una conversación cotidiana",
-      "en un texto formal",
-      "en una situación de viaje",
-      "en el trabajo",
-      "en la escuela",
-      "en casa con familia",
+      "en una conversación entre amigos",
+      "en una entrevista de trabajo",
+      "en un restaurante pidiendo comida",
+      "en el aeropuerto haciendo check-in",
+      "en una tienda comprando ropa",
+      "en el médico describiendo síntomas",
+      "en una reunión de negocios",
+      "en una clase universitaria",
+      "en casa planificando el fin de semana",
+      "en el banco haciendo trámites",
+      "llamando por teléfono para hacer una cita",
+      "escribiendo un email profesional"
     ];
 
     const exerciseType =
       exerciseTypes[Math.floor(Math.random() * exerciseTypes.length)];
     const context = contexts[Math.floor(Math.random() * contexts.length)];
 
-    // Prompt con alta variabilidad
-    const prompt = `Eres un profesor experto de inglés para hispanohablantes. Crea UN ejercicio de opción múltiple ÚNICO.
+    // Prompt MEJORADO con alta variabilidad y especificidad
+    const prompt = `Eres un profesor EXPERTO de inglés para hispanohablantes con 20 años de experiencia. Tu especialidad es crear ejercicios ÚNICOS y EDUCATIVOS.
+
+MISIÓN: Crear UN ejercicio de opción múltiple COMPLETAMENTE ORIGINAL y EDUCATIVO.
 
 CONTEXTO DEL ESTUDIANTE:
 - Nivel: ${params.level}
@@ -59,18 +73,17 @@ CONTEXTO DEL ESTUDIANTE:
 - Debilidades: ${params.userWeaknesses?.join(", ") || "ninguna"}
 - Timestamp único: ${params.timestamp || Date.now()}
 
-INSTRUCCIONES CRÍTICAS:
-- Crea una pregunta COMPLETAMENTE DIFERENTE de ejercicios anteriores
-- NUNCA repitas estructuras como "Have you ___" o "I have ___"
-- Usa vocabulario y estructuras MUY variadas del nivel ${params.level}
-- El ejercicio debe ser sobre "${params.topic}" con enfoque ÚNICO cada vez
-- 4 opciones de respuesta (A, B, C, D) - MEZCLA el orden de la correcta
-- Una respuesta claramente correcta (NO siempre en posición A)
-- Las incorrectas deben ser errores típicos de hispanohablantes
-- Explicación detallada en español
-- VARÍA COMPLETAMENTE la estructura (evita patrones repetitivos)
-- Usa diferentes personas (I, you, he, she, we, they)
-- Cambia contextos (casa, trabajo, escuela, viajes, etc.)
+INSTRUCCIONES CRÍTICAS - CUMPLE TODAS:
+1. ORIGINALIDAD TOTAL: Nunca repitas estructuras previas como "Have you ___" o "I ___"
+2. TEMA ESPECÍFICO: Integra "${params.topic}" de forma NATURAL en el contexto "${context}"
+3. NIVEL APROPIADO: Vocabulario y gramática exactos para nivel ${params.level}
+4. TIPO DE EJERCICIO: Enfócate en "${exerciseType}"
+5. VARIEDAD ESTRUCTURAL: Usa diferentes personas (I/you/he/she/we/they) y tiempos verbales
+6. RESPUESTAS INTELIGENTES: 
+   - 1 respuesta CLARAMENTE correcta (puede estar en cualquier posición A/B/C/D)
+   - 3 respuestas incorrectas que sean errores TÍPICOS de hispanohablantes
+7. EXPLICACIÓN EDUCATIVA: Explica POR QUÉ es correcta y por qué las otras están mal
+8. CONTEXTO REALISTA: Usa situaciones de la vida real del contexto "${context}"
 
 EJEMPLOS DE VARIACIÓN OBLIGATORIA:
 - Preguntas afirmativas: "She walks to school every day."
@@ -89,14 +102,18 @@ TEMAS ESPECÍFICOS PARA ${params.topic}:
 - NO uses siempre la misma estructura gramatical
 - Ejercicio #${params.exerciseNumber}: debe ser único y diferente
 
-FORMATO JSON (responde SOLO el JSON, sin texto adicional):
+FORMATO JSON OBLIGATORIO - Responde ÚNICAMENTE este JSON válido:
 {
-  "question": "Pregunta única aquí variando estructura",
-  "instruction": "Instrucción específica para este ejercicio",
+  "question": "Pregunta contextualizada usando ${params.topic} en ${context}",
+  "instruction": "Instrucción clara y específica para el estudiante",
   "options": ["opción A", "opción B", "opción C", "opción D"],
   "correctAnswer": 0,
-  "explanation": "Explicación detallada en español específica para este caso",
-  "xpReward": 10
+  "explanation": "Explicación educativa: Por qué esta respuesta es correcta y por qué las otras 3 están mal. Incluye regla gramatical específica.",
+  "xpReward": 10,
+  "difficulty": "${params.level}",
+  "topic": "${params.topic}",
+  "context": "${context}",
+  "exerciseType": "${exerciseType}"
 }`;
 
     try {
@@ -109,11 +126,15 @@ FORMATO JSON (responde SOLO el JSON, sin texto adicional):
         },
       });
 
+      console.log("🤖 INICIANDO GENERACIÓN IA - Ejercicio #" + params.exerciseNumber);
+      console.log("📝 Tema:", params.topic, "| Nivel:", params.level);
+      
       const result = await model.generateContent(prompt);
       const text = result.response.text();
 
       // Limpiar y extraer JSON
-      console.log("IA Response:", text); // Para debug
+      console.log("✅ IA Response COMPLETA:", text);
+      console.log("📊 Longitud respuesta:", text.length, "caracteres");
 
       const jsonMatch = text.match(/\{[\s\S]*\}/);
       if (!jsonMatch) {
