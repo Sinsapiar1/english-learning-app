@@ -164,7 +164,8 @@ FORMATO JSON (responde SOLO el JSON, sin texto adicional):
         xpReward: exerciseData.xpReward || 10,
       };
     } catch (error) {
-      console.error("Error generating exercise:", error);
+      console.error("🚨 IA FAILED - Using fallback exercise:", error);
+      console.log("📊 Exercise params:", params);
 
       // Fallbacks únicos por ejercicio y tema
       const uniqueFallbacks = this.getUniqueFallback(
@@ -172,7 +173,24 @@ FORMATO JSON (responde SOLO el JSON, sin texto adicional):
         params.topic,
         params.level
       );
-      return uniqueFallbacks;
+      
+      // APLICAR MEZCLA TAMBIÉN A FALLBACKS
+      const correctAnswerText = uniqueFallbacks.options[uniqueFallbacks.correctAnswer];
+      const shuffledOptions = [...uniqueFallbacks.options];
+      
+      // Mezclar fallbacks también
+      for (let i = shuffledOptions.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [shuffledOptions[i], shuffledOptions[j]] = [shuffledOptions[j], shuffledOptions[i]];
+      }
+      
+      const newCorrectAnswer = shuffledOptions.findIndex(option => option === correctAnswerText);
+      
+      return {
+        ...uniqueFallbacks,
+        options: shuffledOptions,
+        correctAnswer: newCorrectAnswer
+      };
     }
   }
 
@@ -209,6 +227,58 @@ FORMATO JSON (responde SOLO el JSON, sin texto adicional):
           correctAnswer: 0,
           explanation:
             "'Ever' se usa en preguntas de Present Perfect para experiencias.",
+          xpReward: 10,
+        },
+      ],
+      "adverbs": [
+        {
+          question: "She speaks English ____.",
+          instruction: "Elige el adverbio correcto",
+          options: ["good", "fluently", "perfect", "nice"],
+          correctAnswer: 1,
+          explanation: "'Fluently' es el adverbio correcto para describir cómo habla.",
+          xpReward: 10,
+        },
+        {
+          question: "He drives ____.",
+          instruction: "Completa con un adverbio",
+          options: ["careful", "carefully", "care", "caring"],
+          correctAnswer: 1,
+          explanation: "'Carefully' es el adverbio que describe cómo conduce.",
+          xpReward: 10,
+        },
+        {
+          question: "They arrived ____.",
+          instruction: "Elige el adverbio de tiempo",
+          options: ["quick", "yesterday", "fast", "soon"],
+          correctAnswer: 1,
+          explanation: "'Yesterday' es un adverbio de tiempo que indica cuándo llegaron.",
+          xpReward: 10,
+        },
+      ],
+      "prepositions": [
+        {
+          question: "The book is ____ the table.",
+          instruction: "Elige la preposición correcta",
+          options: ["in", "on", "at", "by"],
+          correctAnswer: 1,
+          explanation: "'On' se usa para superficies como mesas.",
+          xpReward: 10,
+        },
+        {
+          question: "We meet ____ 3 o'clock.",
+          instruction: "Preposición de tiempo",
+          options: ["in", "on", "at", "by"],
+          correctAnswer: 2,
+          explanation: "'At' se usa con horas específicas.",
+          xpReward: 10,
+        },
+        {
+          question: "She lives ____ London.",
+          instruction: "Preposición de lugar",
+          options: ["at", "on", "in", "by"],
+          correctAnswer: 2,
+          explanation: "'In' se usa con ciudades y países.",
           xpReward: 10,
         },
       ],
