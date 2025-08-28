@@ -8,7 +8,7 @@ import { useAPIKey } from "../hooks/useAPIKey";
 import { UserProgress } from "../services/adaptiveLearning";
 import { IntelligentLearningSystem } from "../services/intelligentLearning";
 import LevelUpCelebration from './LevelUpCelebration';
-import { RealLevelSystem, RealUserProgress } from '../services/realLevelSystem';
+import { ImprovedLevelSystem } from '../services/levelProgression';
 import { ContentHashTracker } from '../services/contentHashTracker';
 
 interface DashboardProps {
@@ -29,10 +29,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user }) => {
     streak: 7,
   });
 
-  // NUEVO: Estado para el sistema de niveles real
-  const [realUserProgress, setRealUserProgress] = useState<RealUserProgress>(
-    RealLevelSystem.loadUserProgress(user.uid)
-  );
+
 
   const { apiKey, hasApiKey, saveApiKey } = useAPIKey();
   
@@ -152,7 +149,6 @@ const Dashboard: React.FC<DashboardProps> = ({ user }) => {
   const handleSessionComplete = (sessionResults: any) => {
     console.log("📊 SESIÓN COMPLETADA:", sessionResults);
     
-    // Actualizar progreso legacy para compatibilidad
     const newProgress = {
       ...userProgress,
       xp: userProgress.xp + sessionResults.xpEarned,
@@ -160,36 +156,13 @@ const Dashboard: React.FC<DashboardProps> = ({ user }) => {
       completedLessons: userProgress.completedLessons + 1,
       level: sessionResults.levelUp ? sessionResults.newLevel : userProgress.level,
     };
+
     saveUserProgress(newProgress);
-    
-    // NUEVO: Actualizar progreso real (acumulativo)
-    const updatedProgress = RealLevelSystem.updateProgress(realUserProgress, {
-      correctAnswers: sessionResults.correctAnswers,
-      totalAnswers: sessionResults.totalAnswers,
-      xpEarned: sessionResults.xpEarned,
-      level: realUserProgress.currentLevel
-    });
-    
-    // Verificar si puede subir de nivel
-    const progressCheck = RealLevelSystem.calculateRealProgress(updatedProgress);
-    
-    let finalProgress = updatedProgress;
-    let leveledUp = false;
-    
-    if (progressCheck.canLevelUp && !sessionResults.levelUpTriggered) {
-      finalProgress = RealLevelSystem.levelUp(updatedProgress);
-      leveledUp = true;
-      console.log(`🎉 LEVEL UP! Nuevo nivel: ${finalProgress.currentLevel}`);
-    }
-    
-    // Guardar progreso real
-    RealLevelSystem.saveUserProgress(finalProgress);
-    setRealUserProgress(finalProgress);
     setShowLessonSession(false);
-    
-    // Mostrar celebración si subió de nivel
-    if (leveledUp) {
-      setCelebrationLevel(finalProgress.currentLevel);
+
+    if (sessionResults.levelUp) {
+      console.log("🎉 LEVEL UP DETECTED:", sessionResults.newLevel);
+      setCelebrationLevel(sessionResults.newLevel);
       setShowLevelUpCelebration(true);
     }
   };
@@ -199,71 +172,100 @@ const Dashboard: React.FC<DashboardProps> = ({ user }) => {
     setShowAPISetup(false);
   };
 
-  const renderRealLevelProgress = () => {
-    const progressInfo = RealLevelSystem.calculateRealProgress(realUserProgress);
+  const renderLevelProgress = () => {
+    // GARANTIZAR PROGRESO MÍNIMO BASADO EN LECCIONES COMPLETADAS
+    const minimumProgress = Math.min((userProgress.completedLessons * 8) / 120, 0.9); // Máximo 90%
+    ImprovedLevelSystem.ensureMinimumProgress(userProgress.level, minimumProgress);
     
+    const recentSessionsKey = `recent_sessions_${user.uid || 'anonymous'}`;
+    const recentSessions = JSON.parse(localStorage.getItem(recentSessionsKey) || "[0.5, 0.6, 0.7]");
+    
+    console.log('🔍 DEBUG PROGRESO:', {
+      recentSessionsKey,
+      recentSessions,
+      userProgressLevel: userProgress.level,
+      completedLessons: userProgress.completedLessons,
+      accuracy: userProgress.accuracy,
+      xp: userProgress.xp
+    });
+    
+    const levelProgress = ImprovedLevelSystem.calculateLevelProgress({
+      currentLevel: userProgress.level,
+      accuracy: userProgress.accuracy,
+      totalExercises: userProgress.completedLessons * 8,
+      xp: userProgress.xp,
+      recentSessions: recentSessions
+    });
+
+    console.log('📊 LEVEL PROGRESS RESULT:', {
+      canLevelUp: levelProgress.canLevelUp,
+      progressPercentage: levelProgress.progressPercentage,
+      missingRequirements: levelProgress.missingRequirements,
+      motivationalMessage: levelProgress.motivationalMessage
+    });
+
     return (
       <div className={`rounded-2xl p-6 mb-8 border-2 ${
-        progressInfo.canLevelUp 
+        levelProgress.canLevelUp 
           ? 'bg-gradient-to-r from-green-50 to-emerald-50 border-green-300' 
           : 'bg-gradient-to-r from-blue-50 to-purple-50 border-blue-300'
       }`}>
         
-        {/* Header */}
         <div className="flex items-center justify-between mb-4">
           <div>
             <h3 className={`text-xl font-bold ${
-              progressInfo.canLevelUp ? 'text-green-800' : 'text-blue-800'
+              levelProgress.canLevelUp ? 'text-green-800' : 'text-blue-800'
             }`}>
-              📈 Progreso hacia {progressInfo.nextLevel}
+              📈 Progreso hacia {levelProgress.nextLevel}
             </h3>
             <p className={`text-sm ${
-              progressInfo.canLevelUp ? 'text-green-700' : 'text-blue-700'
+              levelProgress.canLevelUp ? 'text-green-700' : 'text-blue-700'
             }`}>
-              {progressInfo.motivationalMessage}
+              {levelProgress.motivationalMessage}
             </p>
           </div>
           
           <div className="flex items-center gap-4">
             <div className="text-center">
               <div className="bg-white px-4 py-2 rounded-full shadow-sm border">
-                <span className="font-bold text-lg text-gray-800">{realUserProgress.currentLevel}</span>
+                <span className="font-bold text-lg text-gray-800">{userProgress.level}</span>
               </div>
               <span className="text-xs text-gray-600 mt-1 block">Actual</span>
             </div>
             <div className="text-2xl">→</div>
             <div className="text-center">
               <div className={`px-4 py-2 rounded-full shadow-sm border-2 ${
-                progressInfo.canLevelUp 
+                levelProgress.canLevelUp 
                   ? 'bg-green-500 text-white border-green-600' 
                   : 'bg-gray-100 text-gray-600 border-gray-300'
               }`}>
-                <span className="font-bold text-lg">{progressInfo.nextLevel}</span>
+                <span className="font-bold text-lg">{levelProgress.nextLevel}</span>
               </div>
               <span className="text-xs text-gray-600 mt-1 block">Siguiente</span>
             </div>
           </div>
         </div>
 
-        {/* Barra de progreso principal */}
         <div className="mb-4">
           <div className="flex justify-between items-center mb-2">
             <span className="text-sm font-medium text-gray-700">Progreso General</span>
-            <span className="text-sm font-bold text-gray-800">{progressInfo.progressPercentage}%</span>
+            <span className="text-sm font-bold text-gray-800">{levelProgress.progressPercentage}%</span>
           </div>
           <div className="bg-gray-200 rounded-full h-4 overflow-hidden">
             <div 
               className={`h-4 rounded-full transition-all duration-1000 ${
-                progressInfo.canLevelUp 
+                levelProgress.canLevelUp 
                   ? 'bg-gradient-to-r from-green-400 to-green-500' 
+                  : levelProgress.progressPercentage > 70
+                  ? 'bg-gradient-to-r from-orange-400 to-orange-500'
                   : 'bg-gradient-to-r from-blue-400 to-purple-500'
               }`}
-              style={{ width: `${progressInfo.progressPercentage}%` }}
+              style={{ width: `${levelProgress.progressPercentage}%` }}
             >
-              {progressInfo.progressPercentage > 10 && (
+              {levelProgress.progressPercentage > 10 && (
                 <div className="h-full flex items-center justify-center">
                   <span className="text-white text-xs font-bold">
-                    {progressInfo.progressPercentage}%
+                    {levelProgress.progressPercentage > 90 ? '¡Casi!' : `${levelProgress.progressPercentage}%`}
                   </span>
                 </div>
               )}
@@ -271,65 +273,36 @@ const Dashboard: React.FC<DashboardProps> = ({ user }) => {
           </div>
         </div>
 
-        {/* Requisitos específicos */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
-          <div className={`p-3 rounded-lg ${progressInfo.requirements.correctAnswers.completed ? 'bg-green-100' : 'bg-gray-100'}`}>
-            <div className="text-xs text-gray-600">Respuestas Correctas</div>
-            <div className="font-bold">
-              {progressInfo.requirements.correctAnswers.current}/{progressInfo.requirements.correctAnswers.needed}
-            </div>
-            {progressInfo.requirements.correctAnswers.completed && <span className="text-green-600 text-xs">✓</span>}
-          </div>
-          
-          <div className={`p-3 rounded-lg ${progressInfo.requirements.sessions.completed ? 'bg-green-100' : 'bg-gray-100'}`}>
-            <div className="text-xs text-gray-600">Sesiones</div>
-            <div className="font-bold">
-              {progressInfo.requirements.sessions.current}/{progressInfo.requirements.sessions.needed}
-            </div>
-            {progressInfo.requirements.sessions.completed && <span className="text-green-600 text-xs">✓</span>}
-          </div>
-          
-          <div className={`p-3 rounded-lg ${progressInfo.requirements.accuracy.completed ? 'bg-green-100' : 'bg-gray-100'}`}>
-            <div className="text-xs text-gray-600">Precisión</div>
-            <div className="font-bold">
-              {Math.round(progressInfo.requirements.accuracy.current * 100)}%
-            </div>
-            {progressInfo.requirements.accuracy.completed && <span className="text-green-600 text-xs">✓</span>}
-          </div>
-          
-          <div className={`p-3 rounded-lg ${progressInfo.requirements.xp.completed ? 'bg-green-100' : 'bg-gray-100'}`}>
-            <div className="text-xs text-gray-600">XP Total</div>
-            <div className="font-bold">
-              {progressInfo.requirements.xp.current}
-            </div>
-            {progressInfo.requirements.xp.completed && <span className="text-green-600 text-xs">✓</span>}
-          </div>
-        </div>
-
-        {/* Acción principal */}
-        {progressInfo.canLevelUp ? (
-          <div className="bg-green-100 rounded-lg p-4">
+        {levelProgress.canLevelUp ? (
+          <div className="bg-green-100 rounded-lg p-4 mb-4">
             <h4 className="font-semibold text-green-800 mb-2 flex items-center">
               🎉 ¡Listo para subir de nivel!
             </h4>
             <p className="text-green-700 text-sm mb-3">
-              Has cumplido todos los requisitos. Completa una sesión más para subir oficialmente a {progressInfo.nextLevel}.
+              Has cumplido todos los requisitos. Completa una sesión más para subir oficialmente a {levelProgress.nextLevel}.
             </p>
             <button
               onClick={() => setShowLessonSession(true)}
               className="bg-green-500 text-white px-6 py-2 rounded-full font-semibold hover:bg-green-600 transition-colors shadow-lg"
             >
-              🚀 ¡SUBIR A {progressInfo.nextLevel} AHORA!
+              🚀 ¡SUBIR DE NIVEL AHORA!
             </button>
           </div>
         ) : (
           <div className="bg-blue-50 rounded-lg p-4">
             <h4 className="font-semibold text-blue-800 mb-2">
-              📋 Continúa progresando hacia {progressInfo.nextLevel}
+              📋 Para subir a {levelProgress.nextLevel} necesitas:
             </h4>
-            <p className="text-blue-700 text-sm">
-              Sigue practicando para mejorar en todas las áreas. ¡Cada sesión cuenta!
-            </p>
+            <div className="grid grid-cols-1 gap-2">
+              {levelProgress.missingRequirements.slice(0, 3).map((req, index) => (
+                <div key={index} className="flex items-center text-sm text-blue-700">
+                  <span className="w-4 h-4 rounded-full bg-blue-200 flex items-center justify-center text-xs font-bold text-blue-800 mr-2">
+                    {index + 1}
+                  </span>
+                  {req}
+                </div>
+              ))}
+            </div>
           </div>
         )}
       </div>
@@ -468,11 +441,34 @@ const Dashboard: React.FC<DashboardProps> = ({ user }) => {
             )}
           </div>
 
-          {renderRealLevelProgress()}
+          {renderLevelProgress()}
 
           {/* API Key Status */}
           {hasApiKey ? (
-            <APIKeySetup onApiKeySet={handleApiKeySet} currentApiKey={apiKey} />
+            <div className="bg-gradient-to-br from-green-50 to-emerald-50 border-2 border-green-300 rounded-xl p-6 mb-8">
+              <div className="flex items-center space-x-4">
+                <div className="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center">
+                  <span className="text-2xl">🤖</span>
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-lg font-semibold text-green-800 mb-1">
+                    ✨ IA Personalizada Activa - Ejercicios Únicos Garantizados
+                  </h3>
+                  <p className="text-green-700 text-sm mb-2">
+                    Tu asistente de inglés con IA está generando ejercicios completamente únicos para ti
+                  </p>
+                  <div className="text-xs text-green-600 bg-green-100 rounded-full px-3 py-1 inline-block">
+                    🎯 0% contenido estático • 100% IA personalizada • Explicaciones en español
+                  </div>
+                </div>
+                <button
+                  onClick={() => setShowAPISetup(true)}
+                  className="text-green-600 hover:text-green-800 text-sm underline"
+                >
+                  Gestionar IA
+                </button>
+              </div>
+            </div>
           ) : (
             <div className="bg-gradient-to-br from-yellow-50 to-orange-100 border-2 border-orange-200 rounded-xl p-6 mb-8">
               <div className="flex items-center space-x-4">

@@ -80,92 +80,43 @@ const LessonSessionFixed: React.FC<LessonSessionProps> = ({
     initializeIntelligentSession();
   }, [userProgress.level, userProgress.userId]);
 
-  // FUNCIÓN AUXILIAR: Generar ejercicio específico para el nivel actual
-  const generateLevelAppropriateExercise = async (): Promise<SmartExercise | null> => {
-    console.log(`🎯 GENERANDO EJERCICIO PARA NIVEL ${userProgress.level}`);
-    
-    // Obtener ejercicios usados para este nivel
-    const usedIds = LevelExerciseManager.getUsedExerciseIds(userProgress.level);
-    
-    // Obtener 1 ejercicio único para este nivel específico
-    const levelExercises = LevelExerciseManager.getUniqueExercisesForLevel(
-      userProgress.level as 'A1' | 'A2' | 'B1' | 'B2',
-      usedIds,
-      1
-    );
-    
-    if (levelExercises.length === 0) {
-      console.log("⚠️ NO HAY EJERCICIOS DISPONIBLES - RESETEANDO");
-      LevelExerciseManager.resetUsedExercises(userProgress.level);
-      
-      // Reintentar después del reset
-      const resetExercises = LevelExerciseManager.getUniqueExercisesForLevel(
-        userProgress.level as 'A1' | 'A2' | 'B1' | 'B2',
-        [],
-        1
-      );
-      
-      if (resetExercises.length === 0) {
-        throw new Error("No hay ejercicios disponibles para este nivel");
-      }
-      
-      return convertToSmartExercise(resetExercises[0]);
-    }
-    
-    const selectedExercise = levelExercises[0];
-    
-    // Marcar como usado
-    LevelExerciseManager.markExercisesAsUsed(userProgress.level, [selectedExercise.id]);
-    
-    console.log(`✅ EJERCICIO SELECCIONADO:`, {
-      id: selectedExercise.id,
-      level: selectedExercise.level,
-      type: selectedExercise.type,
-      difficulty: selectedExercise.difficulty,
-      topic: selectedExercise.topic
-    });
-    
-    return convertToSmartExercise(selectedExercise);
-  };
 
-  // Función auxiliar para convertir ejercicio de nivel a SmartExercise
-  const convertToSmartExercise = (exercise: any): SmartExercise => {
-    return {
-      id: exercise.id,
-      question: exercise.question,
-      instruction: exercise.instruction,
-      options: exercise.options,
-      correctAnswer: exercise.correctAnswer,
-      explanation: exercise.explanation,
-      xpReward: exercise.level === 'B2' ? 15 : exercise.level === 'B1' ? 12 : 10,
-      topic: exercise.topic,
-      level: exercise.level,
-      source: 'curated',
-      difficulty: exercise.difficulty,
-      learningFocus: exercise.skills
-    };
-  };
 
   // GENERAR EJERCICIO INTELIGENTE CON EJERCICIOS ESPECÍFICOS POR NIVEL
   const generateIntelligentExercise = async (exerciseNum: number) => {
     setIsGenerating(true);
     
     try {
-      console.log(`🎯 GENERANDO EJERCICIO ${exerciseNum}/8 PARA NIVEL ${userProgress.level}`);
-      
-      // PRIORIDAD 1: Intentar ejercicio específico para el nivel actual
-      try {
-        const levelExercise = await generateLevelAppropriateExercise();
-        if (levelExercise) {
-          setCurrentExercise(levelExercise);
-          setCurrentTopic(levelExercise.topic);
-          return;
+      // INTENTAR con el método mejorado primero
+      if (apiKey) {
+        try {
+          const smartExercise = await SmartAISystem.generateSmartExerciseEnhanced({
+            userId: userProgress.userId || 'anonymous',
+            userLevel: userProgress.level,
+            apiKey: apiKey,
+            sessionNumber: exerciseNum,
+            weakTopics: userWeaknesses,
+            strengths: userProgress.strengths || [],
+            preferredDifficulty: 'medium'
+          });
+          
+          setCurrentExercise(smartExercise);
+          setCurrentTopic(smartExercise.topic);
+          return; // ✅ Éxito con IA mejorada
+          
+        } catch (error) {
+          if (error.message === "IA_EXHAUSTED") {
+            console.log("⚠️ IA agotada, usando método existente como fallback");
+          } else {
+            console.warn("⚠️ IA mejorada falló, intentando método original:", error);
+          }
         }
-      } catch (error) {
-        console.warn("⚠️ Error con ejercicios de nivel, intentando IA:", error);
       }
       
-      // PRIORIDAD 2: Intentar IA si hay API key
+      // MANTENER toda la lógica existente como fallback
+      console.log(`🎯 GENERANDO EJERCICIO ${exerciseNum}/8 PARA NIVEL ${userProgress.level}`);
+      
+      // PRIORIDAD 2: Intentar IA método original si hay API key
       if (apiKey) {
         try {
           const smartExercise = await SmartAISystem.generateSmartExercise({
@@ -182,7 +133,7 @@ const LessonSessionFixed: React.FC<LessonSessionProps> = ({
           setCurrentTopic(smartExercise.topic);
           return;
         } catch (error) {
-          console.warn("⚠️ IA falló, usando ejercicio de emergencia:", error);
+          console.warn("⚠️ IA método original falló, usando ejercicio de emergencia:", error);
         }
       }
       
@@ -474,14 +425,19 @@ const LessonSessionFixed: React.FC<LessonSessionProps> = ({
         {/* Ejercicio actual */}
         {isGenerating ? (
           <div className="bg-white rounded-xl shadow-lg p-8 text-center">
-            <div className="animate-bounce text-4xl mb-4">🤖</div>
-            <h3 className="text-xl font-semibold mb-2">IA Generando Ejercicio Personalizado...</h3>
+            <div className="animate-pulse text-6xl mb-4">🤖</div>
+            <h3 className="text-xl font-semibold mb-2">
+              IA Generando Ejercicio Único...
+            </h3>
             <p className="text-gray-600 mb-4">
-              Analizando tu nivel y debilidades para crear el ejercicio perfecto
+              Creando ejercicio personalizado nivel {userProgress.level}
             </p>
+            <div className="text-sm text-gray-500 bg-blue-50 rounded-lg p-2">
+              💡 Cada ejercicio es completamente único gracias a tu IA personal
+            </div>
             <div className="flex justify-center space-x-1 mt-4">
               <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
-              <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse" style={{animationDelay: '0.2s'}}></div>
+              <div className="w-2 h-2 bg-purple-500 rounded-full animate-pulse" style={{animationDelay: '0.2s'}}></div>
               <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse" style={{animationDelay: '0.4s'}}></div>
             </div>
           </div>

@@ -307,5 +307,39 @@ export class SmartAISystem {
     return 'hard';
   }
   
+  // NUEVA FUNCIÓN: Mejorar robustez de IA
+  static async generateSmartExerciseEnhanced(request: SmartExerciseRequest): Promise<SmartExercise> {
+    console.log("🤖 GENERACIÓN MEJORADA CON IA");
+    
+    if (!request.apiKey) {
+      throw new Error("🚨 API KEY REQUERIDA - Configura Google AI Studio");
+    }
+    
+    let attempts = 0;
+    const maxAttempts = 3; // Conservador para no sobrecargar
+    
+    while (attempts < maxAttempts) {
+      attempts++;
+      console.log(`🔄 INTENTO IA ${attempts}/${maxAttempts}`);
+      
+      try {
+        const aiExercise = await this.generateAIExercise(request);
+        if (aiExercise) {
+          console.log("✅ IA EXITOSA - Ejercicio único generado");
+          return aiExercise;
+        }
+      } catch (error) {
+        console.warn(`⚠️ IA intento ${attempts} falló:`, error);
+        if (attempts < maxAttempts) {
+          await new Promise(resolve => setTimeout(resolve, 1000 * attempts)); // Backoff
+        }
+      }
+    }
+    
+    // MANTENER el fallback existente para no romper la app
+    console.warn("⚠️ IA agotada, usando sistema de emergencia existente");
+    throw new Error("IA_EXHAUSTED"); // El código existente manejará esto
+  }
+  
   // MÉTODO ELIMINADO - NO MÁS EJERCICIOS ESTÁTICOS DE EMERGENCIA
 }
