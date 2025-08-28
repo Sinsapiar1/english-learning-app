@@ -7,6 +7,7 @@ interface Question {
   correctAnswer: number;
   explanation?: string;
   isError?: boolean;
+  instruction?: string;
 }
 
 interface MultipleChoiceProps {
