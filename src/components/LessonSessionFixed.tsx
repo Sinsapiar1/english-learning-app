@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import MultipleChoice from "./MultipleChoice";
 import { getUniqueExercises, shuffleExerciseOptions, Exercise, cleanOldExerciseHistory } from "../data/exercises";
+import { IntelligentLearningSystem } from "../services/intelligentLearning";
 
 interface LessonSessionProps {
   apiKey: string;
@@ -21,6 +22,7 @@ const LessonSessionFixed: React.FC<LessonSessionProps> = ({
   const [currentExercise, setCurrentExercise] = useState<any>(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [sessionExercises, setSessionExercises] = useState<Exercise[]>([]);
+  const [sessionId] = useState(`session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`);
   
   // Estadísticas
   const [correctCount, setCorrectCount] = useState(0);
@@ -117,14 +119,38 @@ const LessonSessionFixed: React.FC<LessonSessionProps> = ({
     }
   }, [exerciseNumber, sessionExercises]);
 
-  // Manejar respuesta
-  const handleAnswer = useCallback((correct: boolean, xpEarned: number) => {
+  // Manejar respuesta CON TRACKING INTELIGENTE
+  const handleAnswer = useCallback(async (correct: boolean, xpEarned: number, selectedAnswer?: number, responseTime?: number) => {
     if (correct) {
       setCorrectCount((prev) => prev + 1);
     }
     setTotalXP((prev) => prev + xpEarned);
 
-    // Marcar ejercicio como usado
+    // TRACKING INTELIGENTE - Registrar interacción
+    if (currentExercise && userProgress.userId) {
+      try {
+        await IntelligentLearningSystem.recordExerciseInteraction({
+          exerciseId: currentExercise.id,
+          userId: userProgress.userId,
+          topic: currentExercise.topic || currentTopic,
+          level: userProgress.level,
+          isCorrect: correct,
+          responseTime: responseTime || 5, // tiempo promedio si no se proporciona
+          selectedAnswer: selectedAnswer || 0,
+          correctAnswer: currentExercise.correctAnswer,
+          hintsUsed: 0,
+          confidence: correct ? 'high' : 'low',
+          sessionId: sessionId,
+          errorType: !correct ? `${currentExercise.topic}_error` : undefined
+        });
+        
+        console.log("📊 INTERACCIÓN REGISTRADA EN FIREBASE");
+      } catch (error) {
+        console.error("❌ Error registrando interacción:", error);
+      }
+    }
+
+    // Marcar ejercicio como usado localmente
     if (currentExercise) {
       const savedUsedIds = localStorage.getItem(`used_exercises_${userProgress.level}`) || "[]";
       const usedIds = JSON.parse(savedUsedIds);
@@ -139,7 +165,7 @@ const LessonSessionFixed: React.FC<LessonSessionProps> = ({
         setExerciseNumber((prev) => prev + 1);
       }
     }, 2000);
-  }, [exerciseNumber, totalExercises, currentExercise, userProgress.level]);
+  }, [exerciseNumber, totalExercises, currentExercise, userProgress.level, userProgress.userId, currentTopic, sessionId]);
 
   // Completar sesión
   const completeSession = useCallback(() => {

@@ -23,7 +23,7 @@ export const EXERCISE_BANK: Exercise[] = [
     instruction: "Completa con Present Simple",
     options: ["drink", "drinks", "drinking", "drank"],
     correctAnswer: 1,
-    explanation: "Con 'she' usamos la tercera persona singular: drinks",
+    explanation: "🎯 REGLA: Con pronombres de tercera persona singular (he, she, it) añadimos -S al verbo en Present Simple.\n\n✅ 'She drinks' - Correcto\n❌ 'She drink' - Incorrecto (falta la -s)\n\n💡 RECUERDA: I/You/We/They + verbo base | He/She/It + verbo + S",
     xpReward: 10
   },
   {
@@ -34,7 +34,7 @@ export const EXERCISE_BANK: Exercise[] = [
     instruction: "Completa la pregunta",
     options: ["studies", "study", "studying", "studied"],
     correctAnswer: 1,
-    explanation: "En preguntas con 'do' usamos el infinitivo: study",
+    explanation: "🎯 REGLA: En preguntas con DO/DOES usamos el verbo en infinitivo (sin -s)\n\n✅ 'Do you study?' - Correcto\n❌ 'Do you studies?' - Incorrecto (no añadir -s con 'do')\n\n💡 ESTRUCTURA: Do/Does + sujeto + verbo base + ?",
     xpReward: 10
   },
   {
@@ -45,7 +45,7 @@ export const EXERCISE_BANK: Exercise[] = [
     instruction: "Forma negativa",
     options: ["don't", "doesn't", "isn't", "aren't"],
     correctAnswer: 1,
-    explanation: "Con tercera persona singular usamos 'doesn't'",
+    explanation: "🎯 REGLA: Para negar en Present Simple con tercera persona singular usamos DOESN'T\n\n✅ 'He doesn't work' - Correcto\n❌ 'He don't work' - Incorrecto\n\n💡 ESTRUCTURA: I/You/We/They + don't | He/She/It + doesn't",
     xpReward: 10
   },
   {
@@ -69,7 +69,7 @@ export const EXERCISE_BANK: Exercise[] = [
     instruction: "Completa con Present Perfect",
     options: ["have / eat", "have / eaten", "has / eaten", "had / eaten"],
     correctAnswer: 1,
-    explanation: "Present Perfect: have + participio pasado (eaten)",
+    explanation: "🎯 REGLA: Present Perfect se forma con HAVE/HAS + PARTICIPIO PASADO\n\n✅ 'I have eaten' - Experiencia de vida\n❌ 'I have eat' - Incorrecto (falta participio)\n\n💡 USO: Para experiencias sin tiempo específico\n📚 PARTICIPIOS: eat→eaten, go→gone, see→seen",
     xpReward: 10
   },
   {
@@ -80,7 +80,7 @@ export const EXERCISE_BANK: Exercise[] = [
     instruction: "Pregunta en Present Perfect",
     options: ["Did / go", "Have / been", "Do / go", "Are / going"],
     correctAnswer: 1,
-    explanation: "Para experiencias usamos 'Have you ever been'",
+    explanation: "🎯 REGLA: Para preguntar sobre EXPERIENCIAS DE VIDA usamos HAVE YOU EVER + PARTICIPIO\n\n✅ 'Have you ever been to Japan?' - Experiencia\n❌ 'Did you ever go to Japan?' - Incorrecto para experiencias\n\n💡 EVER = alguna vez en tu vida\n🌟 BEEN = participio de BE (go→went→gone, be→was/were→been)",
     xpReward: 10
   },
   {
@@ -115,7 +115,7 @@ export const EXERCISE_BANK: Exercise[] = [
     instruction: "Preposiciones de tiempo",
     options: ["in / in", "on / at", "at / on", "in / at"],
     correctAnswer: 1,
-    explanation: "'On' para días, 'at' para horas específicas",
+    explanation: "🎯 REGLA: Preposiciones de TIEMPO tienen patrones específicos\n\n✅ ON Monday (días específicos)\n✅ AT 3 PM (horas exactas)\n❌ IN Monday, ON 3 PM\n\n💡 RECUERDA:\n📅 ON: días, fechas (Monday, January 1st)\n🕐 AT: horas exactas (3 PM, midnight)\n📆 IN: meses, años, estaciones (July, 2024, summer)",
     xpReward: 10
   },
   {

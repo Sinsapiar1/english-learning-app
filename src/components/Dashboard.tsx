@@ -6,6 +6,7 @@ import APIKeySetup from "./APIKeySetup";
 import LessonSessionComponent from "./LessonSessionFixed";
 import { useAPIKey } from "../hooks/useAPIKey";
 import { UserProgress } from "../services/adaptiveLearning";
+import { IntelligentLearningSystem } from "../services/intelligentLearning";
 
 interface DashboardProps {
   user: User;
@@ -26,6 +27,12 @@ const Dashboard: React.FC<DashboardProps> = ({ user }) => {
   });
 
   const { apiKey, hasApiKey, saveApiKey } = useAPIKey();
+  
+  // Estados para sistema inteligente
+  const [detectedLevel, setDetectedLevel] = useState<string>("");
+  const [personalizedRecommendations, setPersonalizedRecommendations] = useState<any>(null);
+  const [learningAnalytics, setLearningAnalytics] = useState<any>(null);
+  const [isLoadingIntelligence, setIsLoadingIntelligence] = useState(false);
 
   // Cargar progreso del usuario desde localStorage
   useEffect(() => {
@@ -34,6 +41,40 @@ const Dashboard: React.FC<DashboardProps> = ({ user }) => {
       setUserProgress(JSON.parse(savedProgress));
     }
   }, []);
+  
+  // Inicializar sistema inteligente
+  useEffect(() => {
+    const initializeIntelligentSystem = async () => {
+      if (!user?.uid) return;
+      
+      setIsLoadingIntelligence(true);
+      
+      try {
+        console.log("🧠 INICIALIZANDO SISTEMA INTELIGENTE");
+        
+        // Detectar nivel automáticamente
+        const level = await IntelligentLearningSystem.detectUserLevel(user.uid);
+        setDetectedLevel(level);
+        
+        // Obtener recomendaciones personalizadas
+        const recommendations = await IntelligentLearningSystem.getPersonalizedRecommendations(user.uid);
+        setPersonalizedRecommendations(recommendations);
+        
+        // Obtener analytics detallados
+        const analytics = await IntelligentLearningSystem.getDetailedAnalytics(user.uid);
+        setLearningAnalytics(analytics);
+        
+        console.log("✅ Sistema inteligente inicializado");
+        
+      } catch (error) {
+        console.error("❌ Error inicializando sistema inteligente:", error);
+      } finally {
+        setIsLoadingIntelligence(false);
+      }
+    };
+    
+    initializeIntelligentSystem();
+  }, [user?.uid]);
 
   // Guardar progreso cuando cambie
   const saveUserProgress = (newProgress: UserProgress) => {
@@ -138,7 +179,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user }) => {
     return (
       <LessonSessionComponent
         apiKey={apiKey!}
-        userProgress={userProgress}
+                    userProgress={{...userProgress, userId: user.uid}}
         onSessionComplete={handleSessionComplete}
         onExit={() => setShowLessonSession(false)}
       />
@@ -209,9 +250,23 @@ const Dashboard: React.FC<DashboardProps> = ({ user }) => {
       {/* Main content */}
       <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
         <div className="px-4 py-6 sm:px-0">
-          <h2 className="text-3xl font-bold text-gray-900 mb-8">
-            ¡Bienvenido a tu Dashboard! 🎉
-          </h2>
+          <div className="flex items-center justify-between mb-8">
+            <h2 className="text-3xl font-bold text-gray-900">
+              ¡Bienvenido a tu Dashboard! 🎉
+            </h2>
+            {detectedLevel && (
+              <div className="flex items-center gap-3">
+                <div className="bg-blue-100 text-blue-700 px-4 py-2 rounded-full text-sm font-semibold">
+                  🧠 Nivel IA: {detectedLevel}
+                </div>
+                {personalizedRecommendations && (
+                  <div className="bg-green-100 text-green-700 px-4 py-2 rounded-full text-sm font-semibold">
+                    🎯 Sistema Inteligente Activo
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
 
           {/* Progreso de Nivel */}
           <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-2xl p-6 mb-8">
@@ -262,6 +317,43 @@ const Dashboard: React.FC<DashboardProps> = ({ user }) => {
                   >
                     Configurar IA Personal →
                   </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Panel de Recomendaciones IA */}
+          {personalizedRecommendations && !isLoadingIntelligence && (
+            <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-2xl p-6 mb-8 border-2 border-purple-200">
+              <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center">
+                🤖 Recomendaciones Personalizadas
+                <span className="ml-2 bg-purple-100 text-purple-700 text-xs px-2 py-1 rounded-full">
+                  IA
+                </span>
+              </h3>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="bg-white rounded-xl p-4">
+                  <h4 className="font-semibold text-gray-700 mb-2">🎯 Temas Recomendados</h4>
+                  <div className="flex flex-wrap gap-2">
+                    {personalizedRecommendations.recommendedTopics.map((topic: string, index: number) => (
+                      <span key={index} className="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-sm">
+                        {topic}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+                
+                <div className="bg-white rounded-xl p-4">
+                  <h4 className="font-semibold text-gray-700 mb-2">📚 Plan de Estudio</h4>
+                  <ul className="text-sm text-gray-600 space-y-1">
+                    {personalizedRecommendations.studyPlan.slice(0, 3).map((item: string, index: number) => (
+                      <li key={index} className="flex items-start">
+                        <span className="text-green-500 mr-2">•</span>
+                        {item}
+                      </li>
+                    ))}
+                  </ul>
                 </div>
               </div>
             </div>
