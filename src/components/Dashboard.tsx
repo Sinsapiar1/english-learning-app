@@ -40,6 +40,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user }) => {
   const [isLoadingIntelligence, setIsLoadingIntelligence] = useState(false);
   const [showLevelUpCelebration, setShowLevelUpCelebration] = useState(false);
   const [celebrationLevel, setCelebrationLevel] = useState<string>('');
+  const [showQuotaWarning, setShowQuotaWarning] = useState(false);
 
   // Cargar progreso del usuario desde localStorage
   useEffect(() => {
@@ -76,6 +77,21 @@ const Dashboard: React.FC<DashboardProps> = ({ user }) => {
     if (!migrationDone) {
       console.log('✅ Migrado al sistema de niveles real - el progreso nunca bajará');
       localStorage.setItem('migrated_to_real_system', 'true');
+    }
+  }, []);
+
+  // Verificar errores de cuota para mostrar advertencia
+  useEffect(() => {
+    // Verificar si hay errores recientes de cuota
+    const lastQuotaError = localStorage.getItem('last_quota_error');
+    if (lastQuotaError) {
+      const errorTime = new Date(lastQuotaError);
+      const now = new Date();
+      const hoursSinceError = (now.getTime() - errorTime.getTime()) / (1000 * 60 * 60);
+      
+      if (hoursSinceError < 24) {
+        setShowQuotaWarning(true);
+      }
     }
   }, []);
   
@@ -440,6 +456,34 @@ const Dashboard: React.FC<DashboardProps> = ({ user }) => {
               </div>
             )}
           </div>
+
+          {/* Advertencia de cuota agotada */}
+          {showQuotaWarning && (
+            <div className="bg-gradient-to-r from-orange-50 to-yellow-50 border-2 border-orange-200 rounded-xl p-6 mb-8">
+              <div className="flex items-center space-x-4">
+                <div className="w-12 h-12 bg-orange-500 rounded-full flex items-center justify-center">
+                  <span className="text-2xl">⚡</span>
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-lg font-semibold text-orange-800 mb-1">
+                    🔋 Cuota de IA Agotada (Temporal)
+                  </h3>
+                  <p className="text-orange-700 text-sm mb-2">
+                    Has usado tus 50 requests gratuitos diarios de Google AI. La app funciona con ejercicios de respaldo hasta mañana.
+                  </p>
+                  <div className="text-xs text-orange-600 bg-orange-100 rounded-full px-3 py-1 inline-block">
+                    ✅ App funcional • Ejercicios únicos • Se resetea en 24h
+                  </div>
+                </div>
+                <button
+                  onClick={() => setShowQuotaWarning(false)}
+                  className="text-orange-600 hover:text-orange-800 text-sm underline"
+                >
+                  Entendido
+                </button>
+              </div>
+            </div>
+          )}
 
           {renderLevelProgress()}
 

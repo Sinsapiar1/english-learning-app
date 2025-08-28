@@ -109,6 +109,12 @@ const LessonSessionFixed: React.FC<LessonSessionProps> = ({
             console.log("⚠️ IA agotada, usando método existente como fallback");
           } else {
             console.warn("⚠️ IA mejorada falló, intentando método original:", error);
+            
+            // DETECTAR error específico de cuota
+            if (error?.message?.includes('quota') || error?.message?.includes('429')) {
+              console.log("🔋 CUOTA DE IA AGOTADA - Marcando para UX");
+              localStorage.setItem('last_quota_error', new Date().toISOString());
+            }
           }
         }
       }
@@ -133,7 +139,13 @@ const LessonSessionFixed: React.FC<LessonSessionProps> = ({
           setCurrentTopic(smartExercise.topic);
           return;
         } catch (error: any) {
-          console.warn("⚠️ IA método original falló, usando ejercicio de emergencia:", error);
+          console.warn("⚠️ IA falló, usando ejercicio de emergencia:", error);
+          
+          // DETECTAR error específico de cuota
+          if (error?.message?.includes('quota') || error?.message?.includes('429')) {
+            console.log("🔋 CUOTA DE IA AGOTADA - Usando ejercicio de emergencia optimizado");
+            localStorage.setItem('last_quota_error', new Date().toISOString());
+          }
         }
       }
       
@@ -275,29 +287,58 @@ const LessonSessionFixed: React.FC<LessonSessionProps> = ({
         question: "What do you usually have for breakfast?",
         options: ["Coffee and toast", "Nothing", "Cereal", "Fruit"],
         correctAnswer: 0,
-        explanation: "🎯 Una pregunta común sobre hábitos alimenticios. 'Usually' indica rutina.",
+        explanation: "🎯 Una pregunta común sobre hábitos alimenticios. 'Usually' indica rutina diaria.",
         topic: "daily routines"
       },
       {
-        question: "How often do you exercise?",
+        question: "How often do you exercise?", 
         options: ["Every day", "Never", "Sometimes", "Once a week"],
         correctAnswer: 2,
-        explanation: "🎯 'How often' pregunta sobre frecuencia. 'Sometimes' es una respuesta común.",
+        explanation: "🎯 'How often' pregunta sobre frecuencia. 'Sometimes' es una respuesta común y realista.",
         topic: "frequency"
       },
       {
         question: "Where do you work?",
         options: ["In an office", "At home", "In a store", "I don't work"],
         correctAnswer: 1,
-        explanation: "🎯 'Where do you work?' pregunta sobre ubicación laboral.",
+        explanation: "🎯 'Where do you work?' pregunta sobre ubicación laboral. 'At home' es muy común post-2020.",
         topic: "work"
       },
       {
         question: "What's your favorite movie genre?",
-        options: ["Action", "Comedy", "Drama", "Horror"],
+        options: ["Action", "Comedy", "Drama", "Horror"], 
         correctAnswer: 1,
-        explanation: "🎯 'Favorite' significa favorito. Los géneros de películas son vocabulario útil.",
+        explanation: "🎯 'Favorite' significa favorito. Los géneros de películas son vocabulario útil para conversaciones.",
         topic: "entertainment"
+      },
+      // Más ejercicios de emergencia únicos
+      {
+        question: "I _____ working from home since 2020.",
+        options: ["have been", "am", "was", "will be"],
+        correctAnswer: 0,
+        explanation: "🎯 Present Perfect Continuous con 'since' indica acción que empezó en el pasado y continúa ahora.",
+        topic: "present perfect"
+      },
+      {
+        question: "She _____ coffee every morning.",
+        options: ["drink", "drinks", "drinking", "drank"],
+        correctAnswer: 1,
+        explanation: "🎯 Con 'She' (tercera persona singular) añadimos -s al verbo en presente simple.",
+        topic: "present simple"
+      },
+      {
+        question: "What does 'awesome' mean?",
+        options: ["increíble/genial", "horrible", "aburrido", "normal"],
+        correctAnswer: 0,
+        explanation: "🎯 'Awesome' es una palabra muy común que significa increíble o genial. Se usa mucho en conversaciones informales.",
+        topic: "vocabulary"
+      },
+      {
+        question: "Where _____ you from?",
+        options: ["are", "is", "am", "be"],
+        correctAnswer: 0,
+        explanation: "🎯 Con 'you' siempre usamos 'are'. Es una pregunta básica para conocer el origen de alguien.",
+        topic: "verb to be"
       }
     ];
     

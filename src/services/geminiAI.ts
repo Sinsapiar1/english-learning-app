@@ -111,8 +111,15 @@ JSON REQUERIDO:
       };
 
     } catch (error: any) {
-      console.error("🚨 ERROR IA MEJORADA:", error);
-      throw error; // Dejar que el sistema existente maneje el error
+      console.error("🚨 ERROR IA GEMINI:", error);
+      
+      // Guardar si es error de cuota para mostrar notificación
+      if (error?.message?.includes('quota') || error?.message?.includes('429')) {
+        localStorage.setItem('last_quota_error', new Date().toISOString());
+        console.log("🔋 Error de cuota guardado para UX");
+      }
+      
+      throw error;
     }
   }
 

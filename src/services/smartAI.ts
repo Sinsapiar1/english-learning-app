@@ -64,7 +64,7 @@ export class SmartAISystem {
     }
     
     let attempts = 0;
-    const maxAttempts = 10; // Más intentos para forzar IA
+    const maxAttempts = 2; // ✅ SOLO 2 INTENTOS para conservar cuota
     
     while (attempts < maxAttempts) {
       attempts++;
@@ -316,7 +316,7 @@ export class SmartAISystem {
     }
     
     let attempts = 0;
-    const maxAttempts = 3; // Conservador para no sobrecargar
+    const maxAttempts = 2; // ✅ SOLO 2 INTENTOS para conservar cuota
     
     while (attempts < maxAttempts) {
       attempts++;
