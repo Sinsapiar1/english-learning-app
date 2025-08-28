@@ -1,7 +1,7 @@
 // SISTEMA DE IA VERDADERAMENTE INTELIGENTE
 import { PersonalizedLessonGenerator } from './geminiAI';
 import { IntelligentLearningSystem } from './intelligentLearning';
-import { getUniqueExercises, shuffleExerciseOptions, Exercise } from '../data/exercises';
+import { getUniqueExercises, Exercise } from '../data/exercises';
 
 export interface SmartExerciseRequest {
   userId: string;
@@ -27,6 +27,19 @@ export interface SmartExercise {
   source: 'ai' | 'curated';
   difficulty: 'easy' | 'medium' | 'hard';
   learningFocus: string[];
+}
+
+// FUNCIÓN PARA MEZCLAR OPCIONES DE SMART EXERCISE
+function shuffleSmartExerciseOptions(exercise: SmartExercise): SmartExercise {
+  const correctAnswerText = exercise.options[exercise.correctAnswer];
+  const shuffledOptions = [...exercise.options].sort(() => Math.random() - 0.5);
+  const newCorrectAnswer = shuffledOptions.findIndex(option => option === correctAnswerText);
+  
+  return {
+    ...exercise,
+    options: shuffledOptions,
+    correctAnswer: newCorrectAnswer
+  };
 }
 
 export class SmartAISystem {
@@ -99,7 +112,7 @@ export class SmartAISystem {
       };
       
       // Mezclar opciones
-      return shuffleExerciseOptions(smartExercise);
+      return shuffleSmartExerciseOptions(smartExercise);
       
     } catch (error) {
       console.error("❌ Error generando ejercicio IA:", error);
@@ -127,26 +140,28 @@ export class SmartAISystem {
     }
     
     const baseExercise = availableExercises[0];
-    const shuffledExercise = shuffleExerciseOptions(baseExercise);
     
     // Convertir a SmartExercise con explicación mejorada
     const smartExercise: SmartExercise = {
-      id: shuffledExercise.id,
-      question: shuffledExercise.question,
-      instruction: shuffledExercise.instruction,
-      options: shuffledExercise.options,
-      correctAnswer: shuffledExercise.correctAnswer,
-      explanation: this.enhanceExplanation(shuffledExercise.explanation, request.userLevel),
-      xpReward: shuffledExercise.xpReward,
-      topic: shuffledExercise.topic,
-      level: shuffledExercise.level,
+      id: baseExercise.id,
+      question: baseExercise.question,
+      instruction: baseExercise.instruction,
+      options: baseExercise.options,
+      correctAnswer: baseExercise.correctAnswer,
+      explanation: this.enhanceExplanation(baseExercise.explanation, request.userLevel),
+      xpReward: baseExercise.xpReward,
+      topic: baseExercise.topic,
+      level: baseExercise.level,
       source: 'curated',
-      difficulty: this.determineDifficulty(shuffledExercise, request.userLevel),
-      learningFocus: [shuffledExercise.topic]
+      difficulty: this.determineDifficulty(baseExercise, request.userLevel),
+      learningFocus: [baseExercise.topic]
     };
     
-    console.log("📚 EJERCICIO CURADO SELECCIONADO:", smartExercise.id);
-    return smartExercise;
+    // Mezclar opciones del SmartExercise
+    const shuffledSmartExercise = shuffleSmartExerciseOptions(smartExercise);
+    
+    console.log("📚 EJERCICIO CURADO SELECCIONADO:", shuffledSmartExercise.id);
+    return shuffledSmartExercise;
   }
   
   // SELECCIONAR TEMA INTELIGENTEMENTE
