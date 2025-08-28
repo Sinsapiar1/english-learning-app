@@ -57,6 +57,20 @@ const Dashboard: React.FC<DashboardProps> = ({ user }) => {
       setUserProgress(JSON.parse(savedProgress));
     }
   }, []);
+
+  // ARREGLAR progreso regresivo una sola vez
+  useEffect(() => {
+    // LIMPIAR progreso corrupto una sola vez
+    const fixProgressDone = localStorage.getItem('progress_fix_done');
+    if (!fixProgressDone && userProgress.level && userProgress.completedLessons > 0) {
+      // Establecer progreso mínimo basado en lecciones actuales
+      const currentProgress = (userProgress.completedLessons * 8) / 120; // 120 ejercicios para B1
+      ImprovedLevelSystem.ensureMinimumProgress(userProgress.level, Math.min(currentProgress, 0.85));
+      
+      localStorage.setItem('progress_fix_done', 'true');
+      console.log('✅ Progreso ajustado para que nunca baje');
+    }
+  }, [userProgress.level, userProgress.completedLessons]);
   
   // Inicializar sistema inteligente
   useEffect(() => {
@@ -152,6 +166,10 @@ const Dashboard: React.FC<DashboardProps> = ({ user }) => {
   };
 
   const renderLevelProgress = () => {
+    // GARANTIZAR PROGRESO MÍNIMO BASADO EN LECCIONES COMPLETADAS
+    const minimumProgress = Math.min((userProgress.completedLessons * 8) / 120, 0.9); // Máximo 90%
+    ImprovedLevelSystem.ensureMinimumProgress(userProgress.level, minimumProgress);
+    
     const recentSessionsKey = `recent_sessions_${user.uid}`;
     const recentSessions = JSON.parse(localStorage.getItem(recentSessionsKey) || "[0.5, 0.6, 0.7]");
     

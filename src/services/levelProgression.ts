@@ -56,53 +56,81 @@ export class ImprovedLevelSystem {
     const missing: string[] = [];
     let progressFactors: number[] = [];
 
-    const accuracyProgress = Math.min(userStats.accuracy / requirements.accuracy, 1);
+    // 1. PROGRESO DE PRECISIÓN - Solo considerar el MEJOR resultado
+    const bestAccuracy = Math.max(userStats.accuracy, ...userStats.recentSessions, 0);
+    const accuracyProgress = Math.min(bestAccuracy / requirements.accuracy, 1);
     progressFactors.push(accuracyProgress);
-    if (userStats.accuracy < requirements.accuracy) {
-      const needed = Math.round((requirements.accuracy - userStats.accuracy) * 100);
+    
+    if (bestAccuracy < requirements.accuracy) {
+      const needed = Math.round((requirements.accuracy - bestAccuracy) * 100);
       missing.push(`Mejorar precisión en ${needed}%`);
     }
 
+    // 2. PROGRESO DE EJERCICIOS - Siempre ascendente
     const exerciseProgress = Math.min(userStats.totalExercises / requirements.totalExercises, 1);
     progressFactors.push(exerciseProgress);
+    
     if (userStats.totalExercises < requirements.totalExercises) {
       const needed = requirements.totalExercises - userStats.totalExercises;
       missing.push(`Completar ${needed} ejercicios más`);
     }
 
+    // 3. PROGRESO DE XP - Siempre ascendente  
     const xpProgress = Math.min(userStats.xp / requirements.minXP, 1);
     progressFactors.push(xpProgress);
+    
     if (userStats.xp < requirements.minXP) {
       const needed = requirements.minXP - userStats.xp;
       missing.push(`Ganar ${needed} XP más`);
     }
 
-    const recentGoodSessions = userStats.recentSessions.filter(acc => acc >= 0.6).length;
-    const consistencyProgress = Math.min(recentGoodSessions / requirements.consistentSessions, 1);
+    // 4. SESIONES CONSISTENTES - Contar solo las buenas
+    const goodSessions = userStats.recentSessions.filter(acc => acc >= 0.6);
+    const consistencyProgress = Math.min(goodSessions.length / requirements.consistentSessions, 1);
     progressFactors.push(consistencyProgress);
-    if (recentGoodSessions < requirements.consistentSessions) {
-      const needed = requirements.consistentSessions - recentGoodSessions;
+    
+    if (goodSessions.length < requirements.consistentSessions) {
+      const needed = requirements.consistentSessions - goodSessions.length;
       missing.push(`${needed} sesiones más con 60%+ precisión`);
     }
 
-    const overallProgress = progressFactors.reduce((sum, p) => sum + p, 0) / progressFactors.length;
+    // CÁLCULO FINAL - Nunca debe bajar del progreso anterior
+    const currentProgress = progressFactors.reduce((sum, p) => sum + p, 0) / progressFactors.length;
+    
+    // OBTENER PROGRESO ANTERIOR GUARDADO
+    const previousProgressKey = `level_progress_${userStats.currentLevel}`;
+    const previousProgress = parseFloat(localStorage.getItem(previousProgressKey) || '0');
+    
+    // GARANTIZAR QUE NUNCA BAJE
+    const finalProgress = Math.max(currentProgress, previousProgress);
+    
+    // GUARDAR NUEVO PROGRESO (solo si es mayor)
+    if (finalProgress > previousProgress) {
+      localStorage.setItem(previousProgressKey, finalProgress.toString());
+    }
+
+    const progressPercentage = Math.round(finalProgress * 100);
     const canLevelUp = missing.length === 0;
     const nextLevel = this.getNextLevel(userStats.currentLevel);
 
+    // MENSAJES MOTIVACIONALES MEJORADOS
     let motivationalMessage = "";
     if (canLevelUp) {
       motivationalMessage = `🎉 ¡LISTO PARA SUBIR A ${nextLevel}! Complete una sesión más para subir oficialmente.`;
-    } else if (overallProgress > 0.8) {
+    } else if (progressPercentage > 80) {
       motivationalMessage = `🔥 ¡MUY CERCA! Solo te falta: ${missing[0]}`;
-    } else if (overallProgress > 0.5) {
-      motivationalMessage = `💪 ¡Buen progreso! Sigue así. Te falta: ${missing.slice(0, 2).join(', ')}`;
+    } else if (progressPercentage > 60) {
+      motivationalMessage = `💪 ¡Excelente progreso! Sigue así. Te falta: ${missing.slice(0, 2).join(', ')}`;
+    } else if (progressPercentage >= previousProgress * 100) {
+      motivationalMessage = `🌟 ¡Progreso positivo! Enfócate en: ${missing[0]}`;
     } else {
-      motivationalMessage = `🌟 ¡Empezando bien! Enfócate en: ${missing[0]}`;
+      // Mensaje especial si hubo sesión mala pero progreso se mantiene
+      motivationalMessage = `💪 ¡Tu progreso se mantiene! Una sesión mala no borra tu avance anterior.`;
     }
 
     return {
       canLevelUp,
-      progressPercentage: Math.round(overallProgress * 100),
+      progressPercentage,
       missingRequirements: missing,
       nextLevel,
       motivationalMessage
@@ -170,5 +198,23 @@ export class ImprovedLevelSystem {
       color: "from-purple-400 to-pink-600",
       emoji: "🎊"
     };
+  }
+
+  // MÉTODO PARA RESETEAR PROGRESO CORRUPTO (solo usar en casos extremos)
+  static resetProgressForLevel(level: string): void {
+    const progressKey = `level_progress_${level}`;
+    localStorage.removeItem(progressKey);
+    console.log(`🔄 Progreso reseteado para nivel ${level}`);
+  }
+
+  // MÉTODO PARA FORZAR PROGRESO MÍNIMO
+  static ensureMinimumProgress(currentLevel: string, minProgress: number): void {
+    const progressKey = `level_progress_${currentLevel}`;
+    const currentProgress = parseFloat(localStorage.getItem(progressKey) || '0');
+    
+    if (currentProgress < minProgress) {
+      localStorage.setItem(progressKey, minProgress.toString());
+      console.log(`✅ Progreso ajustado a mínimo ${minProgress * 100}% para ${currentLevel}`);
+    }
   }
 }

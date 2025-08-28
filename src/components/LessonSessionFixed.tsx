@@ -216,7 +216,7 @@ const LessonSessionFixed: React.FC<LessonSessionProps> = ({
 
     const levelProgress = ImprovedLevelSystem.calculateLevelProgress({
       currentLevel: userProgress.level,
-      accuracy: (userProgress.accuracy + finalAccuracy) / 2,
+      accuracy: Math.max(userProgress.accuracy, finalAccuracy), // Usar la mejor precisión
       totalExercises: (userProgress.completedLessons + 1) * 8,
       xp: userProgress.xp + totalXP,
       recentSessions: updatedSessions
@@ -248,7 +248,7 @@ const LessonSessionFixed: React.FC<LessonSessionProps> = ({
 
     const detailedProgress = {
       ...userProgress,
-      accuracy: (userProgress.accuracy + finalAccuracy) / 2,
+      accuracy: Math.max(userProgress.accuracy, finalAccuracy), // Usar la mejor precisión
       completedLessons: userProgress.completedLessons + 1,
       xp: userProgress.xp + totalXP,
       level: levelUp ? levelProgress.nextLevel : userProgress.level,
