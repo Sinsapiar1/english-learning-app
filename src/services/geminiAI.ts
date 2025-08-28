@@ -29,69 +29,89 @@ export class PersonalizedLessonGenerator {
     previousErrors?: string[];
     timestamp?: number;
   }): Promise<GeneratedExercise> {
-    // TIPOS DE EJERCICIOS EXPANDIDOS para mayor variedad
+    // 🎯 FORZAR ROTACIÓN DE 4 TIPOS ESPECÍFICOS DE EJERCICIOS
     const exerciseTypes = [
-      "completar la oración con la palabra correcta",
-      "elegir la forma gramatical correcta",
-      "identificar el tiempo verbal apropiado",
-      "seleccionar la preposición correcta",
-      "encontrar y corregir el error",
-      "elegir la traducción más natural",
-      "completar el diálogo de forma natural",
-      "ordenar las palabras correctamente",
-      "elegir el sinónimo apropiado",
-      "seleccionar la respuesta lógica",
-      "completar la expresión idiomática",
-      "elegir el registro formal/informal correcto"
+      {
+        type: "VOCABULARY",
+        template: "What does '[ENGLISH_WORD]' mean in '[CONTEXT]'?",
+        instruction: "Elige el significado correcto en español",
+        format: "English question → Spanish options"
+      },
+      {
+        type: "GRAMMAR", 
+        template: "Complete: '[ENGLISH_SENTENCE_WITH_BLANK]'",
+        instruction: "Completa con la forma gramatical correcta",
+        format: "English sentence → English grammar options"
+      },
+      {
+        type: "TRANSLATION",
+        template: "¿Cómo se dice '[SPANISH_PHRASE]' en inglés?",
+        instruction: "Selecciona la traducción correcta",
+        format: "Spanish question → English options"
+      },
+      {
+        type: "COMPREHENSION",
+        template: "Text: '[SHORT_ENGLISH_TEXT]' Question: '[COMPREHENSION_QUESTION]'",
+        instruction: "Lee y responde en inglés",
+        format: "English text → English comprehension question"
+      }
     ];
 
-    const contexts = [
-      "en una conversación entre amigos",
-      "en una entrevista de trabajo",
-      "en un restaurante pidiendo comida",
-      "en el aeropuerto haciendo check-in",
-      "en una tienda comprando ropa",
-      "en el médico describiendo síntomas",
-      "en una reunión de negocios",
-      "en una clase universitaria",
-      "en casa planificando el fin de semana",
-      "en el banco haciendo trámites",
-      "llamando por teléfono para hacer una cita",
-      "escribiendo un email profesional"
+    // CONTEXTOS MODERNOS ULTRA-ESPECÍFICOS
+    const modernContexts = [
+      "ordering food on DoorDash app",
+      "commenting on Instagram stories", 
+      "working remotely on Zoom calls",
+      "streaming shows on Netflix",
+      "posting TikTok videos",
+      "shopping online on Amazon",
+      "texting friends on WhatsApp",
+      "uploading photos to social media",
+      "booking Uber rides",
+      "leaving Google reviews",
+      "using dating apps like Tinder",
+      "playing online games",
+      "doing video calls with family",
+      "ordering groceries online"
     ];
 
-    const exerciseType =
-      exerciseTypes[Math.floor(Math.random() * exerciseTypes.length)];
-    const context = contexts[Math.floor(Math.random() * contexts.length)];
+    // SELECCIONAR TIPO ESPECÍFICO PARA ESTA SESIÓN (ROTACIÓN FORZADA)
+    const selectedType = exerciseTypes[params.exerciseNumber % 4]; // Garantiza rotación
+    const selectedContext = modernContexts[Math.floor(Math.random() * modernContexts.length)];
 
-    // PROMPT PARA VERDADERO APRENDIZAJE DE INGLÉS
-    const prompt = `Create a REAL English learning exercise for level ${params.level} on topic "${params.topic}".
+    // PROMPT ULTRA-ESPECÍFICO CON TIPO FORZADO
+    const prompt = `Generate a ${selectedType.type} exercise for level ${params.level} about "${params.topic}" in context: "${selectedContext}".
 
-🎯 EXERCISE TYPES (choose one randomly):
-1. VOCABULARY: "What does '[English word]' mean?" → Spanish options
-2. GRAMMAR FILL: English sentence with blank → English grammar options  
-3. TRANSLATION: "How do you say '[Spanish phrase]' in English?" → English options
-4. COMPREHENSION: Short English text → English comprehension questions
+MANDATORY EXERCISE TYPE: ${selectedType.type}
+FORMAT REQUIRED: ${selectedType.format}
+TEMPLATE: ${selectedType.template}
+INSTRUCTION: ${selectedType.instruction}
 
-🚨 CRITICAL REQUIREMENTS:
-- Question can be in Spanish OR English (depending on exercise type)
-- If teaching vocabulary: English word → Spanish meaning options
-- If teaching grammar: English sentence → English grammar options
-- If teaching translation: Spanish phrase → English translation options
-- Use modern contexts: Netflix, Instagram, TikTok, Uber, remote work
+🚨 ULTRA-SPECIFIC REQUIREMENTS:
+✅ Question must use vocabulary/phrases people actually use in "${selectedContext}"
+✅ Options must include common mistakes Spanish speakers make  
+✅ Explanation must be detailed for absolute beginners
+✅ Use modern slang and expressions (not formal textbook English)
+✅ Context must be realistic and relatable
 
-✅ MODERN EXAMPLES:
-- Vocabulary: "What does 'stream' mean in 'I stream Netflix'?" → A) transmitir B) río C) correr D) gritar
-- Grammar: "I ____ working from home since 2020." → A) have been B) am C) was D) will be  
-- Translation: "¿Cómo se dice 'me gusta tu post' en inglés?" → A) I like your post B) I love your post C) I want your post D) I see your post
+FORBIDDEN:
+❌ Generic/textbook examples
+❌ Outdated expressions  
+❌ Overly formal language
+❌ Boring contexts
 
-Respond ONLY JSON (no explanations):
+EXAMPLES FOR ${selectedType.type}:
+${this.getExampleForType(selectedType.type, selectedContext)}
+
+Return ONLY valid JSON - no extra text:
 {
-  "question": "English learning question here",
-  "instruction": "Clear instruction in Spanish", 
+  "type": "${selectedType.type}",
+  "context": "${selectedContext}",
+  "question": "Ultra-specific question here",
+  "instruction": "${selectedType.instruction}",
   "options": ["option A", "option B", "option C", "option D"],
   "correctAnswer": 0,
-  "explanation": "Detailed explanation in Spanish for beginners",
+  "explanation": "Detailed explanation with examples and tips for beginners",
   "xpReward": 10
 }`;
 
@@ -191,4 +211,18 @@ Respond ONLY JSON (no explanations):
   }
 
   // MÉTODO ELIMINADO - NO MÁS EJERCICIOS ESTÁTICOS
+
+  /**
+   * Genera ejemplos específicos para cada tipo de ejercicio
+   */
+  private getExampleForType(type: string, context: string): string {
+    const examples = {
+      "VOCABULARY": `"What does 'swipe' mean in '${context}'?" → A) deslizar ✓ B) tocar C) presionar D) escribir`,
+      "GRAMMAR": `"I ____ ${context} every day." → A) have been doing ✓ B) am doing C) did D) will do`,
+      "TRANSLATION": `"¿Cómo se dice 'me encanta esto' when ${context}?" → A) I love this ✓ B) I like this C) I want this D) I need this`,
+      "COMPREHENSION": `"Sarah was ${context} when her phone died. What happened?" → A) Her phone died ✓ B) She was happy C) She was working D) She was sleeping`
+    };
+
+    return examples[type] || `Example for ${type} in context of ${context}`;
+  }
 }

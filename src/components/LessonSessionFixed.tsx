@@ -4,6 +4,7 @@ import MultipleChoice from "./MultipleChoice";
 import { IntelligentLearningSystem } from "../services/intelligentLearning";
 import { SmartAISystem, SmartExercise } from "../services/smartAI";
 import { ExerciseTracker } from "../services/exerciseTracker";
+import { ContentHashTracker } from "../services/contentHashTracker";
 
 interface LessonSessionProps {
   apiKey: string;
@@ -106,14 +107,20 @@ const LessonSessionFixed: React.FC<LessonSessionProps> = ({
           preferredDifficulty: 'medium'
         });
         
-        // Verificar si ya fue usado
-        const isUsed = ExerciseTracker.isExerciseUsed(userProgress.level, smartExercise.id);
+        // VERIFICACIÓN DOBLE: ID + CONTENIDO REAL
+        const isIdUsed = ExerciseTracker.isExerciseUsed(userProgress.level, smartExercise.id);
+        const isContentRepeated = ContentHashTracker.isContentRepeated(smartExercise, userProgress.level);
         
-        if (!isUsed) {
-          console.log(`✅ EJERCICIO ÚNICO ENCONTRADO: ${smartExercise.id}`);
+        if (!isIdUsed && !isContentRepeated) {
+          console.log(`✅ EJERCICIO COMPLETAMENTE ÚNICO: ${smartExercise.id}`);
+          // Marcar tanto ID como contenido como usados
+          ExerciseTracker.markExerciseAsUsed(userProgress.level, smartExercise.id);
+          ContentHashTracker.markContentAsUsed(smartExercise, userProgress.level);
           break;
         } else {
-          console.log(`⚠️ EJERCICIO YA USADO: ${smartExercise.id}, reintentando...`);
+          if (isIdUsed) console.log(`⚠️ ID YA USADO: ${smartExercise.id}`);
+          if (isContentRepeated) console.log(`⚠️ CONTENIDO YA VISTO: ${smartExercise.question.slice(0, 50)}...`);
+          console.log(`🔄 Reintentando... (${attempts}/5)`);
         }
         
         // Si hemos intentado muchas veces, hacer reset
