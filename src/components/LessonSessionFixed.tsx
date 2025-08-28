@@ -6,6 +6,7 @@ import { SmartAISystem, SmartExercise } from "../services/smartAI";
 import { ExerciseTracker } from "../services/exerciseTracker";
 import { ContentHashTracker } from "../services/contentHashTracker";
 import { ImprovedLevelSystem } from '../services/levelProgression';
+import { LevelExerciseManager } from '../data/levelExercises';
 
 interface LessonSessionProps {
   apiKey: string;
@@ -79,81 +80,117 @@ const LessonSessionFixed: React.FC<LessonSessionProps> = ({
     initializeIntelligentSession();
   }, [userProgress.level, userProgress.userId]);
 
-  // GENERAR EJERCICIO INTELIGENTE CON ANTI-REPETICIÓN ROBUSTO
+  // FUNCIÓN AUXILIAR: Generar ejercicio específico para el nivel actual
+  const generateLevelAppropriateExercise = async (): Promise<SmartExercise | null> => {
+    console.log(`🎯 GENERANDO EJERCICIO PARA NIVEL ${userProgress.level}`);
+    
+    // Obtener ejercicios usados para este nivel
+    const usedIds = LevelExerciseManager.getUsedExerciseIds(userProgress.level);
+    
+    // Obtener 1 ejercicio único para este nivel específico
+    const levelExercises = LevelExerciseManager.getUniqueExercisesForLevel(
+      userProgress.level as 'A1' | 'A2' | 'B1' | 'B2',
+      usedIds,
+      1
+    );
+    
+    if (levelExercises.length === 0) {
+      console.log("⚠️ NO HAY EJERCICIOS DISPONIBLES - RESETEANDO");
+      LevelExerciseManager.resetUsedExercises(userProgress.level);
+      
+      // Reintentar después del reset
+      const resetExercises = LevelExerciseManager.getUniqueExercisesForLevel(
+        userProgress.level as 'A1' | 'A2' | 'B1' | 'B2',
+        [],
+        1
+      );
+      
+      if (resetExercises.length === 0) {
+        throw new Error("No hay ejercicios disponibles para este nivel");
+      }
+      
+      return convertToSmartExercise(resetExercises[0]);
+    }
+    
+    const selectedExercise = levelExercises[0];
+    
+    // Marcar como usado
+    LevelExerciseManager.markExercisesAsUsed(userProgress.level, [selectedExercise.id]);
+    
+    console.log(`✅ EJERCICIO SELECCIONADO:`, {
+      id: selectedExercise.id,
+      level: selectedExercise.level,
+      type: selectedExercise.type,
+      difficulty: selectedExercise.difficulty,
+      topic: selectedExercise.topic
+    });
+    
+    return convertToSmartExercise(selectedExercise);
+  };
+
+  // Función auxiliar para convertir ejercicio de nivel a SmartExercise
+  const convertToSmartExercise = (exercise: any): SmartExercise => {
+    return {
+      id: exercise.id,
+      question: exercise.question,
+      instruction: exercise.instruction,
+      options: exercise.options,
+      correctAnswer: exercise.correctAnswer,
+      explanation: exercise.explanation,
+      xpReward: exercise.level === 'B2' ? 15 : exercise.level === 'B1' ? 12 : 10,
+      topic: exercise.topic,
+      level: exercise.level,
+      source: 'curated',
+      difficulty: exercise.difficulty,
+      learningFocus: exercise.skills
+    };
+  };
+
+  // GENERAR EJERCICIO INTELIGENTE CON EJERCICIOS ESPECÍFICOS POR NIVEL
   const generateIntelligentExercise = async (exerciseNum: number) => {
     setIsGenerating(true);
     
     try {
-      console.log(`🤖 GENERANDO EJERCICIO ÚNICO ${exerciseNum}/8`);
+      console.log(`🎯 GENERANDO EJERCICIO ${exerciseNum}/8 PARA NIVEL ${userProgress.level}`);
       
-      // DEBUG: Ver ejercicios ya usados
-      ExerciseTracker.debugUsedExercises(userProgress.level);
-      
-      // Limpiar historial si es necesario
-      ExerciseTracker.cleanupIfNeeded(userProgress.level, 40);
-      
-      let attempts = 0;
-      let smartExercise: SmartExercise;
-      
-      // INTENTAR HASTA 5 VECES GENERAR EJERCICIO ÚNICO
-      do {
-        attempts++;
-        console.log(`🔄 Intento ${attempts} de generar ejercicio único`);
-        
-        smartExercise = await SmartAISystem.generateSmartExercise({
-          userId: userProgress.userId || 'anonymous',
-          userLevel: userProgress.level,
-          apiKey: apiKey,
-          sessionNumber: exerciseNum,
-          weakTopics: userWeaknesses,
-          strengths: userProgress.strengths || [],
-          preferredDifficulty: 'medium'
-        });
-        
-        // ✅ VERIFICACIÓN CRÍTICA CON LOGGING AGRESIVO
-        const isUsedById = ExerciseTracker.isExerciseUsed(userProgress.level, smartExercise.id);
-        const isUsedByContent = ContentHashTracker.isContentRepeated(smartExercise, userProgress.level);
-        
-        console.log(`🔍 DEBUG EJERCICIO:`, {
-          exerciseId: smartExercise.id,
-          question: smartExercise.question,
-          isUsedById: isUsedById,
-          isUsedByContent: isUsedByContent,
-          attempt: attempts
-        });
-        
-        if (!isUsedById && !isUsedByContent) {
-          console.log(`✅ EJERCICIO ÚNICO ENCONTRADO: ${smartExercise.id}`);
-          ExerciseTracker.markExerciseAsUsed(userProgress.level, smartExercise.id);
-          ContentHashTracker.markContentAsUsed(smartExercise, userProgress.level);
-          console.log(`📝 MARCADO COMO USADO - ID y CONTENIDO`);
-          break;
-        } else {
-          console.log(`⚠️ EJERCICIO REPETIDO - ID usado: ${isUsedById}, Contenido repetido: ${isUsedByContent}`);
+      // PRIORIDAD 1: Intentar ejercicio específico para el nivel actual
+      try {
+        const levelExercise = await generateLevelAppropriateExercise();
+        if (levelExercise) {
+          setCurrentExercise(levelExercise);
+          setCurrentTopic(levelExercise.topic);
+          return;
         }
-        
-        if (attempts >= 5) {
-          console.log("🔄 DEMASIADOS INTENTOS - FORZANDO EJERCICIO DIFERENTE");
-          // Generar exercise completamente diferente como último recurso
-          smartExercise = generateEmergencyExercise(userProgress.level);
-          break;
+      } catch (error) {
+        console.warn("⚠️ Error con ejercicios de nivel, intentando IA:", error);
+      }
+      
+      // PRIORIDAD 2: Intentar IA si hay API key
+      if (apiKey) {
+        try {
+          const smartExercise = await SmartAISystem.generateSmartExercise({
+            userId: userProgress.userId || 'anonymous',
+            userLevel: userProgress.level,
+            apiKey: apiKey,
+            sessionNumber: exerciseNum,
+            weakTopics: userWeaknesses,
+            strengths: userProgress.strengths || [],
+            preferredDifficulty: 'medium'
+          });
+          
+          setCurrentExercise(smartExercise);
+          setCurrentTopic(smartExercise.topic);
+          return;
+        } catch (error) {
+          console.warn("⚠️ IA falló, usando ejercicio de emergencia:", error);
         }
-        
-      } while (attempts < 5);
+      }
       
-      setCurrentExercise(smartExercise);
-      setCurrentTopic(smartExercise.topic);
+      // PRIORIDAD 3: Ejercicio de emergencia
+      const emergencyExercise = generateEmergencyExercise(userProgress.level);
+      setCurrentExercise(emergencyExercise);
+      setCurrentTopic(emergencyExercise.topic);
       
-      console.log(`✅ EJERCICIO CARGADO:`, {
-        id: smartExercise.id,
-        source: smartExercise.source,
-        topic: smartExercise.topic,
-        difficulty: smartExercise.difficulty,
-        attempts: attempts
-      });
-      
-    } catch (error) {
-      console.error("❌ Error generando ejercicio inteligente:", error);
     } finally {
       setIsGenerating(false);
     }
