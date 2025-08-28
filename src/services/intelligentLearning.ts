@@ -239,7 +239,11 @@ export class IntelligentLearningSystem {
           console.error("❌ Error registrando interacción después de", FIREBASE_CONFIG.retryAttempts, "intentos");
           
           // FALLBACK: Guardar localmente
-          OfflineMode.saveToLocalStorage(`interaction_${interaction.exerciseId}_${Date.now()}`, fullInteraction);
+          const fallbackInteraction: ExerciseInteraction = {
+            ...interaction,
+            timestamp: new Date()
+          };
+          OfflineMode.saveToLocalStorage(`interaction_${interaction.exerciseId}_${Date.now()}`, fallbackInteraction);
           console.log("💾 Interacción guardada offline para sincronización posterior");
           return;
         }
