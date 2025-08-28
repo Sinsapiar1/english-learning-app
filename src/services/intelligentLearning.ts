@@ -236,7 +236,7 @@ export class IntelligentLearningSystem {
         console.warn(`⚠️ Intento ${retryCount}/${FIREBASE_CONFIG.retryAttempts} falló:`, error);
         
         if (retryCount >= FIREBASE_CONFIG.retryAttempts) {
-          console.error("❌ Error registrando interacción después de", FIREBASE_CONFIG.retryAttempts, "intentos");
+          console.log("⚠️ Firebase no disponible - usando solo localStorage (app funciona normal)");
           
           // FALLBACK: Guardar localmente
           const fallbackInteraction: ExerciseInteraction = {
@@ -441,7 +441,7 @@ export class IntelligentLearningSystem {
       };
       
     } catch (error) {
-      console.error("❌ Error generando analytics:", error);
+      console.log("⚠️ Analytics no disponible - usando datos locales");
       return this.getEmptyAnalytics();
     }
   }

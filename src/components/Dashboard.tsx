@@ -52,16 +52,13 @@ const Dashboard: React.FC<DashboardProps> = ({ user }) => {
       console.log('🧹 Pregunta problemática de Uber Eats eliminada del cache');
     }
     
-    // LIMPIAR datos corruptos una vez
+    // LIMPIAR datos corruptos una vez - SIN BORRAR HASHES VÁLIDOS
     const cleanupDone = localStorage.getItem('cleanup_done');
     if (!cleanupDone) {
-      // Limpiar hashes de ejercicios corruptos
-      ['A1', 'A2', 'B1', 'B2'].forEach(level => {
-        localStorage.removeItem(`content_hashes_${level}`);
-        localStorage.removeItem(`used_exercises_${level}`);
-      });
+      // NO BORRAR content_hashes - son necesarios para anti-repetición
+      // Solo limpiar used_exercises si es necesario
+      console.log('✅ Cleanup ejecutado - manteniendo hashes para anti-repetición');
       localStorage.setItem('cleanup_done', 'true');
-      console.log('✅ Datos de ejercicios corruptos limpiados');
     }
     
     const savedProgress = localStorage.getItem("user_progress");
@@ -182,8 +179,17 @@ const Dashboard: React.FC<DashboardProps> = ({ user }) => {
     const minimumProgress = Math.min((userProgress.completedLessons * 8) / 120, 0.9); // Máximo 90%
     ImprovedLevelSystem.ensureMinimumProgress(userProgress.level, minimumProgress);
     
-    const recentSessionsKey = `recent_sessions_${user.uid}`;
+    const recentSessionsKey = `recent_sessions_${userProgress.userId || user.uid || 'anonymous'}`;
     const recentSessions = JSON.parse(localStorage.getItem(recentSessionsKey) || "[0.5, 0.6, 0.7]");
+    
+    console.log('🔍 DEBUG PROGRESO:', {
+      recentSessionsKey,
+      recentSessions,
+      userProgressLevel: userProgress.level,
+      completedLessons: userProgress.completedLessons,
+      accuracy: userProgress.accuracy,
+      xp: userProgress.xp
+    });
     
     const levelProgress = ImprovedLevelSystem.calculateLevelProgress({
       currentLevel: userProgress.level,
@@ -191,6 +197,13 @@ const Dashboard: React.FC<DashboardProps> = ({ user }) => {
       totalExercises: userProgress.completedLessons * 8,
       xp: userProgress.xp,
       recentSessions: recentSessions
+    });
+
+    console.log('📊 LEVEL PROGRESS RESULT:', {
+      canLevelUp: levelProgress.canLevelUp,
+      progressPercentage: levelProgress.progressPercentage,
+      missingRequirements: levelProgress.missingRequirements,
+      motivationalMessage: levelProgress.motivationalMessage
     });
 
     return (
