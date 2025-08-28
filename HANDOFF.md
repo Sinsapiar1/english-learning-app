@@ -6,7 +6,7 @@
 **Versión**: 2.0 - Sistema IA Inteligente + Anti-Repetición Robusto  
 **Arquitecto**: Experto en Aplicaciones Educativas con IA  
 **Estado**: ✅ **COMPLETAMENTE FUNCIONAL** - Listo para Producción  
-**Commit Actual**: `bebf49f` - Todos los problemas de usuario resueltos  
+**Commit Actual**: `7d4a3ee` - GEMINI MODEL ACTUALIZADO + Problemas críticos resueltos  
 
 ---
 
@@ -22,7 +22,12 @@
 
 ### ✅ **Problema #3: Lentitud Entre Preguntas (RESUELTO)**
 **Antes**: 2 segundos de espera  
-**Ahora**: 1 segundo (50% más rápido) + sistema de reintentos optimizado
+**Ahora**: 200ms (90% más rápido) + sistema de reintentos optimizado
+
+### ✅ **Problema #4: IA Completamente Fallida - Error 404 (RESUELTO)**
+**Antes**: `models/gemini-pro is not found for API version v1beta`  
+**Causa**: Google deprecó el modelo gemini-pro  
+**Ahora**: Actualizado a `gemini-1.5-flash` - modelo actual y más rápido
 
 ---
 
