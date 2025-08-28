@@ -95,7 +95,7 @@ Responde SOLO JSON (sin explicaciones):
 
     try {
       const model = this.genAI.getGenerativeModel({
-        model: "gemini-pro",
+        model: "gemini-1.5-flash", // ✅ NUEVO MODELO - gemini-pro DEPRECADO
         generationConfig: {
           temperature: 0.9, // Alta creatividad para evitar repetición
           topP: 0.8,
