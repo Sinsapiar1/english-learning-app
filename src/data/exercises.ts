@@ -69,7 +69,7 @@ export const EXERCISE_BANK: Exercise[] = [
     instruction: "Completa con Present Perfect",
     options: ["have / eat", "have / eaten", "has / eaten", "had / eaten"],
     correctAnswer: 1,
-    explanation: "👶 PARA PRINCIPIANTES: Present Perfect es como decir 'he hecho algo' en español, pero sin decir cuándo exactamente.\n\n🕐 ¿CUÁNDO USARLO?\n✅ 'I have never eaten sushi' = 'Nunca he comido sushi' (en mi vida, no sé cuándo)\n❌ 'I never ate sushi' = Incorrecto para experiencias de vida\n\n🔧 ¿CÓMO SE HACE?\nHAVE/HAS + verbo en participio (comido, visto, hecho)\n• I/You/We/They → HAVE + participio\n• He/She/It → HAS + participio\n\n📖 PARTICIPIOS COMUNES:\n• eat → eaten (comido)\n• see → seen (visto)\n• go → gone (ido)\n• do → done (hecho)\n\n💡 TRUCO: Si en español dices 'he...' o 'has...', usa Present Perfect"
+    explanation: "👶 PARA PRINCIPIANTES: Present Perfect es como decir 'he hecho algo' en español, pero sin decir cuándo exactamente.\n\n🕐 ¿CUÁNDO USARLO?\n✅ 'I have never eaten sushi' = 'Nunca he comido sushi' (en mi vida, no sé cuándo)\n❌ 'I never ate sushi' = Incorrecto para experiencias de vida\n\n🔧 ¿CÓMO SE HACE?\nHAVE/HAS + verbo en participio (comido, visto, hecho)\n• I/You/We/They → HAVE + participio\n• He/She/It → HAS + participio\n\n📖 PARTICIPIOS COMUNES:\n• eat → eaten (comido)\n• see → seen (visto)\n• go → gone (ido)\n• do → done (hecho)\n\n💡 TRUCO: Si en español dices 'he...' o 'has...', usa Present Perfect",
     xpReward: 10
   },
   {
