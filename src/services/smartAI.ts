@@ -24,7 +24,7 @@ export interface SmartExercise {
   xpReward: number;
   topic: string;
   level: string;
-  source: 'ai' | 'curated';
+  source: 'ai' | 'curated' | 'emergency';
   difficulty: 'easy' | 'medium' | 'hard';
   learningFocus: string[];
 }
