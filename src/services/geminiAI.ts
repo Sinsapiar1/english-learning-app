@@ -216,7 +216,7 @@ Return ONLY valid JSON - no extra text:
    * Genera ejemplos específicos para cada tipo de ejercicio
    */
   private getExampleForType(type: string, context: string): string {
-    const examples = {
+    const examples: Record<string, string> = {
       "VOCABULARY": `"What does 'swipe' mean in '${context}'?" → A) deslizar ✓ B) tocar C) presionar D) escribir`,
       "GRAMMAR": `"I ____ ${context} every day." → A) have been doing ✓ B) am doing C) did D) will do`,
       "TRANSLATION": `"¿Cómo se dice 'me encanta esto' when ${context}?" → A) I love this ✓ B) I like this C) I want this D) I need this`,

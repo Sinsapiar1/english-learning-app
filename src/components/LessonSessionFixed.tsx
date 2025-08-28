@@ -107,20 +107,18 @@ const LessonSessionFixed: React.FC<LessonSessionProps> = ({
           preferredDifficulty: 'medium'
         });
         
-        // VERIFICACIÓN DOBLE: ID + CONTENIDO REAL
-        const isIdUsed = ExerciseTracker.isExerciseUsed(userProgress.level, smartExercise.id);
-        const isContentRepeated = ContentHashTracker.isContentRepeated(smartExercise, userProgress.level);
+        // ✅ VERIFICACIÓN DOBLE: ID + CONTENIDO REAL (VERSIÓN SIMPLE)
+        const isUsedById = ExerciseTracker.isExerciseUsed(userProgress.level, smartExercise.id);
+        const isUsedByContent = ContentHashTracker.isContentRepeated(smartExercise, userProgress.level);
         
-        if (!isIdUsed && !isContentRepeated) {
-          console.log(`✅ EJERCICIO COMPLETAMENTE ÚNICO: ${smartExercise.id}`);
-          // Marcar tanto ID como contenido como usados
+        if (!isUsedById && !isUsedByContent) {
+          console.log(`✅ EJERCICIO ÚNICO ENCONTRADO: ${smartExercise.id}`);
+          // Marcar ambos sistemas
           ExerciseTracker.markExerciseAsUsed(userProgress.level, smartExercise.id);
           ContentHashTracker.markContentAsUsed(smartExercise, userProgress.level);
           break;
         } else {
-          if (isIdUsed) console.log(`⚠️ ID YA USADO: ${smartExercise.id}`);
-          if (isContentRepeated) console.log(`⚠️ CONTENIDO YA VISTO: ${smartExercise.question.slice(0, 50)}...`);
-          console.log(`🔄 Reintentando... (${attempts}/5)`);
+          console.log(`⚠️ EJERCICIO REPETIDO - ID usado: ${isUsedById}, Contenido repetido: ${isUsedByContent}`);
         }
         
         // Si hemos intentado muchas veces, hacer reset
