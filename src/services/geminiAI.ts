@@ -161,14 +161,15 @@ Responde SOLO este JSON:
       console.error("📝 Prompt length:", prompt.length);
       
       // Log del error específico
-      if (error.message.includes("API key")) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      if (errorMessage.includes("API key")) {
         console.error("🔑 PROBLEMA DE API KEY");
-      } else if (error.message.includes("JSON")) {
+      } else if (errorMessage.includes("JSON")) {
         console.error("📋 PROBLEMA DE FORMATO JSON");
-      } else if (error.message.includes("quota")) {
+      } else if (errorMessage.includes("quota")) {
         console.error("💳 PROBLEMA DE CUOTA/LÍMITES");
       } else {
-        console.error("❓ ERROR DESCONOCIDO:", error.message);
+        console.error("❓ ERROR DESCONOCIDO:", errorMessage);
       }
 
       // Fallbacks únicos por ejercicio y tema
