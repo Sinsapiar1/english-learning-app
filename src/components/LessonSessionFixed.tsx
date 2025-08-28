@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import MultipleChoice from "./MultipleChoice";
 import { getUniqueExercises, shuffleExerciseOptions, Exercise, cleanOldExerciseHistory } from "../data/exercises";
 import { IntelligentLearningSystem } from "../services/intelligentLearning";
+import { SmartAISystem, SmartExercise } from "../services/smartAI";
 
 interface LessonSessionProps {
   apiKey: string;
@@ -19,10 +20,10 @@ const LessonSessionFixed: React.FC<LessonSessionProps> = ({
   // Estados SIMPLES
   const [exerciseNumber, setExerciseNumber] = useState(1);
   const [totalExercises] = useState(8);
-  const [currentExercise, setCurrentExercise] = useState<any>(null);
+  const [currentExercise, setCurrentExercise] = useState<SmartExercise | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
-  const [sessionExercises, setSessionExercises] = useState<Exercise[]>([]);
   const [sessionId] = useState(`session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`);
+  const [userWeaknesses, setUserWeaknesses] = useState<string[]>([]);
   
   // Estadísticas
   const [correctCount, setCorrectCount] = useState(0);
@@ -41,83 +42,69 @@ const LessonSessionFixed: React.FC<LessonSessionProps> = ({
     return allTopics[level as keyof typeof allTopics] || allTopics.A2;
   };
 
-  // Inicializar ejercicios únicos al comenzar
+  // Inicializar sistema inteligente
   useEffect(() => {
-    const initializeSession = () => {
-      console.log("🚀 INICIANDO SESIÓN ANTI-REPETICIÓN GARANTIZADA");
+    const initializeIntelligentSession = async () => {
+      console.log("🧠 INICIANDO SESIÓN DE IA INTELIGENTE");
       
-      // Limpiar historial antiguo y obtener ejercicios ya usados
-      const usedIds = cleanOldExerciseHistory(userProgress.level, 100);
-      
-      // Seleccionar tema basado en debilidades
-      const availableTopics = getTopicsForLevel(userProgress.level);
-      let selectedTopic = availableTopics[0]; // Default
-      
-      if (userProgress.weakAreas && userProgress.weakAreas.length > 0) {
-        const weakTopic = userProgress.weakAreas.find((topic: string) => 
-          availableTopics.includes(topic)
-        );
-        if (weakTopic) selectedTopic = weakTopic;
+      // Obtener debilidades del usuario
+      if (userProgress.userId) {
+        try {
+          const weaknesses = await IntelligentLearningSystem.analyzeUserWeaknesses(userProgress.userId);
+          setUserWeaknesses(weaknesses);
+          console.log("📉 DEBILIDADES IDENTIFICADAS:", weaknesses);
+        } catch (error) {
+          console.warn("⚠️ Error obteniendo debilidades:", error);
+        }
       }
       
-      setCurrentTopic(selectedTopic);
-      
-      // Obtener ejercicios únicos
-      const uniqueExercises = getUniqueExercises(
-        userProgress.level,
-        selectedTopic,
-        usedIds,
-        totalExercises
-      );
-      
-      setSessionExercises(uniqueExercises);
-      
-      console.log("✅ CONFIGURACIÓN COMPLETA:");
-      console.log("📊 Nivel:", userProgress.level);
-      console.log("📝 Tema:", selectedTopic);
-      console.log("🎯 Ejercicios únicos:", uniqueExercises.length);
-      console.log("🚫 Ya usados:", usedIds.length);
-      
-      // Cargar primer ejercicio
-      if (uniqueExercises.length > 0) {
-        loadExercise(1, uniqueExercises);
-      }
+      // Cargar primer ejercicio inteligente
+      await generateIntelligentExercise(1);
     };
     
-    initializeSession();
-  }, [userProgress.level]);
+    initializeIntelligentSession();
+  }, [userProgress.level, userProgress.userId]);
 
-  // Cargar ejercicio específico
-  const loadExercise = (number: number, exercises: Exercise[]) => {
+  // GENERAR EJERCICIO INTELIGENTE
+  const generateIntelligentExercise = async (exerciseNum: number) => {
     setIsGenerating(true);
     
-    setTimeout(() => {
-      const exerciseIndex = number - 1;
+    try {
+      console.log(`🤖 GENERANDO EJERCICIO INTELIGENTE ${exerciseNum}/8`);
       
-      if (exerciseIndex < exercises.length) {
-        const baseExercise = exercises[exerciseIndex];
-        const shuffledExercise = shuffleExerciseOptions(baseExercise);
-        
-        setCurrentExercise({
-          ...shuffledExercise,
-          exerciseNumber: number,
-        });
-        
-        console.log(`✅ EJERCICIO ${number} CARGADO:`, baseExercise.id);
-      } else {
-        console.error("❌ No hay más ejercicios disponibles");
-      }
+      const smartExercise = await SmartAISystem.generateSmartExercise({
+        userId: userProgress.userId || 'anonymous',
+        userLevel: userProgress.level,
+        apiKey: apiKey,
+        sessionNumber: exerciseNum,
+        weakTopics: userWeaknesses,
+        strengths: userProgress.strengths || [],
+        preferredDifficulty: 'medium'
+      });
       
+      setCurrentExercise(smartExercise);
+      setCurrentTopic(smartExercise.topic);
+      
+      console.log(`✅ EJERCICIO INTELIGENTE GENERADO:`, {
+        id: smartExercise.id,
+        source: smartExercise.source,
+        topic: smartExercise.topic,
+        difficulty: smartExercise.difficulty
+      });
+      
+    } catch (error) {
+      console.error("❌ Error generando ejercicio inteligente:", error);
+    } finally {
       setIsGenerating(false);
-    }, 500); // Pequeña pausa para UX
+    }
   };
 
-  // Avanzar al siguiente ejercicio
+  // Avanzar al siguiente ejercicio inteligente
   useEffect(() => {
-    if (exerciseNumber <= totalExercises && sessionExercises.length > 0) {
-      loadExercise(exerciseNumber, sessionExercises);
+    if (exerciseNumber > 1 && exerciseNumber <= totalExercises) {
+      generateIntelligentExercise(exerciseNumber);
     }
-  }, [exerciseNumber, sessionExercises]);
+  }, [exerciseNumber]);
 
   // Manejar respuesta CON TRACKING INTELIGENTE
   const handleAnswer = useCallback(async (correct: boolean, xpEarned: number, selectedAnswer?: number, responseTime?: number) => {
@@ -264,10 +251,10 @@ const LessonSessionFixed: React.FC<LessonSessionProps> = ({
             </button>
             <div className="text-center">
               <h1 className="text-2xl font-bold text-gray-900">
-                ✅ Sesión Garantizada Sin IA
+                🤖 Sesión de Aprendizaje Inteligente
               </h1>
               <p className="text-gray-600">
-                {currentTopic} • Nivel {userProgress.level}
+                {currentTopic} • Nivel {userProgress.level} • IA Personalizada
               </p>
             </div>
             <div className="text-right">
@@ -295,19 +282,19 @@ const LessonSessionFixed: React.FC<LessonSessionProps> = ({
         {/* Ejercicio actual */}
         {isGenerating ? (
           <div className="bg-white rounded-xl shadow-lg p-8 text-center">
-            <div className="animate-bounce text-4xl mb-4">✅</div>
-            <h3 className="text-xl font-semibold mb-2">Cargando ejercicio único...</h3>
+            <div className="animate-bounce text-4xl mb-4">🤖</div>
+            <h3 className="text-xl font-semibold mb-2">IA Generando Ejercicio Personalizado...</h3>
             <p className="text-gray-600 mb-4">
-              Sistema garantizado sin repeticiones
+              Analizando tu nivel y debilidades para crear el ejercicio perfecto
             </p>
+            <div className="flex justify-center space-x-1 mt-4">
+              <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
+              <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse" style={{animationDelay: '0.2s'}}></div>
+              <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse" style={{animationDelay: '0.4s'}}></div>
+            </div>
           </div>
         ) : currentExercise ? (
           <div className="relative">
-            <div className="absolute -top-4 right-4 z-10">
-              <div className="bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs font-medium">
-                ✅ Único: {currentExercise.id}
-              </div>
-            </div>
             <MultipleChoice
               question={currentExercise}
               onAnswer={handleAnswer}

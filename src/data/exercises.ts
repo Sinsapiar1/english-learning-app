@@ -23,7 +23,7 @@ export const EXERCISE_BANK: Exercise[] = [
     instruction: "Completa con Present Simple",
     options: ["drink", "drinks", "drinking", "drank"],
     correctAnswer: 1,
-    explanation: "🎯 REGLA: Con pronombres de tercera persona singular (he, she, it) añadimos -S al verbo en Present Simple.\n\n✅ 'She drinks' - Correcto\n❌ 'She drink' - Incorrecto (falta la -s)\n\n💡 RECUERDA: I/You/We/They + verbo base | He/She/It + verbo + S",
+    explanation: "👶 PARA PRINCIPIANTES: En inglés, cuando hablamos de otra persona (he=él, she=ella, it=eso), añadimos -S al final del verbo.\n\n🗣️ EJEMPLO DIARIO:\n✅ 'She drinks coffee' = 'Ella bebe café' (CORRECTO)\n❌ 'She drink coffee' = Incorrecto (le falta la -s)\n\n📝 FÓRMULA SIMPLE:\n• Yo/Tú/Nosotros → verbo normal (I drink, You drink, We drink)\n• Él/Ella/Eso → verbo + S (He drinks, She drinks, It drinks)\n\n💡 TRUCO: Si puedes decir 'él' o 'ella' antes del verbo, añade -S",
     xpReward: 10
   },
   {
@@ -34,7 +34,7 @@ export const EXERCISE_BANK: Exercise[] = [
     instruction: "Completa la pregunta",
     options: ["studies", "study", "studying", "studied"],
     correctAnswer: 1,
-    explanation: "🎯 REGLA: En preguntas con DO/DOES usamos el verbo en infinitivo (sin -s)\n\n✅ 'Do you study?' - Correcto\n❌ 'Do you studies?' - Incorrecto (no añadir -s con 'do')\n\n💡 ESTRUCTURA: Do/Does + sujeto + verbo base + ?",
+    explanation: "👶 PARA PRINCIPIANTES: Cuando hacemos preguntas en inglés, usamos DO o DOES como ayudantes.\n\n🤔 ¿CÓMO FUNCIONA?\n✅ 'Do you study English?' = '¿Estudias inglés?' (CORRECTO)\n❌ 'Do you studies English?' = Incorrecto (con DO nunca pongas -s al verbo)\n\n📋 REGLA FÁCIL:\n• Con I/You/We/They → DO + verbo normal\n• Con He/She/It → DOES + verbo normal (sin -s)\n\n💡 TRUCO: DO y DOES ya hacen el trabajo de la -s, por eso el verbo va normal",
     xpReward: 10
   },
   {
@@ -69,7 +69,7 @@ export const EXERCISE_BANK: Exercise[] = [
     instruction: "Completa con Present Perfect",
     options: ["have / eat", "have / eaten", "has / eaten", "had / eaten"],
     correctAnswer: 1,
-    explanation: "🎯 REGLA: Present Perfect se forma con HAVE/HAS + PARTICIPIO PASADO\n\n✅ 'I have eaten' - Experiencia de vida\n❌ 'I have eat' - Incorrecto (falta participio)\n\n💡 USO: Para experiencias sin tiempo específico\n📚 PARTICIPIOS: eat→eaten, go→gone, see→seen",
+    explanation: "👶 PARA PRINCIPIANTES: Present Perfect es como decir 'he hecho algo' en español, pero sin decir cuándo exactamente.\n\n🕐 ¿CUÁNDO USARLO?\n✅ 'I have never eaten sushi' = 'Nunca he comido sushi' (en mi vida, no sé cuándo)\n❌ 'I never ate sushi' = Incorrecto para experiencias de vida\n\n🔧 ¿CÓMO SE HACE?\nHAVE/HAS + verbo en participio (comido, visto, hecho)\n• I/You/We/They → HAVE + participio\n• He/She/It → HAS + participio\n\n📖 PARTICIPIOS COMUNES:\n• eat → eaten (comido)\n• see → seen (visto)\n• go → gone (ido)\n• do → done (hecho)\n\n💡 TRUCO: Si en español dices 'he...' o 'has...', usa Present Perfect"
     xpReward: 10
   },
   {
