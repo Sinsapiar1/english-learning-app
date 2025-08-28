@@ -1,95 +1,104 @@
-// VERSIÓN SIMPLE Y COMPATIBLE - SEGÚN RECOMENDACIÓN DE CLAUDE
-// Solo lo esencial para eliminar repeticiones de contenido
-
-export interface ExerciseContent {
-  question: string;
-  options: string[];
-  correctAnswer: number;
-}
-
 export class ContentHashTracker {
-  
-  /**
-   * Genera hash único basado en el CONTENIDO real del ejercicio
-   * Versión compatible sin Set spread operators
-   */
   static hashExerciseContent(exercise: any): string {
-    // Limpiar opciones antes de hacer hash
+    // Limpiar opciones de cualquier formato previo
     const cleanOptions = exercise.options.map((opt: string) => 
       opt.replace(/^[A-D]\)\s*/, '').trim()
     );
     
-    const content = `${exercise.question}_${cleanOptions.join('_')}_${exercise.correctAnswer}`;
+    const content = `${exercise.question.trim()}_${cleanOptions.join('_')}_${exercise.correctAnswer}`;
     
-    // Usar función hash simple compatible (sin btoa para evitar errores)
     let hash = 0;
     for (let i = 0; i < content.length; i++) {
       const char = content.charCodeAt(i);
       hash = ((hash << 5) - hash) + char;
-      hash = hash & hash; // Convert to 32-bit integer
+      hash = hash & hash;
     }
-    return Math.abs(hash).toString(36).slice(0, 16);
+    const finalHash = Math.abs(hash).toString(36).slice(0, 16);
+    
+    console.log(`🔢 HASH GENERADO:`, {
+      question: exercise.question.trim(),
+      cleanOptions: cleanOptions,
+      content: content.substring(0, 100) + "...",
+      hash: finalHash
+    });
+    
+    return finalHash;
   }
   
-  /**
-   * Verifica si el CONTENIDO ya fue usado
-   */
-  static isContentRepeated(exercise: ExerciseContent, level: string): boolean {
+  static isContentRepeated(exercise: any, level: string): boolean {
     const hash = this.hashExerciseContent(exercise);
     const usedHashes = this.getUsedHashes(level);
-    
     const isRepeated = usedHashes.includes(hash);
     
-    if (isRepeated) {
-      console.log("🚨 CONTENIDO REPETIDO DETECTADO:");
-      console.log("📝 Pregunta:", exercise.question.slice(0, 50) + "...");
-      console.log("🔍 Hash:", hash);
-    }
+    console.log(`🔍 VERIFICANDO REPETICIÓN:`, {
+      hash: hash,
+      level: level,
+      totalHashesUsados: usedHashes.length,
+      isRepeated: isRepeated,
+      hashesExistentes: usedHashes
+    });
     
     return isRepeated;
   }
   
-  /**
-   * Marca el CONTENIDO como usado
-   */
-  static markContentAsUsed(exercise: ExerciseContent, level: string): void {
+  static markContentAsUsed(exercise: any, level: string): void {
     const hash = this.hashExerciseContent(exercise);
     const used = this.getUsedHashes(level);
     
     if (!used.includes(hash)) {
       used.push(hash);
-      localStorage.setItem(`content_hashes_${level}`, JSON.stringify(used));
-      console.log(`✅ CONTENT HASH SAVED: ${hash} for level ${level}`);
+      const key = `content_hashes_${level}`;
+      localStorage.setItem(key, JSON.stringify(used));
+      
+      console.log(`✅ CONTENT HASH GUARDADO:`, {
+        hash: hash,
+        level: level,
+        totalHashes: used.length,
+        key: key,
+        question: exercise.question.substring(0, 50) + "..."
+      });
+    } else {
+      console.log(`⚠️ HASH YA EXISTÍA:`, { hash, level });
     }
   }
   
-  /**
-   * Obtiene lista de hashes ya usados
-   */
   private static getUsedHashes(level: string): string[] {
-    const stored = localStorage.getItem(`content_hashes_${level}`);
-    return stored ? JSON.parse(stored) : [];
-  }
-  
-  /**
-   * Limpia hashes para nivel específico
-   */
-  static clearUsedHashes(level: string): void {
-    localStorage.removeItem(`content_hashes_${level}`);
-    console.log(`🗑️ HASHES LIMPIADOS para nivel ${level}`);
-  }
-  
-  /**
-   * Debug: Muestra estadísticas
-   */
-  static debugContentStats(level: string): void {
-    const hashes = this.getUsedHashes(level);
-    console.log("📊 ESTADÍSTICAS DE CONTENIDO ÚNICO:");
-    console.log(`📈 Nivel: ${level}`);
-    console.log(`🔢 Total ejercicios únicos: ${hashes.length}`);
+    const key = `content_hashes_${level}`;
+    const stored = localStorage.getItem(key);
+    const hashes = stored ? JSON.parse(stored) : [];
     
-    if (hashes.length > 0) {
-      console.log(`🔍 Últimos 5 hashes:`, hashes.slice(-5));
-    }
+    console.log(`📋 HASHES RECUPERADOS:`, {
+      level: level,
+      key: key,
+      totalHashes: hashes.length,
+      hashes: hashes
+    });
+    
+    return hashes;
+  }
+  
+  // MÉTODO DE EMERGENCIA: Limpiar hashes específicos
+  static removeSpecificQuestion(questionText: string, level: string): void {
+    const dummyExercise = {
+      question: questionText,
+      options: ["dummy", "dummy", "dummy", "dummy"], 
+      correctAnswer: 0
+    };
+    
+    const hashToRemove = this.hashExerciseContent(dummyExercise);
+    const used = this.getUsedHashes(level);
+    const filtered = used.filter(hash => hash !== hashToRemove);
+    
+    localStorage.setItem(`content_hashes_${level}`, JSON.stringify(filtered));
+    console.log(`🗑️ HASH ESPECÍFICO ELIMINADO:`, { hashToRemove, level });
+  }
+  
+  // LIMPIAR TODO EL CACHÉ (usar solo en emergencia)
+  static clearAllHashes(): void {
+    ['A1', 'A2', 'B1', 'B2'].forEach(level => {
+      localStorage.removeItem(`content_hashes_${level}`);
+      localStorage.removeItem(`used_exercises_${level}`);
+    });
+    console.log(`🧹 TODOS LOS HASHES LIMPIADOS`);
   }
 }

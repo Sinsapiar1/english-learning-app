@@ -108,24 +108,32 @@ const LessonSessionFixed: React.FC<LessonSessionProps> = ({
           preferredDifficulty: 'medium'
         });
         
-        // ✅ VERIFICACIÓN DOBLE: ID + CONTENIDO REAL (VERSIÓN SIMPLE)
+        // ✅ VERIFICACIÓN CRÍTICA CON LOGGING AGRESIVO
         const isUsedById = ExerciseTracker.isExerciseUsed(userProgress.level, smartExercise.id);
         const isUsedByContent = ContentHashTracker.isContentRepeated(smartExercise, userProgress.level);
         
+        console.log(`🔍 DEBUG EJERCICIO:`, {
+          exerciseId: smartExercise.id,
+          question: smartExercise.question,
+          isUsedById: isUsedById,
+          isUsedByContent: isUsedByContent,
+          attempt: attempts
+        });
+        
         if (!isUsedById && !isUsedByContent) {
           console.log(`✅ EJERCICIO ÚNICO ENCONTRADO: ${smartExercise.id}`);
-          // Marcar ambos sistemas
           ExerciseTracker.markExerciseAsUsed(userProgress.level, smartExercise.id);
           ContentHashTracker.markContentAsUsed(smartExercise, userProgress.level);
+          console.log(`📝 MARCADO COMO USADO - ID y CONTENIDO`);
           break;
         } else {
           console.log(`⚠️ EJERCICIO REPETIDO - ID usado: ${isUsedById}, Contenido repetido: ${isUsedByContent}`);
         }
         
-        // Si hemos intentado muchas veces, hacer reset
         if (attempts >= 5) {
-          console.log("🔄 DEMASIADOS INTENTOS - HACIENDO RESET DE HISTORIAL");
-          ExerciseTracker.resetUsedExercises(userProgress.level);
+          console.log("🔄 DEMASIADOS INTENTOS - FORZANDO EJERCICIO DIFERENTE");
+          // Generar exercise completamente diferente como último recurso
+          smartExercise = generateEmergencyExercise(userProgress.level);
           break;
         }
         
@@ -269,6 +277,57 @@ const LessonSessionFixed: React.FC<LessonSessionProps> = ({
     }, 3000);
 
   }, [sessionComplete, correctCount, totalExercises, totalXP, userProgress, currentTopic, onSessionComplete]);
+
+  // EJERCICIO DE EMERGENCIA CUANDO LA IA FALLA
+  const generateEmergencyExercise = (level: string): SmartExercise => {
+    const emergencyExercises = [
+      {
+        question: "What do you usually have for breakfast?",
+        options: ["Coffee and toast", "Nothing", "Cereal", "Fruit"],
+        correctAnswer: 0,
+        explanation: "🎯 Una pregunta común sobre hábitos alimenticios. 'Usually' indica rutina.",
+        topic: "daily routines"
+      },
+      {
+        question: "How often do you exercise?",
+        options: ["Every day", "Never", "Sometimes", "Once a week"],
+        correctAnswer: 2,
+        explanation: "🎯 'How often' pregunta sobre frecuencia. 'Sometimes' es una respuesta común.",
+        topic: "frequency"
+      },
+      {
+        question: "Where do you work?",
+        options: ["In an office", "At home", "In a store", "I don't work"],
+        correctAnswer: 1,
+        explanation: "🎯 'Where do you work?' pregunta sobre ubicación laboral.",
+        topic: "work"
+      },
+      {
+        question: "What's your favorite movie genre?",
+        options: ["Action", "Comedy", "Drama", "Horror"],
+        correctAnswer: 1,
+        explanation: "🎯 'Favorite' significa favorito. Los géneros de películas son vocabulario útil.",
+        topic: "entertainment"
+      }
+    ];
+    
+    const randomExercise = emergencyExercises[Math.floor(Math.random() * emergencyExercises.length)];
+    
+    return {
+      id: `emergency_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      question: randomExercise.question,
+      instruction: "Selecciona la respuesta más apropiada",
+      options: randomExercise.options,
+      correctAnswer: randomExercise.correctAnswer,
+      explanation: randomExercise.explanation,
+      xpReward: 8,
+      topic: randomExercise.topic,
+      level: level,
+      source: 'emergency',
+      difficulty: 'medium',
+      learningFocus: [randomExercise.topic]
+    };
+  };
 
   // Pantalla de resultados
   if (sessionComplete) {

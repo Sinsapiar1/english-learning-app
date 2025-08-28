@@ -9,6 +9,7 @@ import { UserProgress } from "../services/adaptiveLearning";
 import { IntelligentLearningSystem } from "../services/intelligentLearning";
 import LevelUpCelebration from './LevelUpCelebration';
 import { ImprovedLevelSystem } from '../services/levelProgression';
+import { ContentHashTracker } from '../services/contentHashTracker';
 
 interface DashboardProps {
   user: User;
@@ -40,6 +41,17 @@ const Dashboard: React.FC<DashboardProps> = ({ user }) => {
 
   // Cargar progreso del usuario desde localStorage
   useEffect(() => {
+    // LIMPIAR LA PREGUNTA PROBLEMÁTICA ESPECÍFICA
+    const cleanProblemQuestion = localStorage.getItem('cleaned_uber_question');
+    if (!cleanProblemQuestion) {
+      ContentHashTracker.removeSpecificQuestion(
+        "Has Sofía ordered food using Uber Eats today?", 
+        userProgress.level
+      );
+      localStorage.setItem('cleaned_uber_question', 'true');
+      console.log('🧹 Pregunta problemática de Uber Eats eliminada del cache');
+    }
+    
     // LIMPIAR datos corruptos una vez
     const cleanupDone = localStorage.getItem('cleanup_done');
     if (!cleanupDone) {
