@@ -64,32 +64,34 @@ export class PersonalizedLessonGenerator {
       exerciseTypes[Math.floor(Math.random() * exerciseTypes.length)];
     const context = contexts[Math.floor(Math.random() * contexts.length)];
 
-    // PROMPT ULTRA-CREATIVO PARA EJERCICIOS ÚNICOS
-    const prompt = `Crea ejercicio COMPLETAMENTE ÚNICO nivel ${params.level} sobre "${params.topic}".
+    // PROMPT PARA VERDADERO APRENDIZAJE DE INGLÉS
+    const prompt = `Create a REAL English learning exercise for level ${params.level} on topic "${params.topic}".
 
-🚨 PROHIBIDO ABSOLUTO:
-- "since 2020", "every morning", "lived here", "worked there"
-- Frases de libros de texto típicas
-- Ejemplos aburridos y repetitivos
+🎯 EXERCISE TYPES (choose one randomly):
+1. VOCABULARY: "What does '[English word]' mean?" → Spanish options
+2. GRAMMAR FILL: English sentence with blank → English grammar options  
+3. TRANSLATION: "How do you say '[Spanish phrase]' in English?" → English options
+4. COMPREHENSION: Short English text → English comprehension questions
 
-✅ OBLIGATORIO:
-- Usa marcas modernas: Netflix, Spotify, Instagram, TikTok, Uber, Amazon
-- Situaciones reales: trabajo remoto, redes sociales, apps, viajes
-- Contextos interesantes y memorables
-- Nombres propios y lugares específicos
+🚨 CRITICAL REQUIREMENTS:
+- Question can be in Spanish OR English (depending on exercise type)
+- If teaching vocabulary: English word → Spanish meaning options
+- If teaching grammar: English sentence → English grammar options
+- If teaching translation: Spanish phrase → English translation options
+- Use modern contexts: Netflix, Instagram, TikTok, Uber, remote work
 
-EJEMPLOS CREATIVOS para ${params.topic}:
-- "My Netflix subscription _____ automatically last month"
-- "The Uber driver _____ completely lost in downtown"
-- "Instagram _____ my story because of copyright"
+✅ MODERN EXAMPLES:
+- Vocabulary: "What does 'stream' mean in 'I stream Netflix'?" → A) transmitir B) río C) correr D) gritar
+- Grammar: "I ____ working from home since 2020." → A) have been B) am C) was D) will be  
+- Translation: "¿Cómo se dice 'me gusta tu post' en inglés?" → A) I like your post B) I love your post C) I want your post D) I see your post
 
-Responde SOLO JSON (sin explicaciones):
+Respond ONLY JSON (no explanations):
 {
-  "question": "Situación moderna y única aquí",
-  "instruction": "Instrucción específica", 
-  "options": ["opción A", "opción B", "opción C", "opción D"],
+  "question": "English learning question here",
+  "instruction": "Clear instruction in Spanish", 
+  "options": ["option A", "option B", "option C", "option D"],
   "correctAnswer": 0,
-  "explanation": "Explicación detallada en español",
+  "explanation": "Detailed explanation in Spanish for beginners",
   "xpReward": 10
 }`;
 
