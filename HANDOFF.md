@@ -2,11 +2,11 @@
 
 ## 📊 **ESTADO ACTUAL DEL PROYECTO**
 
-**ÚLTIMA ACTUALIZACIÓN**: Diciembre 2024 (Sesión completa de fixes críticos)  
-**COMMIT ACTUAL**: `3bde5b2` - Fix TypeScript userId error + All critical issues resolved  
+**ÚLTIMA ACTUALIZACIÓN**: Diciembre 2024 (Sesión completa de fixes críticos + language fixes)  
+**COMMIT ACTUAL**: `c0219bc` - Fix critical language issues + comprehension text + all previous fixes  
 **DEPLOY**: https://english-learning-app-nu.vercel.app  
 **BRANCH**: `main` (deploy automático configurado)  
-**STATUS**: ✅ **PRODUCCIÓN ESTABLE** - Todos los bugs críticos resueltos
+**STATUS**: ⚠️ **FUNCIONAL CON PROBLEMAS PENDIENTES** - Fixes críticos completados, issues menores identificados
 
 ---
 
@@ -76,6 +76,27 @@
 - ✅ Agregado 'emergency' a SmartExercise source union type
 - ✅ Arreglado userProgress.userId error usando user.uid directamente
 - ✅ Props opcionales agregadas para compatibilidad
+
+### 🚨 **8. TEXTO FALTANTE EN COMPRENSIÓN (RESUELTO - Commit d2e8d9e)**
+**PROBLEMA**: Ejercicios de comprensión sin texto de contexto
+**CAUSA**: Prompt no especificaba incluir texto completo en pregunta
+**SOLUCIÓN IMPLEMENTADA**:
+- ✅ Prompt actualizado con instrucciones específicas para COMPRENSIÓN
+- ✅ Formato requerido: "Text: [contexto] Question: [pregunta]"
+- ✅ Ejemplo mejorado con texto completo incluido
+- ✅ Instrucción crítica: NO generar solo pregunta sin texto
+
+### 🚨 **9. PREGUNTAS EN ESPAÑOL (RESUELTO - Commit c0219bc)**
+**PROBLEMA**: App generaba preguntas EN ESPAÑOL (error fundamental)
+**CAUSA**: Prompt no clarificaba que preguntas deben ser en inglés
+**SOLUCIÓN IMPLEMENTADA**:
+- ✅ Todas las instrucciones cambiadas a INGLÉS:
+  • VOCABULARIO: "What does this English word mean?"
+  • GRAMÁTICA: "Complete the sentence with the correct option"  
+  • TRADUCCIÓN: "Select the correct English translation"
+  • COMPRENSIÓN: "Read the text and answer the question"
+- ✅ Prompt clarificado: Preguntas en inglés, explicaciones en español
+- ✅ Regla implementada: Es app para APRENDER inglés, no practicar español
 
 ---
 
@@ -201,7 +222,7 @@ src/services/
 
 ## 🐛 **PROBLEMAS CONOCIDOS ACTUALES**
 
-### ✅ **TODOS LOS CRÍTICOS RESUELTOS**
+### ✅ **CRÍTICOS RESUELTOS**
 - ✅ Opciones duplicadas: RESUELTO
 - ✅ Progreso regresivo: RESUELTO  
 - ✅ Repetición de contenido: RESUELTO
@@ -209,6 +230,38 @@ src/services/
 - ✅ Progreso no sube: RESUELTO
 - ✅ Firebase errores: RESUELTO
 - ✅ TypeScript errors: RESUELTO
+- ✅ Texto faltante en comprensión: RESUELTO
+- ✅ Preguntas en español: RESUELTO
+
+### ⚠️ **PROBLEMAS PENDIENTES IDENTIFICADOS**
+
+#### **🔄 REPETICIÓN DE PREGUNTAS CUANDO NO SE SUBE DE NIVEL**
+**PROBLEMA REPORTADO**: Usuario ve preguntas repetidas cuando se queda en el mismo nivel
+**SÍNTOMAS**:
+- Preguntas se repiten mucho cuando no hay progreso de nivel
+- Posible causa: Sistema anti-repetición se resetea o no funciona correctamente
+- Ocurre especialmente cuando usuario no alcanza requisitos para subir nivel
+
+**HIPÓTESIS**:
+- ContentHashTracker podría estar limpiándose prematuramente
+- Pool de ejercicios insuficiente para nivel específico
+- Sistema podría necesitar más variedad de ejercicios por nivel
+
+**PRIORIDAD**: 🔥 ALTA - Afecta experiencia de usuario significativamente
+
+#### **📊 PROGRESO NO AVANZA CORRECTAMENTE**
+**PROBLEMA REPORTADO**: Porcentaje de progreso no aumenta después de sesiones
+**SÍNTOMAS**:
+- Usuario completa sesiones pero progreso se mantiene igual
+- Posible fallo en cálculo de ImprovedLevelSystem
+- Keys de localStorage podrían no estar sincronizadas correctamente
+
+**DEBUGGING REQUERIDO**:
+- Verificar logs "DEBUG PROGRESO" en console
+- Confirmar que recentSessions se actualiza
+- Validar cálculo de levelProgress
+
+**PRIORIDAD**: 🔥 ALTA - Sistema motivacional no funciona sin progreso visible
 
 ### 🔍 **ÁREAS DE MONITOREO**
 
@@ -249,6 +302,9 @@ de1f78e - fix: Progreso de nivel nunca debe bajar - sistema motivacional
 a631c83 - fix: Add 'emergency' to SmartExercise source type
 a53291d - CRITICAL FIX: Resolve all major issues
 3bde5b2 - fix: Resolve TypeScript userId error in Dashboard
+32eaa67 - docs: Complete documentation update for handoff
+d2e8d9e - fix: CRITICAL - Add missing text to comprehension exercises
+c0219bc - fix: CRITICAL - Questions must be in ENGLISH, not Spanish
 ```
 
 ---
@@ -297,6 +353,11 @@ DEPENDENCIAS: Offline mode funcionando ✅
 
 ## 🛠️ **GUÍA PARA PRÓXIMO DESARROLLADOR (CLAUDE)**
 
+### **🔥 PRIORIDADES INMEDIATAS**
+1. **INVESTIGAR REPETICIÓN DE PREGUNTAS**: Usuario reporta preguntas repetidas cuando no sube de nivel
+2. **VERIFICAR PROGRESO**: Confirmar que porcentaje de progreso aumenta después de sesiones
+3. **DEBUGGING CONSOLE**: Revisar logs "DEBUG PROGRESO" para identificar problemas
+
 ### **Comandos Esenciales**
 ```bash
 # Setup local
@@ -319,12 +380,31 @@ git push origin main
 4. **`src/components/Dashboard.tsx`** - Dashboard con progreso visual
 
 ### **Debugging Esencial**
+
+#### **Para Problema de Repetición:**
 ```javascript
-// Console logs importantes a buscar:
+// Console logs a monitorear:
 🔍 DEBUG EJERCICIO: {exerciseId, question, isUsedById, isUsedByContent}
-📊 LEVEL PROGRESS RESULT: {progressPercentage, missingRequirements}
 🔢 HASH GENERADO: {question, hash}
 ✅ CONTENT HASH GUARDADO: {hash, level, totalHashes}
+📋 HASHES RECUPERADOS: {level, totalHashes, hashes}
+
+// Si ves repetición:
+1. Verificar que totalHashes aumenta
+2. Confirmar que isUsedByContent = true para repetidas
+3. Check si hashes se están limpiando incorrectamente
+```
+
+#### **Para Problema de Progreso:**
+```javascript
+// Console logs críticos:
+🔍 DEBUG PROGRESO: {recentSessionsKey, recentSessions, completedLessons, accuracy, xp}
+📊 LEVEL PROGRESS RESULT: {progressPercentage, missingRequirements, motivationalMessage}
+
+// Si progreso no sube:
+1. Verificar que recentSessions se actualiza con nueva accuracy
+2. Confirmar que recentSessionsKey es consistente
+3. Validar cálculo en ImprovedLevelSystem.calculateLevelProgress
 ```
 
 ### **Testing Crítico**
