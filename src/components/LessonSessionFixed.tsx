@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import MultipleChoice from "./MultipleChoice";
-import { getUniqueExercises, shuffleExerciseOptions, Exercise, cleanOldExerciseHistory } from "../data/exercises";
+// ELIMINADA IMPORTACIÓN DE EJERCICIOS ESTÁTICOS - SOLO IA
 import { IntelligentLearningSystem } from "../services/intelligentLearning";
 import { SmartAISystem, SmartExercise } from "../services/smartAI";
 import { ExerciseTracker } from "../services/exerciseTracker";

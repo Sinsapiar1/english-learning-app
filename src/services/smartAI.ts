@@ -147,8 +147,8 @@ export class SmartAISystem {
     const availableExercises = getUniqueExercises(request.userLevel, targetTopic, usedIds, 1);
     
     if (availableExercises.length === 0) {
-      // Si no hay ejercicios, crear uno básico
-      return this.createBasicExercise(request);
+      // NO MÁS EJERCICIOS BÁSICOS - SOLO IA
+      throw new Error("🚨 No hay ejercicios disponibles y no se permiten ejercicios estáticos");
     }
     
     const baseExercise = availableExercises[0];
@@ -297,42 +297,5 @@ export class SmartAISystem {
     return 'hard';
   }
   
-  // CREAR EJERCICIO BÁSICO DE EMERGENCIA
-  static createBasicExercise(request: SmartExerciseRequest): SmartExercise {
-    const basicExercises = {
-      'A1': {
-        question: "I _____ a student.",
-        instruction: "Completa con el verbo 'to be'",
-        options: ["am", "is", "are", "be"],
-        correctAnswer: 0,
-        explanation: "👶 NIVEL BÁSICO - Con 'I' siempre usamos 'am'. Es la forma del verbo 'to be' para primera persona singular.\n\n✅ I am = Yo soy/estoy\n❌ I is, I are = Incorrecto\n\n💡 CONSEJO: Memoriza: I am, You are, He/She/It is",
-        topic: "verb to be"
-      },
-      'A2': {
-        question: "She _____ lived here since 2020.",
-        instruction: "Completa con Present Perfect",
-        options: ["have", "has", "is", "was"],
-        correctAnswer: 1,
-        explanation: "📚 NIVEL ELEMENTAL - Con tercera persona singular (she) usamos 'has' + participio pasado.\n\n✅ She has lived = Ella ha vivido\n❌ She have lived = Incorrecto\n\n🎯 RECUERDA: I/You/We/They have | He/She/It has",
-        topic: "present perfect"
-      }
-    };
-    
-    const template = basicExercises[request.userLevel as keyof typeof basicExercises] || basicExercises['A1'];
-    
-    return {
-      id: `emergency_${Date.now()}`,
-      question: template.question,
-      instruction: template.instruction,
-      options: template.options,
-      correctAnswer: template.correctAnswer,
-      explanation: template.explanation,
-      xpReward: this.calculateXPReward(request.userLevel, 'easy'),
-      topic: template.topic,
-      level: request.userLevel,
-      source: 'curated',
-      difficulty: 'easy',
-      learningFocus: [template.topic]
-    };
-  }
+  // MÉTODO ELIMINADO - NO MÁS EJERCICIOS ESTÁTICOS DE EMERGENCIA
 }
