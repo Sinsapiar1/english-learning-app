@@ -6,7 +6,7 @@
 **Versión**: 2.0 - Sistema IA Inteligente + Anti-Repetición Robusto  
 **Arquitecto**: Experto en Aplicaciones Educativas con IA  
 **Estado**: ✅ **COMPLETAMENTE FUNCIONAL** - Listo para Producción  
-**Commit Actual**: `7d4a3ee` - GEMINI MODEL ACTUALIZADO + Problemas críticos resueltos  
+**Commit Actual**: `51746e8` - MAJOR REDESIGN: Real English learning exercises + Model updated  
 
 ---
 
@@ -28,6 +28,15 @@
 **Antes**: `models/gemini-pro is not found for API version v1beta`  
 **Causa**: Google deprecó el modelo gemini-pro  
 **Ahora**: Actualizado a `gemini-1.5-flash` - modelo actual y más rápido
+
+### ✅ **Problema #5: App No Enseñaba Inglés Real (RESUELTO)**
+**Antes**: Preguntas en español con respuestas mezcladas - no aprendizaje real
+**Causa**: Diseño pedagógico fundamentalmente erróneo
+**Ahora**: 4 tipos de ejercicios reales: Vocabulario, Gramática, Traducción, Comprensión
+
+### ⚠️ **Problema #6: Repeticiones Persistentes (EN INVESTIGACIÓN)**
+**Reportado**: Usuario aún ve algunas preguntas repetidas
+**Estado**: Requiere análisis profundo del sistema anti-repetición
 
 ---
 
