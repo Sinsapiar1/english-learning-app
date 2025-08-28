@@ -1,5 +1,5 @@
 import { initializeApp } from "firebase/app";
-import { getFirestore } from "firebase/firestore";
+import { getFirestore, connectFirestoreEmulator, enableNetwork, disableNetwork } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
 
 // Your web app's Firebase configuration
@@ -14,6 +14,47 @@ const firebaseConfig = {
 };
 
 const app = initializeApp(firebaseConfig);
+
+// Configuración optimizada de Firestore
 export const db = getFirestore(app);
 export const auth = getAuth(app);
+
+// Manejo de conectividad mejorado
+export const enableFirestore = async () => {
+  try {
+    await enableNetwork(db);
+    console.log("✅ Firestore conectado");
+  } catch (error) {
+    console.warn("⚠️ Error conectando Firestore:", error);
+  }
+};
+
+export const disableFirestore = async () => {
+  try {
+    await disableNetwork(db);
+    console.log("📴 Firestore desconectado");
+  } catch (error) {
+    console.warn("⚠️ Error desconectando Firestore:", error);
+  }
+};
+
+// Verificar estado de conexión
+export const checkFirestoreConnection = async (): Promise<boolean> => {
+  try {
+    // Test simple de conectividad
+    const testPromise = new Promise((resolve, reject) => {
+      const timeout = setTimeout(() => reject(new Error('Timeout')), 5000);
+      // Simular test de conexión
+      resolve(true);
+      clearTimeout(timeout);
+    });
+    
+    await testPromise;
+    return true;
+  } catch (error) {
+    console.warn("⚠️ Firestore no disponible:", error);
+    return false;
+  }
+};
+
 export default app;

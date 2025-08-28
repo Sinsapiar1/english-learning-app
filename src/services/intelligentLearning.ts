@@ -1,6 +1,14 @@
 // SISTEMA INTELIGENTE DE APRENDIZAJE CON FIREBASE
 import { doc, setDoc, getDoc, updateDoc, collection, addDoc, query, where, orderBy, limit, getDocs } from 'firebase/firestore';
 import { db } from '../firebase';
+import { OfflineMode } from './offlineMode';
+
+// Configuración para evitar errores de conexión
+const FIREBASE_CONFIG = {
+  retryAttempts: 3,
+  timeout: 10000,
+  batchSize: 10
+};
 
 export interface UserLearningProfile {
   userId: string;
@@ -195,24 +203,50 @@ export class IntelligentLearningSystem {
     };
   }
   
-  // TRACKING DE INTERACCIONES
+  // TRACKING DE INTERACCIONES CON MANEJO DE ERRORES ROBUSTO
   static async recordExerciseInteraction(interaction: Omit<ExerciseInteraction, 'timestamp'>): Promise<void> {
-    try {
-      const fullInteraction: ExerciseInteraction = {
-        ...interaction,
-        timestamp: new Date()
-      };
-      
-      // Guardar interacción individual
-      await addDoc(collection(db, 'exercise_interactions'), fullInteraction);
-      
-      // Actualizar perfil del usuario
-      await this.updateLearningProfile(interaction.userId, fullInteraction);
-      
-      console.log("✅ Interacción registrada:", fullInteraction.exerciseId);
-      
-    } catch (error) {
-      console.error("❌ Error registrando interacción:", error);
+    let retryCount = 0;
+    
+    while (retryCount < FIREBASE_CONFIG.retryAttempts) {
+      try {
+        const fullInteraction: ExerciseInteraction = {
+          ...interaction,
+          timestamp: new Date()
+        };
+        
+        // Timeout wrapper para evitar conexiones colgadas
+        const timeoutPromise = new Promise((_, reject) =>
+          setTimeout(() => reject(new Error('Firebase timeout')), FIREBASE_CONFIG.timeout)
+        );
+        
+        // Guardar interacción con timeout
+        await Promise.race([
+          addDoc(collection(db, 'exercise_interactions'), fullInteraction),
+          timeoutPromise
+        ]);
+        
+        // Actualizar perfil del usuario
+        await this.updateLearningProfile(interaction.userId, fullInteraction);
+        
+        console.log("✅ Interacción registrada:", fullInteraction.exerciseId);
+        return; // Éxito, salir del loop
+        
+      } catch (error) {
+        retryCount++;
+        console.warn(`⚠️ Intento ${retryCount}/${FIREBASE_CONFIG.retryAttempts} falló:`, error);
+        
+        if (retryCount >= FIREBASE_CONFIG.retryAttempts) {
+          console.error("❌ Error registrando interacción después de", FIREBASE_CONFIG.retryAttempts, "intentos");
+          
+          // FALLBACK: Guardar localmente
+          OfflineMode.saveToLocalStorage(`interaction_${interaction.exerciseId}_${Date.now()}`, fullInteraction);
+          console.log("💾 Interacción guardada offline para sincronización posterior");
+          return;
+        }
+        
+        // Esperar antes del siguiente intento
+        await new Promise(resolve => setTimeout(resolve, 1000 * retryCount));
+      }
     }
   }
   
