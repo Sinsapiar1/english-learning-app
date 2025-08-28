@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import MultipleChoice from "./MultipleChoice";
 import { PersonalizedLessonGenerator } from "../services/geminiAI";
 
@@ -117,10 +117,22 @@ const LessonSessionComponent: React.FC<LessonSessionProps> = ({
 
       setCurrentExercise(uniqueExercise);
     } catch (error) {
-      console.error("Error:", error);
+      console.error("Error generating exercise:", error);
+      
+      // Mostrar error temporal al usuario
+      setCurrentExercise({
+        question: "Error al generar ejercicio. Usando ejercicio de respaldo...",
+        instruction: "Cargando...",
+        options: [],
+        correctAnswer: 0,
+        explanation: "",
+        xpReward: 0,
+        isError: true
+      });
 
-      // Fallback único por ejercicio
-      const fallbackExercises = [
+      // Esperar 1 segundo antes de mostrar fallback
+      setTimeout(() => {
+        const fallbackExercises = [
         {
           question: "I ____ never been to Spain.",
           instruction: "Completa con Present Perfect",
@@ -194,6 +206,7 @@ const LessonSessionComponent: React.FC<LessonSessionProps> = ({
         id: `fallback_${exerciseNumber}`,
         exerciseNumber: exerciseNumber,
       });
+      }, 1000);
     } finally {
       setIsGenerating(false);
     }
@@ -207,8 +220,8 @@ const LessonSessionComponent: React.FC<LessonSessionProps> = ({
   }, [exerciseNumber]);
 
   // Manejar respuesta y avanzar
-  const handleAnswer = (correct: boolean, xpEarned: number) => {
-    // Actualizar stats
+  const handleAnswer = useCallback((correct: boolean, xpEarned: number) => {
+    // Actualizar stats inmediatamente
     if (correct) {
       setCorrectCount((prev) => prev + 1);
     }
@@ -217,25 +230,28 @@ const LessonSessionComponent: React.FC<LessonSessionProps> = ({
     // Mostrar resultado por 2 segundos, luego continuar
     setTimeout(() => {
       if (exerciseNumber >= totalExercises) {
-        // Completar sesión
-        completeSession(correct);
+        // Completar sesión - no pasamos 'correct' ya que ya se contó arriba
+        completeSession();
       } else {
         // Siguiente ejercicio
         setExerciseNumber((prev) => prev + 1);
       }
     }, 2000);
-  };
+  }, [exerciseNumber, totalExercises]);
 
-  const completeSession = (lastCorrect: boolean) => {
-    const finalCorrect = correctCount + (lastCorrect ? 1 : 0);
-    const finalAccuracy = finalCorrect / totalExercises;
+  const completeSession = useCallback(() => {
+    // Prevenir ejecución múltiple
+    if (sessionComplete) return;
+    
+    // Los contadores ya están actualizados en handleAnswer
+    const finalAccuracy = correctCount / totalExercises;
 
     const results = {
       exercisesCompleted: totalExercises,
-      correctAnswers: finalCorrect,
+      correctAnswers: correctCount,
       totalAnswers: totalExercises,
       accuracy: finalAccuracy,
-      xpEarned: totalXP + (lastCorrect ? currentExercise?.xpReward || 10 : 0),
+      xpEarned: totalXP,
       levelUp: finalAccuracy >= 0.8 && userProgress.completedLessons >= 5,
     };
 
@@ -245,7 +261,7 @@ const LessonSessionComponent: React.FC<LessonSessionProps> = ({
     setTimeout(() => {
       onSessionComplete(results);
     }, 3000);
-  };
+  }, [sessionComplete, correctCount, totalExercises, totalXP, userProgress.completedLessons, onSessionComplete]);
 
   // Pantalla de resultados
   if (sessionComplete) {
@@ -368,10 +384,16 @@ const LessonSessionComponent: React.FC<LessonSessionProps> = ({
         {/* Ejercicio actual */}
         {isGenerating ? (
           <div className="bg-white rounded-xl shadow-lg p-8 text-center">
-            <div className="animate-spin text-4xl mb-4">🤖</div>
-            <p className="text-gray-600">
-              Generando ejercicio {exerciseNumber} de {totalExercises}...
+            <div className="animate-bounce text-4xl mb-4">🤖</div>
+            <h3 className="text-xl font-semibold mb-2">Generando ejercicio...</h3>
+            <p className="text-gray-600 mb-4">
+              Creando ejercicio {exerciseNumber} de {totalExercises} personalizado para ti
             </p>
+            <div className="flex justify-center space-x-1">
+              <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
+              <div className="w-2 h-2 bg-purple-500 rounded-full animate-pulse" style={{animationDelay: '0.2s'}}></div>
+              <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse" style={{animationDelay: '0.4s'}}></div>
+            </div>
           </div>
         ) : currentExercise ? (
           <div className="relative">
@@ -385,7 +407,18 @@ const LessonSessionComponent: React.FC<LessonSessionProps> = ({
               onAnswer={handleAnswer}
             />
           </div>
-        ) : null}
+        ) : (
+          <div className="bg-white rounded-xl shadow-lg p-8 text-center">
+            <div className="text-4xl mb-4">⚠️</div>
+            <p className="text-gray-600 mb-4">Error cargando ejercicio</p>
+            <button 
+              onClick={() => generateUniqueExercise()}
+              className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors"
+            >
+              Reintentar
+            </button>
+          </div>
+        )}
 
         {/* Stats SIMPLES */}
         <div className="mt-6 grid grid-cols-4 gap-4">

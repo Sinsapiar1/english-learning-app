@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useCallback, memo } from "react";
 
 interface Question {
   id: number;
@@ -6,6 +6,7 @@ interface Question {
   options: string[];
   correctAnswer: number;
   explanation?: string;
+  isError?: boolean;
 }
 
 interface MultipleChoiceProps {
@@ -13,7 +14,7 @@ interface MultipleChoiceProps {
   onAnswer: (correct: boolean, xpEarned: number) => void;
 }
 
-const MultipleChoice: React.FC<MultipleChoiceProps> = ({
+const MultipleChoice: React.FC<MultipleChoiceProps> = memo(({
   question,
   onAnswer,
 }) => {
@@ -21,8 +22,8 @@ const MultipleChoice: React.FC<MultipleChoiceProps> = ({
   const [showResult, setShowResult] = useState(false);
   const [answered, setAnswered] = useState(false);
 
-  const handleSubmit = () => {
-    if (selectedAnswer === null) return;
+  const handleSubmit = useCallback(() => {
+    if (selectedAnswer === null || question.isError) return;
 
     const isCorrect = selectedAnswer === question.correctAnswer;
     const xpEarned = isCorrect ? 10 : 3; // 10 XP por correcta, 3 por intento
@@ -34,11 +35,23 @@ const MultipleChoice: React.FC<MultipleChoiceProps> = ({
     setTimeout(() => {
       onAnswer(isCorrect, xpEarned);
     }, 2000);
-  };
+  }, [selectedAnswer, question.isError, question.correctAnswer, onAnswer]);
 
-  const handleNext = () => {
+  const handleNext = useCallback(() => {
     onAnswer(selectedAnswer === question.correctAnswer, 0);
-  };
+  }, [selectedAnswer, question.correctAnswer, onAnswer]);
+
+  // Si es un error, mostrar estado de carga
+  if (question.isError) {
+    return (
+      <div className="bg-white rounded-xl p-6 shadow-lg max-w-2xl mx-auto">
+        <div className="text-center py-8">
+          <div className="animate-spin text-4xl mb-4">⏳</div>
+          <p className="text-gray-600">{question.question}</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-white rounded-xl p-6 shadow-lg max-w-2xl mx-auto">
@@ -47,6 +60,9 @@ const MultipleChoice: React.FC<MultipleChoiceProps> = ({
         <h3 className="text-xl font-semibold text-gray-800 mb-4">
           {question.question}
         </h3>
+        {question.instruction && (
+          <p className="text-sm text-gray-500 mb-2">{question.instruction}</p>
+        )}
       </div>
 
       {/* Opciones */}
@@ -150,6 +166,8 @@ const MultipleChoice: React.FC<MultipleChoiceProps> = ({
       </div>
     </div>
   );
-};
+});
+
+MultipleChoice.displayName = 'MultipleChoice';
 
 export default MultipleChoice;
