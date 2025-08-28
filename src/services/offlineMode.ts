@@ -4,12 +4,17 @@ export class OfflineMode {
   // Detectar si hay conexión a Firebase
   static async isFirebaseAvailable(): Promise<boolean> {
     try {
-      // Test simple de conectividad
+      // Test simple de conectividad con AbortController para timeout
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 5000);
+      
       const response = await fetch('https://firestore.googleapis.com/', {
         method: 'HEAD',
         mode: 'no-cors',
-        timeout: 5000
+        signal: controller.signal
       });
+      
+      clearTimeout(timeoutId);
       return true;
     } catch {
       console.warn("⚠️ Firebase no disponible - usando modo offline");
