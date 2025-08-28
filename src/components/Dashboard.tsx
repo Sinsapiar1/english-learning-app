@@ -10,6 +10,7 @@ import { IntelligentLearningSystem } from "../services/intelligentLearning";
 import LevelUpCelebration from './LevelUpCelebration';
 import { ImprovedLevelSystem } from '../services/levelProgression';
 import { ContentHashTracker } from '../services/contentHashTracker';
+import { RealLevelSystem, RealUserProgress } from '../services/realLevelSystem';
 
 interface DashboardProps {
   user: User;
@@ -19,15 +20,10 @@ const Dashboard: React.FC<DashboardProps> = ({ user }) => {
   const [showLegacyExercise, setShowLegacyExercise] = useState(false);
   const [showLessonSession, setShowLessonSession] = useState(false);
   const [showAPISetup, setShowAPISetup] = useState(false);
-  const [userProgress, setUserProgress] = useState<UserProgress>({
-    level: "A2",
-    xp: 850,
-    accuracy: 0.75,
-    completedLessons: 3,
-    weakAreas: ["present perfect", "prepositions"],
-    strengths: ["basic vocabulary", "verb to be"],
-    streak: 7,
-  });
+  // ✅ UN SOLO ESTADO DE PROGRESO - RealLevelSystem
+  const [userProgress, setUserProgress] = useState<RealUserProgress>(
+    RealLevelSystem.loadUserProgress(user.uid || 'anonymous')
+  );
 
 
 
@@ -42,32 +38,36 @@ const Dashboard: React.FC<DashboardProps> = ({ user }) => {
   const [celebrationLevel, setCelebrationLevel] = useState<string>('');
   const [showQuotaWarning, setShowQuotaWarning] = useState(false);
 
-  // Cargar progreso del usuario desde localStorage
+  // ✅ LIMPIAR SISTEMAS MÚLTIPLES Y CARGAR PROGRESO UNIFICADO
   useEffect(() => {
+    // ✅ LIMPIAR datos conflictivos de sistemas múltiples
+    const cleanupKeys = [
+      'user_progress', // Legacy
+      'level_progress_A1',
+      'level_progress_A2', 
+      'level_progress_B1',
+      'recent_sessions_anonymous'
+    ];
+    
+    cleanupKeys.forEach(key => {
+      if (localStorage.getItem(key)) {
+        console.log(`🧹 Limpiando dato conflictivo: ${key}`);
+        localStorage.removeItem(key);
+      }
+    });
+    
     // LIMPIAR LA PREGUNTA PROBLEMÁTICA ESPECÍFICA
     const cleanProblemQuestion = localStorage.getItem('cleaned_uber_question');
     if (!cleanProblemQuestion) {
       ContentHashTracker.removeSpecificQuestion(
         "Has Sofía ordered food using Uber Eats today?", 
-        userProgress.level
+        userProgress.currentLevel
       );
       localStorage.setItem('cleaned_uber_question', 'true');
       console.log('🧹 Pregunta problemática de Uber Eats eliminada del cache');
     }
     
-    // LIMPIAR datos corruptos una vez - SIN BORRAR HASHES VÁLIDOS
-    const cleanupDone = localStorage.getItem('cleanup_done');
-    if (!cleanupDone) {
-      // NO BORRAR content_hashes - son necesarios para anti-repetición
-      // Solo limpiar used_exercises si es necesario
-      console.log('✅ Cleanup ejecutado - manteniendo hashes para anti-repetición');
-      localStorage.setItem('cleanup_done', 'true');
-    }
-    
-    const savedProgress = localStorage.getItem("user_progress");
-    if (savedProgress) {
-      setUserProgress(JSON.parse(savedProgress));
-    }
+    console.log("✅ Sistema de progreso unificado iniciado");
   }, []);
 
   // El progreso real ya no puede bajar, este efecto ya no es necesario
@@ -130,9 +130,10 @@ const Dashboard: React.FC<DashboardProps> = ({ user }) => {
   }, [user?.uid]);
 
   // Guardar progreso cuando cambie
-  const saveUserProgress = (newProgress: UserProgress) => {
+  // ✅ FUNCIÓN SIMPLE - UN SOLO SISTEMA
+  const saveUserProgress = (newProgress: RealUserProgress) => {
     setUserProgress(newProgress);
-    localStorage.setItem("user_progress", JSON.stringify(newProgress));
+    RealLevelSystem.saveUserProgress(newProgress);
   };
 
   // Pregunta legacy para compatibilidad
@@ -153,7 +154,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user }) => {
   const handleLegacyAnswer = (correct: boolean, xpEarned: number) => {
     const newProgress = {
       ...userProgress,
-      xp: userProgress.xp + xpEarned,
+      totalXP: userProgress.totalXP + xpEarned,
     };
     saveUserProgress(newProgress);
 
@@ -163,54 +164,49 @@ const Dashboard: React.FC<DashboardProps> = ({ user }) => {
   };
 
   const handleSessionComplete = (sessionResults: any) => {
-    console.log("📊 SESIÓN COMPLETADA - RESULTADOS:", sessionResults);
+    console.log("📊 SESIÓN COMPLETADA:", sessionResults);
     
     try {
-      // ✅ ACTUALIZAR PROGRESO LEGACY CORRECTAMENTE
-      const newAccuracy = (userProgress.accuracy + sessionResults.accuracy) / 2;
-      const newProgress = {
-        ...userProgress,
-        xp: userProgress.xp + (sessionResults.xpEarned || 0),
-        accuracy: Math.max(userProgress.accuracy, sessionResults.accuracy), // ✅ SOLO SUBE
-        completedLessons: userProgress.completedLessons + 1,
-        level: sessionResults.levelUp ? sessionResults.newLevel : userProgress.level,
-      };
-      
-      console.log("💾 GUARDANDO PROGRESO ACTUALIZADO:", newProgress);
-      saveUserProgress(newProgress);
-      
-      // ✅ ACTUALIZAR RECENT SESSIONS CORRECTAMENTE
-      const userId = user?.uid || 'anonymous';
-      const recentSessionsKey = `recent_sessions_${userId}`;
-      const currentSessions = JSON.parse(localStorage.getItem(recentSessionsKey) || "[]");
-      const updatedSessions = [...currentSessions, sessionResults.accuracy].slice(-10);
-      localStorage.setItem(recentSessionsKey, JSON.stringify(updatedSessions));
-      
-      console.log("📈 RECENT SESSIONS ACTUALIZADAS:", updatedSessions);
-      
-      // ✅ RECALCULAR PROGRESO CON DATOS CORRECTOS
-      const progressData = ImprovedLevelSystem.calculateLevelProgress({
-        currentLevel: newProgress.level,
-        accuracy: newProgress.accuracy,
-        totalExercises: newProgress.completedLessons * 8,
-        xp: newProgress.xp,
-        recentSessions: updatedSessions
+      // ✅ USAR SOLO RealLevelSystem - UN SOLO SISTEMA
+      const updatedProgress = RealLevelSystem.updateProgress(userProgress, {
+        correctAnswers: sessionResults.correctAnswers || 0,
+        totalAnswers: sessionResults.totalAnswers || 8,
+        xpEarned: sessionResults.xpEarned || 0,
+        level: userProgress.currentLevel
       });
       
-      console.log("📊 PROGRESO CALCULADO:", progressData);
+      console.log("📈 PROGRESO ACTUALIZADO:", updatedProgress);
       
-      console.log("✅ PROGRESO GUARDADO EXITOSAMENTE");
+      // ✅ VERIFICAR SI PUEDE SUBIR DE NIVEL
+      const progressCheck = RealLevelSystem.calculateRealProgress(updatedProgress);
+      let finalProgress = updatedProgress;
+      let leveledUp = false;
+      
+      if (progressCheck.canLevelUp) {
+        finalProgress = RealLevelSystem.levelUp(updatedProgress);
+        leveledUp = true;
+        console.log(`🎉 LEVEL UP! Nuevo nivel: ${finalProgress.currentLevel}`);
+        
+        // Mostrar celebración
+        setCelebrationLevel(finalProgress.currentLevel);
+        setShowLevelUpCelebration(true);
+      }
+      
+      // ✅ GUARDAR UNA SOLA VEZ
+      saveUserProgress(finalProgress);
+      
+      console.log("✅ PROGRESO GUARDADO EXITOSAMENTE:", {
+        currentLevel: finalProgress.currentLevel,
+        totalXP: finalProgress.totalXP,
+        totalCorrect: finalProgress.totalCorrectAnswers,
+        accuracy: finalProgress.overallAccuracy,
+        leveledUp: leveledUp
+      });
       
     } catch (error) {
       console.error("❌ ERROR ACTUALIZANDO PROGRESO:", error);
     } finally {
       setShowLessonSession(false);
-    }
-
-    if (sessionResults.levelUp) {
-      console.log("🎉 LEVEL UP DETECTED:", sessionResults.newLevel);
-      setCelebrationLevel(sessionResults.newLevel);
-      setShowLevelUpCelebration(true);
     }
   };
 
@@ -220,137 +216,99 @@ const Dashboard: React.FC<DashboardProps> = ({ user }) => {
   };
 
   const renderLevelProgress = () => {
-    // GARANTIZAR PROGRESO MÍNIMO BASADO EN LECCIONES COMPLETADAS
-    const minimumProgress = Math.min((userProgress.completedLessons * 8) / 120, 0.9); // Máximo 90%
-    ImprovedLevelSystem.ensureMinimumProgress(userProgress.level, minimumProgress);
+    const progressInfo = RealLevelSystem.calculateRealProgress(userProgress);
     
-    const recentSessionsKey = `recent_sessions_${user.uid || 'anonymous'}`;
-    const recentSessions = JSON.parse(localStorage.getItem(recentSessionsKey) || "[0.5, 0.6, 0.7]");
-    
-    console.log('🔍 DEBUG PROGRESO:', {
-      recentSessionsKey,
-      recentSessions,
-      userProgressLevel: userProgress.level,
-      completedLessons: userProgress.completedLessons,
-      accuracy: userProgress.accuracy,
-      xp: userProgress.xp
+    console.log("🔍 DEBUG PROGRESO SIMPLIFICADO:", {
+      currentLevel: userProgress.currentLevel,
+      totalXP: userProgress.totalXP,
+      totalCorrect: userProgress.totalCorrectAnswers,
+      totalExercises: userProgress.totalExercises,
+      accuracy: userProgress.overallAccuracy,
+      progressPercentage: progressInfo.progressPercentage,
+      canLevelUp: progressInfo.canLevelUp
     });
     
-    const levelProgress = ImprovedLevelSystem.calculateLevelProgress({
-      currentLevel: userProgress.level,
-      accuracy: userProgress.accuracy,
-      totalExercises: userProgress.completedLessons * 8,
-      xp: userProgress.xp,
-      recentSessions: recentSessions
-    });
-
-    console.log('📊 LEVEL PROGRESS RESULT:', {
-      canLevelUp: levelProgress.canLevelUp,
-      progressPercentage: levelProgress.progressPercentage,
-      missingRequirements: levelProgress.missingRequirements,
-      motivationalMessage: levelProgress.motivationalMessage
-    });
-
     return (
       <div className={`rounded-2xl p-6 mb-8 border-2 ${
-        levelProgress.canLevelUp 
+        progressInfo.canLevelUp 
           ? 'bg-gradient-to-r from-green-50 to-emerald-50 border-green-300' 
           : 'bg-gradient-to-r from-blue-50 to-purple-50 border-blue-300'
       }`}>
         
+        {/* Header con info clara */}
         <div className="flex items-center justify-between mb-4">
           <div>
             <h3 className={`text-xl font-bold ${
-              levelProgress.canLevelUp ? 'text-green-800' : 'text-blue-800'
+              progressInfo.canLevelUp ? 'text-green-800' : 'text-blue-800'
             }`}>
-              📈 Progreso hacia {levelProgress.nextLevel}
+              📈 Nivel {userProgress.currentLevel} → {progressInfo.nextLevel}
             </h3>
             <p className={`text-sm ${
-              levelProgress.canLevelUp ? 'text-green-700' : 'text-blue-700'
+              progressInfo.canLevelUp ? 'text-green-700' : 'text-blue-700'
             }`}>
-              {levelProgress.motivationalMessage}
+              {progressInfo.motivationalMessage}
             </p>
           </div>
           
-          <div className="flex items-center gap-4">
-            <div className="text-center">
-              <div className="bg-white px-4 py-2 rounded-full shadow-sm border">
-                <span className="font-bold text-lg text-gray-800">{userProgress.level}</span>
-              </div>
-              <span className="text-xs text-gray-600 mt-1 block">Actual</span>
+          <div className="text-center">
+            <div className="bg-white px-4 py-2 rounded-full shadow-sm border">
+              <span className="font-bold text-2xl text-gray-800">{progressInfo.progressPercentage}%</span>
             </div>
-            <div className="text-2xl">→</div>
-            <div className="text-center">
-              <div className={`px-4 py-2 rounded-full shadow-sm border-2 ${
-                levelProgress.canLevelUp 
-                  ? 'bg-green-500 text-white border-green-600' 
-                  : 'bg-gray-100 text-gray-600 border-gray-300'
-              }`}>
-                <span className="font-bold text-lg">{levelProgress.nextLevel}</span>
-              </div>
-              <span className="text-xs text-gray-600 mt-1 block">Siguiente</span>
-            </div>
+            <span className="text-xs text-gray-600 mt-1 block">Progreso</span>
           </div>
         </div>
 
+        {/* Barra de progreso */}
         <div className="mb-4">
-          <div className="flex justify-between items-center mb-2">
-            <span className="text-sm font-medium text-gray-700">Progreso General</span>
-            <span className="text-sm font-bold text-gray-800">{levelProgress.progressPercentage}%</span>
-          </div>
           <div className="bg-gray-200 rounded-full h-4 overflow-hidden">
             <div 
               className={`h-4 rounded-full transition-all duration-1000 ${
-                levelProgress.canLevelUp 
+                progressInfo.canLevelUp 
                   ? 'bg-gradient-to-r from-green-400 to-green-500' 
-                  : levelProgress.progressPercentage > 70
-                  ? 'bg-gradient-to-r from-orange-400 to-orange-500'
                   : 'bg-gradient-to-r from-blue-400 to-purple-500'
               }`}
-              style={{ width: `${levelProgress.progressPercentage}%` }}
-            >
-              {levelProgress.progressPercentage > 10 && (
-                <div className="h-full flex items-center justify-center">
-                  <span className="text-white text-xs font-bold">
-                    {levelProgress.progressPercentage > 90 ? '¡Casi!' : `${levelProgress.progressPercentage}%`}
-                  </span>
-                </div>
-              )}
-            </div>
+              style={{ width: `${progressInfo.progressPercentage}%` }}
+            />
           </div>
         </div>
 
-        {levelProgress.canLevelUp ? (
-          <div className="bg-green-100 rounded-lg p-4 mb-4">
-            <h4 className="font-semibold text-green-800 mb-2 flex items-center">
-              🎉 ¡Listo para subir de nivel!
-            </h4>
-            <p className="text-green-700 text-sm mb-3">
-              Has cumplido todos los requisitos. Completa una sesión más para subir oficialmente a {levelProgress.nextLevel}.
-            </p>
-            <button
-              onClick={() => setShowLessonSession(true)}
-              className="bg-green-500 text-white px-6 py-2 rounded-full font-semibold hover:bg-green-600 transition-colors shadow-lg"
-            >
-              🚀 ¡SUBIR DE NIVEL AHORA!
-            </button>
+        {/* Stats simples */}
+        <div className="grid grid-cols-4 gap-3 mb-4">
+          <div className="bg-white p-3 rounded-lg text-center">
+            <div className="font-bold text-lg text-blue-600">{userProgress.totalCorrectAnswers}</div>
+            <div className="text-xs text-gray-600">Correctas</div>
           </div>
-        ) : (
-          <div className="bg-blue-50 rounded-lg p-4">
-            <h4 className="font-semibold text-blue-800 mb-2">
-              📋 Para subir a {levelProgress.nextLevel} necesitas:
-            </h4>
-            <div className="grid grid-cols-1 gap-2">
-              {levelProgress.missingRequirements.slice(0, 3).map((req, index) => (
-                <div key={index} className="flex items-center text-sm text-blue-700">
-                  <span className="w-4 h-4 rounded-full bg-blue-200 flex items-center justify-center text-xs font-bold text-blue-800 mr-2">
-                    {index + 1}
-                  </span>
-                  {req}
-                </div>
-              ))}
+          <div className="bg-white p-3 rounded-lg text-center">
+            <div className="font-bold text-lg text-green-600">{userProgress.totalXP}</div>
+            <div className="text-xs text-gray-600">XP</div>
+          </div>
+          <div className="bg-white p-3 rounded-lg text-center">
+            <div className="font-bold text-lg text-purple-600">
+              {Math.round(userProgress.overallAccuracy * 100)}%
             </div>
+            <div className="text-xs text-gray-600">Precisión</div>
           </div>
+          <div className="bg-white p-3 rounded-lg text-center">
+            <div className="font-bold text-lg text-orange-600">{userProgress.totalExercises}</div>
+            <div className="text-xs text-gray-600">Ejercicios</div>
+          </div>
+        </div>
+
+        {/* Acción */}
+        {progressInfo.canLevelUp ? (
+          <button
+            onClick={() => setShowLessonSession(true)}
+            className="w-full bg-green-500 text-white py-3 rounded-xl font-semibold hover:bg-green-600 transition-colors"
+          >
+            🚀 ¡SUBIR A {progressInfo.nextLevel} AHORA!
+          </button>
+        ) : (
+          <button
+            onClick={() => setShowLessonSession(true)}
+            className="w-full bg-blue-500 text-white py-3 rounded-xl font-semibold hover:bg-blue-600 transition-colors"
+          >
+            📚 Continuar Aprendiendo
+          </button>
         )}
       </div>
     );
@@ -361,18 +319,18 @@ const Dashboard: React.FC<DashboardProps> = ({ user }) => {
   };
 
   const getXPforNextLevel = () => {
-    const levelRequirements = {
+    const levelRequirements: { [key: string]: number } = {
       A1: 1000,
       A2: 2500,
       B1: 5000,
       B2: 10000,
     };
-    return levelRequirements[userProgress.level] || 10000;
+    return levelRequirements[userProgress.currentLevel] || 10000;
   };
 
   const getProgressToNextLevel = () => {
     const required = getXPforNextLevel();
-    return (userProgress.xp / required) * 100;
+    return (userProgress.totalXP / required) * 100;
   };
 
   // Vista de configuración de API
@@ -416,7 +374,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user }) => {
               <h1 className="text-2xl font-bold text-gray-900">
                 📚 Lección Básica
               </h1>
-              <p className="text-gray-600">XP: {userProgress.xp}</p>
+              <p className="text-gray-600">XP: {userProgress.totalXP}</p>
             </div>
             <button
               onClick={() => setShowLegacyExercise(false)}
@@ -452,7 +410,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user }) => {
                   {user.email?.split("@")[0]}! 👋
                 </p>
                 <p className="text-xs text-gray-500">
-                  Nivel {userProgress.level} • {userProgress.completedLessons}{" "}
+                  Nivel {userProgress.currentLevel} • {userProgress.totalExercises}{" "}
                   lecciones
                 </p>
               </div>
@@ -622,7 +580,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user }) => {
                         XP Total
                       </dt>
                       <dd className="text-2xl font-bold text-blue-600">
-                        {userProgress.xp}
+                        {userProgress.totalXP}
                       </dd>
                     </dl>
                   </div>
@@ -644,7 +602,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user }) => {
                         Precisión
                       </dt>
                       <dd className="text-2xl font-bold text-green-600">
-                        {Math.round(userProgress.accuracy * 100)}%
+                        {Math.round(userProgress.overallAccuracy * 100)}%
                       </dd>
                     </dl>
                   </div>
@@ -688,7 +646,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user }) => {
                         Lecciones
                       </dt>
                       <dd className="text-2xl font-bold text-purple-600">
-                        {userProgress.completedLessons}
+                        {Math.floor(userProgress.totalExercises / 8)}
                       </dd>
                     </dl>
                   </div>
@@ -743,7 +701,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user }) => {
                 Áreas a Mejorar
               </h4>
               <div className="space-y-2">
-                {userProgress.weakAreas.map((area, index) => (
+                {['grammar', 'vocabulary', 'pronunciation'].map((area, index) => (
                   <div
                     key={index}
                     className="bg-orange-50 px-3 py-2 rounded-lg text-sm text-orange-800 capitalize"
@@ -760,7 +718,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user }) => {
                 Fortalezas
               </h4>
               <div className="space-y-2">
-                {userProgress.strengths.map((strength, index) => (
+                {userProgress.unlockedSkills.slice(0, 3).map((strength, index) => (
                   <div
                     key={index}
                     className="bg-green-50 px-3 py-2 rounded-lg text-sm text-green-800 capitalize"

@@ -213,28 +213,11 @@ const LessonSessionFixed: React.FC<LessonSessionProps> = ({
   }, [exerciseNumber, totalExercises, currentExercise, userProgress.level, userProgress.userId, currentTopic, sessionId]);
 
   // Completar sesión
+  // ✅ FUNCIÓN SIMPLIFICADA - SIN LÓGICA DUPLICADA
   const completeSession = useCallback(() => {
     if (sessionComplete) return;
     
     const finalAccuracy = correctCount / totalExercises;
-
-    const recentSessionsKey = `recent_sessions_${userId || 'anonymous'}`;
-    const recentSessions = JSON.parse(localStorage.getItem(recentSessionsKey) || "[]");
-    
-    const updatedSessions = [...recentSessions, finalAccuracy].slice(-10);
-    localStorage.setItem(recentSessionsKey, JSON.stringify(updatedSessions));
-
-    const levelProgress = ImprovedLevelSystem.calculateLevelProgress({
-      currentLevel: userProgress.level,
-      accuracy: Math.max(userProgress.accuracy, finalAccuracy), // Usar la mejor precisión
-      totalExercises: (userProgress.completedLessons + 1) * 8,
-      xp: userProgress.xp + totalXP,
-      recentSessions: updatedSessions
-    });
-
-    console.log("📊 NIVEL PROGRESS:", levelProgress);
-
-    const levelUp = levelProgress.canLevelUp && levelProgress.nextLevel !== userProgress.level;
 
     const results = {
       exercisesCompleted: totalExercises,
@@ -242,43 +225,16 @@ const LessonSessionFixed: React.FC<LessonSessionProps> = ({
       totalAnswers: totalExercises,
       accuracy: finalAccuracy,
       xpEarned: totalXP,
-      levelUp: levelUp,
-      newLevel: levelUp ? levelProgress.nextLevel : userProgress.level,
-      levelProgress: levelProgress,
-      
-      sessionData: {
-        topicsStudied: [currentTopic],
-        averageResponseTime: 5,
-        difficulty: userProgress.level,
-        timestamp: new Date().toISOString()
-      }
+      // ✅ NO calcular levelUp aquí - lo hace Dashboard
     };
 
     setSessionComplete(true);
-
-    const detailedProgress = {
-      ...userProgress,
-      accuracy: Math.max(userProgress.accuracy, finalAccuracy), // Usar la mejor precisión
-      completedLessons: userProgress.completedLessons + 1,
-      xp: userProgress.xp + totalXP,
-      level: levelUp ? levelProgress.nextLevel : userProgress.level,
-      lastSession: {
-        date: new Date().toISOString(),
-        accuracy: finalAccuracy,
-        xpEarned: totalXP,
-        exercisesCompleted: totalExercises,
-        topicsStudied: [currentTopic]
-      },
-      levelProgress: levelProgress
-    };
-
-    localStorage.setItem("user_progress", JSON.stringify(detailedProgress));
 
     setTimeout(() => {
       onSessionComplete(results);
     }, 3000);
 
-  }, [sessionComplete, correctCount, totalExercises, totalXP, userProgress, currentTopic, onSessionComplete]);
+  }, [sessionComplete, correctCount, totalExercises, totalXP, onSessionComplete]);
 
   // EJERCICIO DE EMERGENCIA CUANDO LA IA FALLA
   const generateEmergencyExercise = (level: string): SmartExercise => {
