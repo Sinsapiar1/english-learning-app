@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import MultipleChoice from "./MultipleChoice";
 import { PersonalizedLessonGenerator } from "../services/geminiAI";
+import { getUniqueExercises, shuffleExerciseOptions, Exercise } from "../data/exercises";
 
 interface LessonSessionProps {
   apiKey: string;
@@ -20,6 +21,8 @@ const LessonSessionComponent: React.FC<LessonSessionProps> = ({
   const [totalExercises] = useState(8);
   const [currentExercise, setCurrentExercise] = useState<any>(null);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [uniqueExercises, setUniqueExercises] = useState<Exercise[]>([]);
+  const [usedExerciseIds, setUsedExerciseIds] = useState<string[]>([]);
 
   // Estadísticas SIMPLES
   const [correctCount, setCorrectCount] = useState(0);

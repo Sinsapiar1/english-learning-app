@@ -3,7 +3,7 @@ import { User, signOut } from "firebase/auth";
 import { auth } from "../firebase";
 import MultipleChoice from "./MultipleChoice";
 import APIKeySetup from "./APIKeySetup";
-import LessonSessionComponent from "./LessonSession";
+import LessonSessionComponent from "./LessonSessionFixed";
 import { useAPIKey } from "../hooks/useAPIKey";
 import { UserProgress } from "../services/adaptiveLearning";
 
