@@ -221,7 +221,7 @@ export class SmartAISystem {
     
     focusAreas.push(...(levelFocus[request.userLevel] || levelFocus['A2']));
     
-    return [...new Set(focusAreas)]; // Eliminar duplicados
+    return Array.from(new Set(focusAreas)); // Eliminar duplicados
   }
   
   // MEJORAR EXPLICACIÓN PARA PRINCIPIANTES
