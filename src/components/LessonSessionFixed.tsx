@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import MultipleChoice from "./MultipleChoice";
-import { getUniqueExercises, shuffleExerciseOptions, Exercise } from "../data/exercises";
+import { getUniqueExercises, shuffleExerciseOptions, Exercise, cleanOldExerciseHistory } from "../data/exercises";
 
 interface LessonSessionProps {
   apiKey: string;
@@ -42,11 +42,10 @@ const LessonSessionFixed: React.FC<LessonSessionProps> = ({
   // Inicializar ejercicios únicos al comenzar
   useEffect(() => {
     const initializeSession = () => {
-      console.log("🚀 INICIANDO SESIÓN SIN IA - SISTEMA GARANTIZADO");
+      console.log("🚀 INICIANDO SESIÓN ANTI-REPETICIÓN GARANTIZADA");
       
-      // Obtener ejercicios ya usados
-      const savedUsedIds = localStorage.getItem(`used_exercises_${userProgress.level}`) || "[]";
-      const usedIds = JSON.parse(savedUsedIds);
+      // Limpiar historial antiguo y obtener ejercicios ya usados
+      const usedIds = cleanOldExerciseHistory(userProgress.level, 100);
       
       // Seleccionar tema basado en debilidades
       const availableTopics = getTopicsForLevel(userProgress.level);

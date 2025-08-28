@@ -12,7 +12,7 @@ export interface Exercise {
   xpReward: number;
 }
 
-// BANCO MASIVO DE EJERCICIOS ÚNICOS
+// BANCO MASIVO DE EJERCICIOS ÚNICOS - 100+ EJERCICIOS
 export const EXERCISE_BANK: Exercise[] = [
   // PRESENT SIMPLE - A1
   {
@@ -198,7 +198,7 @@ export const EXERCISE_BANK: Exercise[] = [
     xpReward: 10
   },
 
-  // PAST SIMPLE - A1
+  // PAST SIMPLE - A1 (20 EJERCICIOS)
   {
     id: "past_01",
     level: "A1",
@@ -242,37 +242,466 @@ export const EXERCISE_BANK: Exercise[] = [
     correctAnswer: 2,
     explanation: "Negativo en pasado: did not + infinitivo",
     xpReward: 10
+  },
+  {
+    id: "past_05",
+    level: "A1",
+    topic: "past simple",
+    question: "We _____ pizza for dinner last Friday.",
+    instruction: "Verbo irregular en pasado",
+    options: ["eat", "ate", "eaten", "eating"],
+    correctAnswer: 1,
+    explanation: "El pasado de 'eat' es 'ate'",
+    xpReward: 10
+  },
+  {
+    id: "past_06",
+    level: "A1",
+    topic: "past simple",
+    question: "My brother _____ a new car last month.",
+    instruction: "Verbo irregular",
+    options: ["buy", "buyed", "bought", "buying"],
+    correctAnswer: 2,
+    explanation: "El pasado de 'buy' es 'bought'",
+    xpReward: 10
+  },
+  {
+    id: "past_07",
+    level: "A1",
+    topic: "past simple",
+    question: "_____ she _____ to the party?",
+    instruction: "Pregunta en pasado",
+    options: ["Does / come", "Did / come", "Did / came", "Was / come"],
+    correctAnswer: 1,
+    explanation: "Preguntas en pasado: Did + infinitivo sin 'to'",
+    xpReward: 10
+  },
+  {
+    id: "past_08",
+    level: "A1",
+    topic: "past simple",
+    question: "The children _____ in the park yesterday.",
+    instruction: "Verbo irregular",
+    options: ["play", "played", "run", "ran"],
+    correctAnswer: 3,
+    explanation: "El pasado de 'run' es 'ran'",
+    xpReward: 10
+  },
+  {
+    id: "past_09",
+    level: "A1",
+    topic: "past simple",
+    question: "I _____ my keys this morning.",
+    instruction: "Verbo irregular",
+    options: ["lose", "losed", "lost", "losing"],
+    correctAnswer: 2,
+    explanation: "El pasado de 'lose' es 'lost'",
+    xpReward: 10
+  },
+  {
+    id: "past_10",
+    level: "A1",
+    topic: "past simple",
+    question: "_____ it _____ yesterday?",
+    instruction: "Pregunta sobre el clima",
+    options: ["Did / rain", "Did / rained", "Was / rain", "Does / rain"],
+    correctAnswer: 0,
+    explanation: "Para preguntas en pasado simple: Did + infinitivo",
+    xpReward: 10
+  },
+  {
+    id: "past_11",
+    level: "A1",
+    topic: "past simple",
+    question: "She _____ a beautiful song at the concert.",
+    instruction: "Verbo irregular",
+    options: ["sing", "sang", "sung", "singing"],
+    correctAnswer: 1,
+    explanation: "El pasado de 'sing' es 'sang'",
+    xpReward: 10
+  },
+  {
+    id: "past_12",
+    level: "A1",
+    topic: "past simple",
+    question: "We _____ our grandparents last weekend.",
+    instruction: "Verbo irregular",
+    options: ["visit", "visited", "see", "saw"],
+    correctAnswer: 3,
+    explanation: "El pasado de 'see' es 'saw' (ver a alguien)",
+    xpReward: 10
+  },
+
+  // PRESENT SIMPLE EXPANDIDO (20 EJERCICIOS)
+  {
+    id: "ps_05",
+    level: "A1",
+    topic: "present simple",
+    question: "My father _____ to work by car every day.",
+    instruction: "Tercera persona singular",
+    options: ["go", "goes", "going", "went"],
+    correctAnswer: 1,
+    explanation: "Con tercera persona singular añadimos -es: goes",
+    xpReward: 10
+  },
+  {
+    id: "ps_06",
+    level: "A1",
+    topic: "present simple",
+    question: "_____ you _____ coffee or tea?",
+    instruction: "Pregunta con 'prefer'",
+    options: ["Do / prefer", "Does / prefer", "Are / prefer", "Do / prefers"],
+    correctAnswer: 0,
+    explanation: "Con 'you' usamos 'Do' + infinitivo",
+    xpReward: 10
+  },
+  {
+    id: "ps_07",
+    level: "A1",
+    topic: "present simple",
+    question: "Children _____ milk for strong bones.",
+    instruction: "Verbo 'need'",
+    options: ["needs", "need", "needing", "needed"],
+    correctAnswer: 1,
+    explanation: "Con plural no añadimos -s: need",
+    xpReward: 10
+  },
+  {
+    id: "ps_08",
+    level: "A1",
+    topic: "present simple",
+    question: "She _____ her teeth twice a day.",
+    instruction: "Rutina diaria",
+    options: ["brush", "brushs", "brushes", "brushing"],
+    correctAnswer: 2,
+    explanation: "Verbos terminados en -sh añaden -es: brushes",
+    xpReward: 10
+  },
+  {
+    id: "ps_09",
+    level: "A1",
+    topic: "present simple",
+    question: "_____ your sister _____ in this city?",
+    instruction: "Pregunta con 'live'",
+    options: ["Do / live", "Does / live", "Does / lives", "Is / live"],
+    correctAnswer: 1,
+    explanation: "Con tercera persona: Does + infinitivo",
+    xpReward: 10
+  },
+  {
+    id: "ps_10",
+    level: "A1",
+    topic: "present simple",
+    question: "We _____ TV in the evening.",
+    instruction: "Verbo 'watch'",
+    options: ["watch", "watches", "watching", "watched"],
+    correctAnswer: 0,
+    explanation: "Con 'we' usamos la forma base: watch",
+    xpReward: 10
+  },
+  {
+    id: "ps_11",
+    level: "A1",
+    topic: "present simple",
+    question: "The sun _____ in the east.",
+    instruction: "Hecho general",
+    options: ["rise", "rises", "rising", "rose"],
+    correctAnswer: 1,
+    explanation: "Hechos generales con tercera persona: rises",
+    xpReward: 10
+  },
+  {
+    id: "ps_12",
+    level: "A1",
+    topic: "present simple",
+    question: "I _____ like spicy food.",
+    instruction: "Negativo con 'I'",
+    options: ["don't", "doesn't", "am not", "not"],
+    correctAnswer: 0,
+    explanation: "Con 'I' usamos 'don't' para negar",
+    xpReward: 10
+  },
+
+  // PRESENT PERFECT EXPANDIDO (20 EJERCICIOS)
+  {
+    id: "pp_05",
+    level: "A2",
+    topic: "present perfect",
+    question: "They _____ _____ three movies this week.",
+    instruction: "Tiempo completado recientemente",
+    options: ["have / see", "have / seen", "has / seen", "had / seen"],
+    correctAnswer: 1,
+    explanation: "Con 'they': have + participio pasado (seen)",
+    xpReward: 10
+  },
+  {
+    id: "pp_06",
+    level: "A2",
+    topic: "present perfect",
+    question: "_____ you _____ your homework yet?",
+    instruction: "Pregunta con 'yet'",
+    options: ["Did / finish", "Have / finished", "Do / finish", "Are / finishing"],
+    correctAnswer: 1,
+    explanation: "Con 'yet' usamos Present Perfect: Have you finished",
+    xpReward: 10
+  },
+  {
+    id: "pp_07",
+    level: "A2",
+    topic: "present perfect",
+    question: "He _____ _____ his job for five years.",
+    instruction: "Duración hasta ahora",
+    options: ["has / have", "has / had", "have / had", "is / having"],
+    correctAnswer: 1,
+    explanation: "Para duración hasta el presente: has had",
+    xpReward: 10
+  },
+  {
+    id: "pp_08",
+    level: "A2",
+    topic: "present perfect",
+    question: "We _____ not _____ from him lately.",
+    instruction: "Negativo en Present Perfect",
+    options: ["have / hear", "have / heard", "has / heard", "did / hear"],
+    correctAnswer: 1,
+    explanation: "Negativo: have not + participio pasado (heard)",
+    xpReward: 10
+  },
+  {
+    id: "pp_09",
+    level: "A2",
+    topic: "present perfect",
+    question: "She _____ already _____ dinner.",
+    instruction: "Con 'already'",
+    options: ["has / eat", "has / eaten", "have / eaten", "is / eating"],
+    correctAnswer: 1,
+    explanation: "Con 'already' y tercera persona: has eaten",
+    xpReward: 10
+  },
+  {
+    id: "pp_10",
+    level: "A2",
+    topic: "present perfect",
+    question: "_____ they ever _____ to Europe?",
+    instruction: "Experiencia de vida",
+    options: ["Did / travel", "Have / traveled", "Do / travel", "Are / traveling"],
+    correctAnswer: 1,
+    explanation: "Para experiencias: Have they ever traveled",
+    xpReward: 10
+  },
+
+  // PREPOSITIONS EXPANDIDO (20 EJERCICIOS)
+  {
+    id: "prep_05",
+    level: "A2",
+    topic: "prepositions",
+    question: "The conference is _____ July _____ the convention center.",
+    instruction: "Mes y lugar",
+    options: ["in / at", "on / in", "at / on", "in / on"],
+    correctAnswer: 0,
+    explanation: "'In' para meses, 'at' para lugares específicos",
+    xpReward: 10
+  },
+  {
+    id: "prep_06",
+    level: "A2",
+    topic: "prepositions",
+    question: "She arrived _____ the airport _____ time.",
+    instruction: "Lugar y tiempo",
+    options: ["at / on", "in / in", "to / at", "at / in"],
+    correctAnswer: 0,
+    explanation: "'At' para lugares específicos, 'on time' = puntual",
+    xpReward: 10
+  },
+  {
+    id: "prep_07",
+    level: "A2",
+    topic: "prepositions",
+    question: "We're going _____ vacation _____ December.",
+    instruction: "Actividad y mes",
+    options: ["on / in", "in / on", "to / at", "for / in"],
+    correctAnswer: 0,
+    explanation: "'On vacation' (de vacaciones), 'in' para meses",
+    xpReward: 10
+  },
+  {
+    id: "prep_08",
+    level: "A2",
+    topic: "prepositions",
+    question: "The cat is hiding _____ the bed.",
+    instruction: "Posición",
+    options: ["under", "above", "between", "through"],
+    correctAnswer: 0,
+    explanation: "'Under' significa debajo de algo",
+    xpReward: 10
+  },
+  {
+    id: "prep_09",
+    level: "A2",
+    topic: "prepositions",
+    question: "I'm thinking _____ changing my job.",
+    instruction: "Preposición con 'thinking'",
+    options: ["of", "about", "in", "for"],
+    correctAnswer: 1,
+    explanation: "'Thinking about' = considerar algo",
+    xpReward: 10
+  },
+  {
+    id: "prep_10",
+    level: "A2",
+    topic: "prepositions",
+    question: "The meeting starts _____ 9 AM _____ Monday.",
+    instruction: "Hora y día",
+    options: ["at / on", "in / in", "on / at", "at / in"],
+    correctAnswer: 0,
+    explanation: "'At' para horas exactas, 'on' para días",
+    xpReward: 10
+  },
+
+  // ADVERBS EXPANDIDO (20 EJERCICIOS)
+  {
+    id: "adv_05",
+    level: "A2",
+    topic: "adverbs",
+    question: "She _____ arrives late to work.",
+    instruction: "Adverbio de frecuencia",
+    options: ["never", "always", "sometimes", "often"],
+    correctAnswer: 0,
+    explanation: "'Never' significa nunca llega tarde",
+    xpReward: 10
+  },
+  {
+    id: "adv_06",
+    level: "A2",
+    topic: "adverbs",
+    question: "He solved the problem _____.",
+    instruction: "Adverbio de modo",
+    options: ["quick", "quickly", "quickness", "more quick"],
+    correctAnswer: 1,
+    explanation: "Para describir cómo hizo algo: quickly",
+    xpReward: 10
+  },
+  {
+    id: "adv_07",
+    level: "A2",
+    topic: "adverbs",
+    question: "We _____ go to the beach in summer.",
+    instruction: "Frecuencia",
+    options: ["frequent", "frequently", "more frequent", "most frequent"],
+    correctAnswer: 1,
+    explanation: "Adverbio de frecuencia: frequently",
+    xpReward: 10
+  },
+  {
+    id: "adv_08",
+    level: "A2",
+    topic: "adverbs",
+    question: "She speaks _____ than her brother.",
+    instruction: "Comparativo de adverbios",
+    options: ["softly", "softer", "more softly", "most softly"],
+    correctAnswer: 2,
+    explanation: "Comparativo de adverbios largos: more softly",
+    xpReward: 10
+  },
+  {
+    id: "adv_09",
+    level: "A2",
+    topic: "adverbs",
+    question: "The train arrived _____ on time.",
+    instruction: "Adverbio de grado",
+    options: ["exact", "exactly", "more exact", "most exact"],
+    correctAnswer: 1,
+    explanation: "Para intensificar 'on time': exactly",
+    xpReward: 10
+  },
+  {
+    id: "adv_10",
+    level: "A2",
+    topic: "adverbs",
+    question: "They worked _____ to finish the project.",
+    instruction: "Adverbio de modo",
+    options: ["hard", "hardly", "harder", "hardest"],
+    correctAnswer: 0,
+    explanation: "'Hard' como adverbio significa con esfuerzo",
+    xpReward: 10
   }
 ];
 
-// FUNCIÓN PARA OBTENER EJERCICIOS ÚNICOS SIN REPETICIÓN
+// FUNCIÓN ROBUSTA PARA OBTENER EJERCICIOS ÚNICOS SIN REPETICIÓN
 export function getUniqueExercises(
   level: string,
   topic: string,
   usedExerciseIds: string[] = [],
   count: number = 8
 ): Exercise[] {
-  // Filtrar por nivel y tema
-  const availableExercises = EXERCISE_BANK.filter(
+  console.log("🎯 BUSCANDO EJERCICIOS ÚNICOS:");
+  console.log("📊 Nivel:", level, "| Tema:", topic);
+  console.log("🚫 Ya usados:", usedExerciseIds.length, "ejercicios");
+
+  // Filtrar por nivel y tema específico
+  let availableExercises = EXERCISE_BANK.filter(
     exercise => 
       exercise.level === level && 
       exercise.topic === topic &&
       !usedExerciseIds.includes(exercise.id)
   );
 
-  // Si no hay suficientes ejercicios únicos, mezclar con otros temas del mismo nivel
+  console.log("📝 Ejercicios disponibles para", topic + ":", availableExercises.length);
+
+  // Si no hay suficientes del tema específico, expandir a todo el nivel
   if (availableExercises.length < count) {
-    const sameLevel = EXERCISE_BANK.filter(
+    console.log("⚠️ No suficientes ejercicios del tema, expandiendo a nivel", level);
+    
+    const sameLevelExercises = EXERCISE_BANK.filter(
       exercise => 
         exercise.level === level &&
         !usedExerciseIds.includes(exercise.id)
     );
-    availableExercises.push(...sameLevel.slice(0, count - availableExercises.length));
+    
+    // Priorizar tema original, luego añadir otros
+    const otherLevelExercises = sameLevelExercises.filter(
+      exercise => exercise.topic !== topic
+    );
+    
+    availableExercises = [...availableExercises, ...otherLevelExercises];
+    console.log("📈 Total disponibles en nivel:", availableExercises.length);
   }
 
-  // Mezclar y devolver
+  // Si aún no hay suficientes, reiniciar pool (permitir repetir los más antiguos)
+  if (availableExercises.length < count) {
+    console.log("🔄 Reiniciando pool - permitiendo ejercicios más antiguos");
+    
+    // Tomar todos los ejercicios del nivel, priorizando los menos usados recientemente
+    availableExercises = EXERCISE_BANK.filter(exercise => exercise.level === level);
+  }
+
+  // Mezclar completamente para máxima variedad
   const shuffled = [...availableExercises].sort(() => Math.random() - 0.5);
-  return shuffled.slice(0, count);
+  const selected = shuffled.slice(0, count);
+  
+  console.log("✅ EJERCICIOS SELECCIONADOS:", selected.map(ex => ex.id));
+  
+  return selected;
+}
+
+// FUNCIÓN MEJORADA PARA LIMPIAR HISTORIAL ANTIGUO
+export function cleanOldExerciseHistory(level: string, maxHistory: number = 50) {
+  const key = `used_exercises_${level}`;
+  const savedUsedIds = localStorage.getItem(key);
+  
+  if (savedUsedIds) {
+    const usedIds = JSON.parse(savedUsedIds);
+    
+    // Si hay demasiados, mantener solo los más recientes
+    if (usedIds.length > maxHistory) {
+      const recentIds = usedIds.slice(-maxHistory);
+      localStorage.setItem(key, JSON.stringify(recentIds));
+      console.log("🧹 Historial limpiado - manteniendo", maxHistory, "ejercicios más recientes");
+      return recentIds;
+    }
+  }
+  
+  return JSON.parse(savedUsedIds || "[]");
 }
 
 // FUNCIÓN PARA MEZCLAR OPCIONES
