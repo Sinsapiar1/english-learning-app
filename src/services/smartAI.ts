@@ -31,8 +31,18 @@ export interface SmartExercise {
 
 // FUNCIÓN PARA MEZCLAR OPCIONES DE SMART EXERCISE
 function shuffleSmartExerciseOptions(exercise: SmartExercise): SmartExercise {
-  const correctAnswerText = exercise.options[exercise.correctAnswer];
-  const shuffledOptions = [...exercise.options].sort(() => Math.random() - 0.5);
+  // Limpiar opciones de cualquier letra previa
+  const cleanOptions = exercise.options.map(option => 
+    option.replace(/^[A-D]\)\s*/, '').trim()
+  );
+  
+  // Identificar respuesta correcta por contenido
+  const correctAnswerText = cleanOptions[exercise.correctAnswer];
+  
+  // Mezclar opciones limpias
+  const shuffledOptions = [...cleanOptions].sort(() => Math.random() - 0.5);
+  
+  // Encontrar nueva posición de la respuesta correcta
   const newCorrectAnswer = shuffledOptions.findIndex(option => option === correctAnswerText);
   
   return {

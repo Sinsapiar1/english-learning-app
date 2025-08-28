@@ -95,22 +95,25 @@ ${selectedType.format}
 EJEMPLO ESPECÍFICO:
 ${selectedType.example}
 
-ESTRUCTURA DE RESPUESTA (JSON válido):
-{
-  "question": "[Pregunta aquí - puede estar en inglés o español según el tipo]",
-  "instruction": "${selectedType.instruction}",
-  "options": ["A) opción 1", "B) opción 2", "C) opción 3", "D) opción 4"],
-  "correctAnswer": 0,
-  "explanation": "🎯 EXPLICACIÓN COMPLETA EN ESPAÑOL: [Explicación detallada de por qué es correcta, con ejemplos adicionales, todo en español perfecto para principiantes]"
-}
+           ESTRUCTURA DE RESPUESTA (JSON válido):
+           {
+             "question": "[Pregunta aquí - puede estar en inglés o español según el tipo]",
+             "instruction": "${selectedType.instruction}",
+             "options": ["opción 1", "opción 2", "opción 3", "opción 4"],
+             "correctAnswer": 0,
+             "explanation": "🎯 EXPLICACIÓN COMPLETA EN ESPAÑOL: [Explicación detallada de por qué es correcta, con ejemplos adicionales, todo en español perfecto para principiantes]"
+           }
 
-IMPORTANTE: 
-- La explicación DEBE empezar con un emoji y estar completamente en español
-- Incluir ejemplos adicionales en español
-- Explicar por qué las otras opciones están mal
-- Usar un tono amigable y pedagógico
+           IMPORTANTE: 
+           - La explicación DEBE empezar con un emoji y estar completamente en español
+           - Incluir ejemplos adicionales en español
+           - Explicar por qué las otras opciones están mal
+           - Usar un tono amigable y pedagógico
+           - Las opciones NO deben tener letras A), B), C), D)
+           - Solo la palabra/frase directa
+           - El componente agregará las letras automáticamente
 
-Responde SOLO el JSON, sin texto adicional:`;
+           Responde SOLO el JSON, sin texto adicional:`;
 
     try {
       const model = this.genAI.getGenerativeModel({

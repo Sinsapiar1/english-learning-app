@@ -100,7 +100,7 @@ const MultipleChoice: React.FC<MultipleChoiceProps> = memo(({
               disabled={answered}
             >
               <span className="font-medium">
-                {String.fromCharCode(65 + index)}) {option}
+                {String.fromCharCode(65 + index)}) {option.replace(/^[A-D]\)\s*/, '')}
               </span>
               {answered && index === question.correctAnswer && (
                 <span className="float-right text-green-600">✓</span>

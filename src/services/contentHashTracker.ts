@@ -13,8 +13,13 @@ export class ContentHashTracker {
    * Genera hash único basado en el CONTENIDO real del ejercicio
    * Versión compatible sin Set spread operators
    */
-  static hashExerciseContent(exercise: ExerciseContent): string {
-    const content = `${exercise.question}_${exercise.options.join('_')}_${exercise.correctAnswer}`;
+  static hashExerciseContent(exercise: any): string {
+    // Limpiar opciones antes de hacer hash
+    const cleanOptions = exercise.options.map((opt: string) => 
+      opt.replace(/^[A-D]\)\s*/, '').trim()
+    );
+    
+    const content = `${exercise.question}_${cleanOptions.join('_')}_${exercise.correctAnswer}`;
     
     // Usar función hash simple compatible (sin btoa para evitar errores)
     let hash = 0;

@@ -40,6 +40,18 @@ const Dashboard: React.FC<DashboardProps> = ({ user }) => {
 
   // Cargar progreso del usuario desde localStorage
   useEffect(() => {
+    // LIMPIAR datos corruptos una vez
+    const cleanupDone = localStorage.getItem('cleanup_done');
+    if (!cleanupDone) {
+      // Limpiar hashes de ejercicios corruptos
+      ['A1', 'A2', 'B1', 'B2'].forEach(level => {
+        localStorage.removeItem(`content_hashes_${level}`);
+        localStorage.removeItem(`used_exercises_${level}`);
+      });
+      localStorage.setItem('cleanup_done', 'true');
+      console.log('✅ Datos de ejercicios corruptos limpiados');
+    }
+    
     const savedProgress = localStorage.getItem("user_progress");
     if (savedProgress) {
       setUserProgress(JSON.parse(savedProgress));
