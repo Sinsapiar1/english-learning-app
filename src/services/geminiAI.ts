@@ -29,91 +29,88 @@ export class PersonalizedLessonGenerator {
     previousErrors?: string[];
     timestamp?: number;
   }): Promise<GeneratedExercise> {
-    // 🎯 FORZAR ROTACIÓN DE 4 TIPOS ESPECÍFICOS DE EJERCICIOS
+    // TIPOS DE EJERCICIOS ESPECÍFICOS - Rotación forzada
     const exerciseTypes = [
       {
-        type: "VOCABULARY",
-        template: "What does '[ENGLISH_WORD]' mean in '[CONTEXT]'?",
-        instruction: "Elige el significado correcto en español",
-        format: "English question → Spanish options"
+        type: "VOCABULARIO",
+        instruction: "¿Qué significa esta palabra en inglés?",
+        format: "English word → Spanish options",
+        example: "What does 'stream' mean in 'I stream Netflix'? → A) transmitir B) río C) correr D) gritar"
       },
       {
-        type: "GRAMMAR", 
-        template: "Complete: '[ENGLISH_SENTENCE_WITH_BLANK]'",
-        instruction: "Completa con la forma gramatical correcta",
-        format: "English sentence → English grammar options"
+        type: "GRAMÁTICA", 
+        instruction: "Completa la oración con la opción correcta",
+        format: "English sentence with blank → English grammar options",
+        example: "I _____ working from home since 2020. → A) have been B) am C) was D) will be"
       },
       {
-        type: "TRANSLATION",
-        template: "¿Cómo se dice '[SPANISH_PHRASE]' en inglés?",
-        instruction: "Selecciona la traducción correcta",
-        format: "Spanish question → English options"
+        type: "TRADUCCIÓN",
+        instruction: "Selecciona la traducción correcta al inglés",
+        format: "Spanish phrase → English translation options",
+        example: "¿Cómo se dice 'me gusta tu post'? → A) I like your post B) I love your post C) I want your post D) I see your post"
       },
       {
-        type: "COMPREHENSION",
-        template: "Text: '[SHORT_ENGLISH_TEXT]' Question: '[COMPREHENSION_QUESTION]'",
-        instruction: "Lee y responde en inglés",
-        format: "English text → English comprehension question"
+        type: "COMPRENSIÓN",
+        instruction: "Lee el texto y responde la pregunta",
+        format: "Short English text → English comprehension question",
+        example: "Text: 'Maria works for Netflix creating content.' Question: What does Maria do? → A) creates content B) watches shows C) sells subscriptions D) fixes bugs"
       }
     ];
 
+    // SELECCIONAR TIPO BASADO EN NÚMERO DE EJERCICIO (rotación garantizada)
+    const selectedType = exerciseTypes[params.exerciseNumber % 4];
+
     // CONTEXTOS MODERNOS ULTRA-ESPECÍFICOS
     const modernContexts = [
-      "ordering food on DoorDash app",
-      "commenting on Instagram stories", 
-      "working remotely on Zoom calls",
-      "streaming shows on Netflix",
-      "posting TikTok videos",
-      "shopping online on Amazon",
-      "texting friends on WhatsApp",
-      "uploading photos to social media",
-      "booking Uber rides",
-      "leaving Google reviews",
-      "using dating apps like Tinder",
-      "playing online games",
-      "doing video calls with family",
-      "ordering groceries online"
+      "usando apps de delivery como Uber Eats",
+      "subiendo stories a Instagram", 
+      "trabajando remotamente en videollamadas",
+      "viendo series en Netflix y plataformas streaming",
+      "haciendo videos para TikTok",
+      "comprando online en Amazon",
+      "chateando por WhatsApp con amigos",
+      "dejando reviews en Google Maps",
+      "pidiendo taxi por apps como Uber",
+      "haciendo posts en redes sociales"
     ];
 
-    // SELECCIONAR TIPO ESPECÍFICO PARA ESTA SESIÓN (ROTACIÓN FORZADA)
-    const selectedType = exerciseTypes[params.exerciseNumber % 4]; // Garantiza rotación
     const selectedContext = modernContexts[Math.floor(Math.random() * modernContexts.length)];
 
-    // PROMPT ULTRA-ESPECÍFICO CON TIPO FORZADO
-    const prompt = `Generate a ${selectedType.type} exercise for level ${params.level} about "${params.topic}" in context: "${selectedContext}".
+    // PROMPT ULTRA-ESPECÍFICO EN ESPAÑOL
+    const prompt = `Eres un profesor de inglés experto. Crea un ejercicio de tipo ${selectedType.type} para estudiantes hispanohablantes de nivel ${params.level}.
 
-MANDATORY EXERCISE TYPE: ${selectedType.type}
-FORMAT REQUIRED: ${selectedType.format}
-TEMPLATE: ${selectedType.template}
-INSTRUCTION: ${selectedType.instruction}
+CONTEXTO OBLIGATORIO: ${selectedContext}
+TEMA: ${params.topic}
 
-🚨 ULTRA-SPECIFIC REQUIREMENTS:
-✅ Question must use vocabulary/phrases people actually use in "${selectedContext}"
-✅ Options must include common mistakes Spanish speakers make  
-✅ Explanation must be detailed for absolute beginners
-✅ Use modern slang and expressions (not formal textbook English)
-✅ Context must be realistic and relatable
+INSTRUCCIONES CRÍTICAS:
+🇪🇸 TODA la explicación debe estar en ESPAÑOL PERFECTO
+🎯 Tipo de ejercicio: ${selectedType.type}
+📱 Usar vocabulario moderno del contexto: ${selectedContext}
+👶 Explicación para principiantes absolutos en español
+❌ PROHIBIDO usar inglés en la explicación
 
-FORBIDDEN:
-❌ Generic/textbook examples
-❌ Outdated expressions  
-❌ Overly formal language
-❌ Boring contexts
+FORMATO REQUERIDO:
+${selectedType.format}
 
-EXAMPLES FOR ${selectedType.type}:
-${this.getExampleForType(selectedType.type, selectedContext)}
+EJEMPLO ESPECÍFICO:
+${selectedType.example}
 
-Return ONLY valid JSON - no extra text:
+ESTRUCTURA DE RESPUESTA (JSON válido):
 {
-  "type": "${selectedType.type}",
-  "context": "${selectedContext}",
-  "question": "Ultra-specific question here",
+  "question": "[Pregunta aquí - puede estar en inglés o español según el tipo]",
   "instruction": "${selectedType.instruction}",
-  "options": ["option A", "option B", "option C", "option D"],
+  "options": ["A) opción 1", "B) opción 2", "C) opción 3", "D) opción 4"],
   "correctAnswer": 0,
-  "explanation": "Detailed explanation with examples and tips for beginners",
-  "xpReward": 10
-}`;
+  "explanation": "🎯 EXPLICACIÓN COMPLETA EN ESPAÑOL: [Explicación detallada de por qué es correcta, con ejemplos adicionales, todo en español perfecto para principiantes]"
+}
+
+IMPORTANTE: 
+- La explicación DEBE empezar con un emoji y estar completamente en español
+- Incluir ejemplos adicionales en español
+- Explicar por qué las otras opciones están mal
+- Usar un tono amigable y pedagógico
+
+Responde SOLO el JSON, sin texto adicional:`;
 
     try {
       const model = this.genAI.getGenerativeModel({
@@ -125,17 +122,13 @@ Return ONLY valid JSON - no extra text:
         },
       });
 
-      console.log("🤖 INICIANDO GENERACIÓN IA - Ejercicio #" + params.exerciseNumber);
-      console.log("📝 Tema:", params.topic, "| Nivel:", params.level);
-      console.log("🔑 API Key configurada:", !!this.genAI);
-      console.log("📝 Prompt enviado:", prompt);
+      console.log("🤖 GENERANDO EJERCICIO CON EXPLICACIÓN EN ESPAÑOL");
+      console.log("📝 Tipo:", selectedType.type, "| Contexto:", selectedContext);
       
       const result = await model.generateContent(prompt);
       const text = result.response.text();
 
-      // Limpiar y extraer JSON
-      console.log("✅ IA Response COMPLETA:", text);
-      console.log("📊 Longitud respuesta:", text.length, "caracteres");
+      console.log("✅ RESPUESTA IA COMPLETA:", text);
 
       const jsonMatch = text.match(/\{[\s\S]*\}/);
       if (!jsonMatch) {
@@ -150,13 +143,22 @@ Return ONLY valid JSON - no extra text:
         throw new Error("Invalid JSON from AI");
       }
 
-      // Validar estructura
-      if (
-        !exerciseData.question ||
-        !exerciseData.options ||
-        !Array.isArray(exerciseData.options) ||
-        exerciseData.options.length !== 4
-      ) {
+      // VALIDACIÓN CRÍTICA: Verificar que explicación esté en español
+      if (exerciseData.explanation && exerciseData.explanation.length > 20) {
+        // Contar palabras en español vs inglés (heurística simple)
+        const spanishWords = ['es', 'la', 'el', 'un', 'una', 'con', 'por', 'para', 'que', 'de', 'del', 'en', 'se', 'y', 'o', 'pero', 'cuando', 'como', 'donde', 'porque', 'usamos', 'correcto', 'incorrecto', 'significa', 'ejemplo'];
+        const explanationLower = exerciseData.explanation.toLowerCase();
+        const spanishWordCount = spanishWords.filter(word => explanationLower.includes(' ' + word + ' ') || explanationLower.startsWith(word + ' ')).length;
+        
+        if (spanishWordCount < 3) {
+          console.warn("⚠️ EXPLICACIÓN POSIBLEMENTE EN INGLÉS - FORZANDO ESPAÑOL");
+          // Forzar explicación en español simple
+          exerciseData.explanation = `🎯 NIVEL ${params.level}: La respuesta correcta es la opción ${String.fromCharCode(65 + exerciseData.correctAnswer)}. Esta estructura es muy común en inglés moderno, especialmente cuando ${selectedContext.toLowerCase()}. Recuerda practicar este tipo de expresiones para sonar más natural en inglés.`;
+        }
+      }
+
+      // Validar estructura básica
+      if (!exerciseData.question || !exerciseData.options || !Array.isArray(exerciseData.options) || exerciseData.options.length !== 4) {
         throw new Error("Invalid exercise structure from AI");
       }
 
@@ -178,35 +180,15 @@ Return ONLY valid JSON - no extra text:
 
       return {
         question: exerciseData.question,
-        instruction:
-          exerciseData.instruction || "Selecciona la respuesta correcta",
+        instruction: exerciseData.instruction || selectedType.instruction,
         options: shuffledOptions,
         correctAnswer: newCorrectAnswer,
-        explanation: exerciseData.explanation || "Explicación no disponible",
-        xpReward: exerciseData.xpReward || 10,
+        explanation: exerciseData.explanation || `Respuesta correcta: ${correctAnswerText}`,
+        xpReward: 10,
       };
     } catch (error) {
-      console.error("🚨🚨🚨 IA COMPLETAMENTE FALLIDA 🚨🚨🚨");
-      console.error("❌ Error completo:", error);
-      console.error("📊 Parámetros enviados:", params);
-      console.error("🔑 API Key existe?", !!this.genAI);
-      console.error("📝 Prompt length:", prompt.length);
-      
-      // Log del error específico
-      const errorMessage = error instanceof Error ? error.message : String(error);
-      if (errorMessage.includes("API key")) {
-        console.error("🔑 PROBLEMA DE API KEY");
-      } else if (errorMessage.includes("JSON")) {
-        console.error("📋 PROBLEMA DE FORMATO JSON");
-      } else if (errorMessage.includes("quota")) {
-        console.error("💳 PROBLEMA DE CUOTA/LÍMITES");
-      } else {
-        console.error("❓ ERROR DESCONOCIDO:", errorMessage);
-      }
-
-      // NO MÁS EJERCICIOS DE RESPALDO - SOLO IA
-      console.error("🚨 IA COMPLETAMENTE FALLIDA - NO HAY RESPALDO ESTÁTICO");
-      throw new Error(`🤖 La IA no pudo generar ejercicio después de múltiples intentos. Verifica tu API Key y conexión a internet. Error: ${errorMessage}`);
+      console.error("🚨 ERROR GENERANDO EJERCICIO:", error);
+      throw new Error(`La IA no pudo generar ejercicio. Error: ${error instanceof Error ? error.message : String(error)}`);
     }
   }
 
