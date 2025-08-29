@@ -85,7 +85,28 @@ export class RealLevelSystem {
     motivationalMessage: string;
   } {
     
+    // ✅ AÑADIR DEBUGGING DETALLADO AL INICIO
+    console.log("🔍 DEBUGGING PROGRESO DETALLADO:", {
+      userId: progress.userId,
+      currentLevel: progress.currentLevel,
+      actual: {
+        correctAnswers: progress.totalCorrectAnswers,
+        totalExercises: progress.totalExercises,
+        accuracy: progress.overallAccuracy,
+        totalXP: progress.totalXP,
+        sessions: progress.sessionsA1 + progress.sessionsA2 + progress.sessionsB1 + progress.sessionsB2
+      }
+    });
+    
     const currentLevelReqs = this.LEVEL_REQUIREMENTS[progress.currentLevel as keyof typeof this.LEVEL_REQUIREMENTS];
+    
+    // Log de requisitos actuales
+    if (currentLevelReqs) {
+      console.log("📋 REQUISITOS PARA SUBIR DE NIVEL:", {
+        level: progress.currentLevel,
+        requirements: currentLevelReqs
+      });
+    }
     if (!currentLevelReqs) {
       return {
         canLevelUp: true,
@@ -160,6 +181,25 @@ export class RealLevelSystem {
       motivationalMessage = "🚀 ¡Cada ejercicio te acerca más a tu objetivo!";
     }
     
+    // ✅ AÑADIR LOG FINAL ANTES DEL RETURN
+    console.log("📊 RESULTADO FINAL PROGRESO:", {
+      canLevelUp,
+      progressPercentage,
+      nextLevel,
+      blockedBy: {
+        correctAnswers: !correctAnswersReq.completed ? `${correctAnswersReq.current}/${correctAnswersReq.needed}` : '✅',
+        sessions: !sessionsReq.completed ? `${sessionsReq.current}/${sessionsReq.needed}` : '✅',
+        accuracy: !accuracyReq.completed ? `${(accuracyReq.current * 100).toFixed(1)}%/${(accuracyReq.needed * 100).toFixed(1)}%` : '✅',
+        xp: !xpReq.completed ? `${xpReq.current}/${xpReq.needed}` : '✅'
+      },
+      meets: {
+        correctAnswers: correctAnswersReq.completed,
+        sessions: sessionsReq.completed,
+        accuracy: accuracyReq.completed,
+        xp: xpReq.completed
+      }
+    });
+
     return {
       canLevelUp,
       progressPercentage,
@@ -320,5 +360,34 @@ export class RealLevelSystem {
       console.warn("⚠️ Error guardando en Firebase:", error);
       throw error;
     }
+  }
+
+  // ✅ FUNCIÓN TEMPORAL PARA DESBLOQUEAR USUARIO
+  static debugUnblockUser(userId: string): RealUserProgress {
+    const progress = this.loadUserProgress(userId);
+    
+    console.log("🚨 DESBLOQUEANDO USUARIO - SITUACIÓN DE EMERGENCIA");
+    console.log("Estado actual:", progress);
+    
+    // Si está muy cerca del level up, forzarlo
+    const progressCheck = this.calculateRealProgress(progress);
+    if (progressCheck.progressPercentage >= 95 && !progressCheck.canLevelUp) {
+      console.log("🆘 FORZANDO LEVEL UP - Usuario bloqueado al 95%+");
+      
+      // Ajustar ligeramente los valores para permitir level up
+      const adjustedProgress = {
+        ...progress,
+        totalCorrectAnswers: Math.max(progress.totalCorrectAnswers, 50),
+        overallAccuracy: Math.max(progress.overallAccuracy, 0.80),
+        totalXP: Math.max(progress.totalXP, 600),
+        sessionsA1: Math.max(progress.sessionsA1, 10) // Asegurar sesiones suficientes
+      };
+      
+      this.saveUserProgress(adjustedProgress);
+      console.log("✅ Usuario desbloqueado con valores ajustados:", adjustedProgress);
+      return adjustedProgress;
+    }
+    
+    return progress;
   }
 }

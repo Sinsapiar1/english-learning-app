@@ -355,6 +355,20 @@ const Dashboard: React.FC<DashboardProps> = ({ user }) => {
             📚 Continuar Aprendiendo
           </button>
         )}
+
+        {/* BOTÓN TEMPORAL DE DEBUG - REMOVER DESPUÉS */}
+        {progressInfo.progressPercentage >= 95 && !progressInfo.canLevelUp && (
+          <button
+            onClick={() => {
+              const unblocked = RealLevelSystem.debugUnblockUser(user.uid);
+              setUserProgress(unblocked);
+              console.log("🆘 Usuario desbloqueado manualmente");
+            }}
+            className="w-full bg-red-500 text-white py-2 rounded-lg text-sm font-medium hover:bg-red-600 transition-colors mt-2"
+          >
+            🆘 DEBUG: Desbloquear Progreso
+          </button>
+        )}
       </div>
     );
   };

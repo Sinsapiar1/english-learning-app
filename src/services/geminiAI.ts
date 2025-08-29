@@ -230,6 +230,7 @@ REGLAS CRÍTICAS - VALIDACIÓN PEDAGÓGICA:
 - Emojis incorrectos (🐶 para gato)
 - Preguntas obvias o redundantes
 - Ejercicios repetidos o muy similares entre sí
+- OPCIONES MUY SIMILARES que confunden al usuario
 
 ✅ OBLIGATORIO PARA PRINCIPIANTES:
 - 8 ejercicios COMPLETAMENTE diferentes
@@ -279,6 +280,19 @@ INSTRUCCIONES DE VALIDACIÓN INTERNA:
 3. ¿La respuesta no está obvia en la pregunta?
 4. ¿Los emojis coinciden con el contenido?
 5. ¿Realmente enseñan inglés práctico?
+6. ¿Las opciones son SUFICIENTEMENTE DIFERENTES entre sí?
+7. ¿No hay dos opciones que significan casi lo mismo?
+
+❌ PROHIBIDO ABSOLUTO - OPCIONES SIMILARES:
+- "Me gusta las manzanas" y "Me gustan las manzanas" (demasiado similares)
+- "I am happy" y "I'm happy" (son lo mismo)
+- "big house" y "large house" (sinónimos confusos para principiantes)
+
+✅ OBLIGATORIO - OPCIONES DISTINTIVAS:
+- Cada opción debe ser CLARAMENTE diferente en significado
+- Para gramática: usar tiempos COMPLETAMENTE diferentes (am/was/will be)
+- Para vocabulario: usar palabras de CATEGORÍAS diferentes (apple/car/house/red)
+- Para traducción: opciones que NO se parezcan fonéticamente
 
 FORMATO JSON REQUERIDO (array de 8 ejercicios):
 {
@@ -446,8 +460,75 @@ FORMATO JSON REQUERIDO (array de 8 ejercicios):
       return false;
     }
     
+    // ✅ NUEVA VALIDACIÓN: Detectar opciones muy similares
+    const optionsLower = options.map((opt: string) => opt.toLowerCase().trim());
+    
+    for (let i = 0; i < optionsLower.length; i++) {
+      for (let j = i + 1; j < optionsLower.length; j++) {
+        const similarity = this.calculateTextSimilarity(optionsLower[i], optionsLower[j]);
+        if (similarity > 0.85) { // Si son 85% similares
+          console.warn(`❌ Ejercicio ${exerciseNumber}: Opciones muy similares detectadas`);
+          console.warn(`Opción ${i}: "${optionsLower[i]}"`);
+          console.warn(`Opción ${j}: "${optionsLower[j]}"`);
+          console.warn(`Similitud: ${(similarity * 100).toFixed(1)}%`);
+          return false;
+        }
+      }
+    }
+    
     console.log(`✅ Ejercicio ${exerciseNumber}: Validación APROBADA`);
     return true;
+  }
+
+  // ✅ NUEVA FUNCIÓN: Calcular similitud entre textos
+  private calculateTextSimilarity(text1: string, text2: string): number {
+    // Algoritmo simple de similitud de texto
+    const words1 = text1.split(' ').filter(w => w.length > 1); // Filtrar palabras muy cortas
+    const words2 = text2.split(' ').filter(w => w.length > 1);
+    
+    if (words1.length === 0 || words2.length === 0) return 0;
+    
+    let commonWords = 0;
+    words1.forEach(word1 => {
+      if (words2.some(word2 => 
+        word2.includes(word1) || word1.includes(word2) || 
+        Math.abs(word1.length - word2.length) <= 1 && this.levenshteinDistance(word1, word2) <= 1
+      )) {
+        commonWords++;
+      }
+    });
+    
+    const maxWords = Math.max(words1.length, words2.length);
+    return commonWords / maxWords;
+  }
+
+  // ✅ NUEVA FUNCIÓN: Distancia de Levenshtein para detectar palabras muy similares
+  private levenshteinDistance(str1: string, str2: string): number {
+    const matrix = [];
+    
+    for (let i = 0; i <= str2.length; i++) {
+      matrix[i] = [i];
+    }
+    
+    for (let j = 0; j <= str1.length; j++) {
+      matrix[0][j] = j;
+    }
+    
+    for (let i = 1; i <= str2.length; i++) {
+      for (let j = 1; j <= str1.length; j++) {
+        if (str2.charAt(i - 1) === str1.charAt(j - 1)) {
+          matrix[i][j] = matrix[i - 1][j - 1];
+        } else {
+          matrix[i][j] = Math.min(
+            matrix[i - 1][j - 1] + 1, // substitution
+            matrix[i][j - 1] + 1,     // insertion
+            matrix[i - 1][j] + 1      // deletion
+          );
+        }
+      }
+    }
+    
+    return matrix[str2.length][str1.length];
   }
 
   /**
