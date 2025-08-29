@@ -1,23 +1,21 @@
 {
-  "name": "english-master-app",
-  "version": "2.0.0",
-  "description": "English learning app with personalized AI exercises for Spanish speakers",
-  "type": "module",
+  "name": "english-master-v3",
+  "version": "3.0.0",
+  "private": true,
   "scripts": {
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview"
   },
   "dependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
     "@google/generative-ai": "^0.2.1",
     "firebase": "^10.7.1",
     "framer-motion": "^10.16.16",
     "lucide-react": "^0.303.0",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
     "react-hot-toast": "^2.4.1",
-    "react-router-dom": "^6.20.1",
-    "recharts": "^2.8.0"
+    "zod": "^3.22.4"
   },
   "devDependencies": {
     "@types/react": "^18.2.43",
@@ -25,31 +23,8 @@
     "@vitejs/plugin-react": "^4.2.1",
     "autoprefixer": "^10.4.16",
     "postcss": "^8.4.32",
-    "tailwindcss": "^3.3.6",
+    "tailwindcss": "^3.4.0",
     "typescript": "^5.2.2",
     "vite": "^5.0.8"
-  },
-  "engines": {
-    "node": ">=18.0.0"
-  },
-  "keywords": [
-    "english-learning",
-    "ai-education",
-    "spanish-speakers",
-    "personalized-learning",
-    "react",
-    "typescript",
-    "firebase",
-    "gemini-ai"
-  ],
-  "author": "English Master Team",
-  "license": "MIT",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/your-username/english-master-app.git"
-  },
-  "bugs": {
-    "url": "https://github.com/your-username/english-master-app/issues"
-  },
-  "homepage": "https://english-master-app.vercel.app"
+  }
 }
