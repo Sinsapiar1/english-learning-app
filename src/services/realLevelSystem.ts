@@ -35,35 +35,39 @@ export interface RealUserProgress {
 
 export class RealLevelSystem {
   
-  // REQUISITOS REALISTAS Y ALCANZABLES
+  // REQUISITOS INTELIGENTES Y REALISTAS
   private static LEVEL_REQUIREMENTS = {
     'A1': {
-      minCorrectAnswers: 50,      // 50 respuestas correctas
-      minSessions: 6,             // 6 sesiones (48 ejercicios)
-      minAccuracy: 0.6,           // 60% precisión
-      xpRequired: 400,
+      minCorrectAnswers: 40,      // 5 sesiones perfectas
+      minSessions: 8,             // 8 sesiones mínimo
+      minAccuracy: 0.75,          // 75% precisión
+      xpRequired: 500,
+      description: "Palabras básicas, presente simple, verbo to be",
       skillsUnlocked: ['basic_vocabulary', 'present_simple', 'verb_to_be']
     },
     'A2': {
-      minCorrectAnswers: 120,     // 120 respuestas correctas total
-      minSessions: 15,            // 15 sesiones (120 ejercicios)
-      minAccuracy: 0.65,          // 65% precisión
-      xpRequired: 1000,
+      minCorrectAnswers: 100,     // Más exigente
+      minSessions: 15,
+      minAccuracy: 0.80,          // 80% precisión
+      xpRequired: 1200,
+      description: "Present perfect, pasado simple, preposiciones",
       skillsUnlocked: ['present_perfect', 'past_simple', 'prepositions', 'basic_conversation']
     },
     'B1': {
-      minCorrectAnswers: 250,     // 250 respuestas correctas total
-      minSessions: 30,            // 30 sesiones (240 ejercicios)
-      minAccuracy: 0.70,          // 70% precisión
-      xpRequired: 2200,
+      minCorrectAnswers: 200,
+      minSessions: 25,
+      minAccuracy: 0.85,          // 85% precisión
+      xpRequired: 2500,
+      description: "Condicionales, voz pasiva, gramática avanzada",
       skillsUnlocked: ['conditionals', 'passive_voice', 'advanced_grammar', 'fluent_conversation']
     },
     'B2': {
-      minCorrectAnswers: 500,     // 500 respuestas correctas total
-      minSessions: 60,            // 60 sesiones (480 ejercicios) 
-      minAccuracy: 0.75,          // 75% precisión
-      xpRequired: 4500,
-      skillsUnlocked: ['advanced_vocabulary', 'nuanced_expressions', 'native_patterns']
+      minCorrectAnswers: 350,
+      minSessions: 40,
+      minAccuracy: 0.90,          // 90% precisión para nivel alto
+      xpRequired: 4000,
+      description: "Vocabulario avanzado, expresiones nativas, fluidez",
+      skillsUnlocked: ['advanced_vocabulary', 'nuanced_expressions', 'native_patterns', 'business_english']
     }
   };
   

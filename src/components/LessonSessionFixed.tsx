@@ -1,8 +1,10 @@
 import React, { useState, useEffect, useCallback } from "react";
 import MultipleChoice from "./MultipleChoice";
-// ELIMINADA IMPORTACIÓN DE EJERCICIOS ESTÁTICOS - SOLO IA
+// IMPORTACIONES PARA SESIÓN COMPLETA
 import { IntelligentLearningSystem } from "../services/intelligentLearning";
 import { SmartAISystem, SmartExercise } from "../services/smartAI";
+import { PersonalizedLessonGenerator } from "../services/geminiAI";
+import { SessionHashTracker } from "../services/sessionHashTracker";
 import { ExerciseTracker } from "../services/exerciseTracker";
 import { ContentHashTracker } from "../services/contentHashTracker";
 import { ImprovedLevelSystem } from '../services/levelProgression';
@@ -30,13 +32,17 @@ const LessonSessionFixed: React.FC<LessonSessionProps> = ({
   onExit,
   userId,
 }) => {
-  // Estados SIMPLES
+  // Estados para SESIÓN COMPLETA
   const [exerciseNumber, setExerciseNumber] = useState(1);
   const [totalExercises] = useState(8);
   const [currentExercise, setCurrentExercise] = useState<SmartExercise | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [sessionId] = useState(`session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`);
   const [userWeaknesses, setUserWeaknesses] = useState<string[]>([]);
+  
+  // NUEVOS ESTADOS para sesión completa
+  const [sessionExercises, setSessionExercises] = useState<any[]>([]);
+  const [currentExerciseIndex, setCurrentExerciseIndex] = useState(0);
   
   // Estadísticas
   const [correctCount, setCorrectCount] = useState(0);
@@ -55,10 +61,12 @@ const LessonSessionFixed: React.FC<LessonSessionProps> = ({
     return allTopics[level as keyof typeof allTopics] || allTopics.A2;
   };
 
-  // Inicializar sistema inteligente
-  useEffect(() => {
-    const initializeIntelligentSession = async () => {
-      console.log("🧠 INICIANDO SESIÓN DE IA INTELIGENTE");
+  // NUEVA función: generar sesión completa de una vez
+  const generateCompleteSession = async () => {
+    setIsGenerating(true);
+    
+    try {
+      console.log("🎯 GENERANDO SESIÓN COMPLETA DE 8 EJERCICIOS");
       
       // Obtener debilidades del usuario
       if (userProgress.userId) {
@@ -71,107 +79,100 @@ const LessonSessionFixed: React.FC<LessonSessionProps> = ({
         }
       }
       
-      // VERIFICAR API KEY ANTES DE EMPEZAR
-      if (!apiKey) {
-        console.error("🚨 NO HAY API KEY - REDIRIGIR A CONFIGURACIÓN");
-        alert("⚠️ Necesitas configurar tu API Key de Google AI para usar ejercicios con IA. Ve a Configuración.");
-        return;
-      }
-      
-      console.log("🔑 API KEY DISPONIBLE - FORZANDO IA");
-      
-      // Cargar primer ejercicio inteligente
-      await generateIntelligentExercise(1);
-    };
-    
-    initializeIntelligentSession();
-  }, [userProgress.level, userProgress.userId]);
-
-
-
-  // GENERAR EJERCICIO INTELIGENTE CON EJERCICIOS ESPECÍFICOS POR NIVEL
-  const generateIntelligentExercise = async (exerciseNum: number) => {
-    setIsGenerating(true);
-    
-    try {
-      // INTENTAR con el método mejorado primero
       if (apiKey) {
+        // Intentar con IA primero
         try {
-          const smartExercise = await SmartAISystem.generateSmartExerciseEnhanced({
+          const generator = new PersonalizedLessonGenerator(apiKey);
+          const exercises = await generator.generateCompleteSession({
+            level: userProgress.level,
             userId: userProgress.userId || 'anonymous',
-            userLevel: userProgress.level,
-            apiKey: apiKey,
-            sessionNumber: exerciseNum,
-            weakTopics: userWeaknesses,
-            strengths: userProgress.strengths || [],
-            preferredDifficulty: 'medium'
+            userWeaknesses: userWeaknesses,
+            userStrengths: userProgress.strengths || [],
+            completedLessons: userProgress.completedLessons || 0
           });
           
-          setCurrentExercise(smartExercise);
-          setCurrentTopic(smartExercise.topic);
-          return; // ✅ Éxito con IA mejorada
-          
-        } catch (error: any) {
-          if (error?.message === "IA_EXHAUSTED") {
-            console.log("⚠️ IA agotada, usando método existente como fallback");
-          } else {
-            console.warn("⚠️ IA mejorada falló, intentando método original:", error);
-            
-            // DETECTAR error específico de cuota
-            if (error?.message?.includes('quota') || error?.message?.includes('429')) {
-              console.log("🔋 CUOTA DE IA AGOTADA - Marcando para UX");
-              localStorage.setItem('last_quota_error', new Date().toISOString());
-            }
+          // Verificar que no sea sesión repetida
+          if (SessionHashTracker.isSessionRepeated(exercises, userProgress.level)) {
+            console.warn("⚠️ SESIÓN REPETIDA DETECTADA - regenerando...");
+            throw new Error("Sesión repetida");
           }
-        }
-      }
-      
-      // MANTENER toda la lógica existente como fallback
-      console.log(`🎯 GENERANDO EJERCICIO ${exerciseNum}/8 PARA NIVEL ${userProgress.level}`);
-      
-      // PRIORIDAD 2: Intentar IA método original si hay API key
-      if (apiKey) {
-        try {
-          const smartExercise = await SmartAISystem.generateSmartExercise({
-            userId: userProgress.userId || 'anonymous',
-            userLevel: userProgress.level,
-            apiKey: apiKey,
-            sessionNumber: exerciseNum,
-            weakTopics: userWeaknesses,
-            strengths: userProgress.strengths || [],
-            preferredDifficulty: 'medium'
-          });
           
-          setCurrentExercise(smartExercise);
-          setCurrentTopic(smartExercise.topic);
+          // Marcar sesión como usada
+          SessionHashTracker.markSessionAsUsed(exercises, userProgress.level);
+          
+          setSessionExercises(exercises);
+          setCurrentExercise(exercises[0]);
+          setCurrentTopic(exercises[0].topic);
+          
+          console.log("✅ SESIÓN COMPLETA GENERADA - 8 EJERCICIOS ÚNICOS");
           return;
+          
         } catch (error: any) {
-          console.warn("⚠️ IA falló, usando ejercicio de emergencia:", error);
+          console.warn("⚠️ Error generando sesión con IA:", error);
           
           // DETECTAR error específico de cuota
           if (error?.message?.includes('quota') || error?.message?.includes('429')) {
-            console.log("🔋 CUOTA DE IA AGOTADA - Usando ejercicio de emergencia optimizado");
+            console.log("🔋 CUOTA DE IA AGOTADA - Marcando para UX");
             localStorage.setItem('last_quota_error', new Date().toISOString());
           }
         }
       }
       
-      // PRIORIDAD 3: Ejercicio de emergencia
-      const emergencyExercise = generateEmergencyExercise(userProgress.level);
-      setCurrentExercise(emergencyExercise);
-      setCurrentTopic(emergencyExercise.topic);
+      // Fallback: generar 8 ejercicios de emergencia únicos
+      const emergencyExercises = generateEmergencySession(userProgress.level);
+      setSessionExercises(emergencyExercises);
+      setCurrentExercise(emergencyExercises[0]);
+      setCurrentTopic(emergencyExercises[0].topic);
       
     } finally {
       setIsGenerating(false);
     }
   };
 
-  // Avanzar al siguiente ejercicio inteligente
+  // INICIALIZAR sesión una sola vez
   useEffect(() => {
-    if (exerciseNumber > 1 && exerciseNumber <= totalExercises) {
-      generateIntelligentExercise(exerciseNumber);
+    generateCompleteSession();
+  }, []); // Solo una vez al montar
+
+  // Completar sesión
+  const completeSession = useCallback(() => {
+    if (sessionComplete) return;
+    
+    const finalAccuracy = correctCount / totalExercises;
+
+    const results = {
+      exercisesCompleted: totalExercises,
+      correctAnswers: correctCount,
+      totalAnswers: totalExercises,
+      accuracy: finalAccuracy,
+      xpEarned: totalXP,
+    };
+
+    setSessionComplete(true);
+
+    setTimeout(() => {
+      onSessionComplete(results);
+    }, 3000);
+
+  }, [sessionComplete, correctCount, totalExercises, totalXP, onSessionComplete]);
+
+  // NUEVA función: avanzar al siguiente ejercicio de la sesión
+  const advanceToNextExercise = useCallback(() => {
+    const nextIndex = currentExerciseIndex + 1;
+    
+    if (nextIndex < sessionExercises.length) {
+      setCurrentExerciseIndex(nextIndex);
+      setCurrentExercise(sessionExercises[nextIndex]);
+      setExerciseNumber(nextIndex + 1);
+      setCurrentTopic(sessionExercises[nextIndex].topic);
+    } else {
+      completeSession();
     }
-  }, [exerciseNumber]);
+  }, [currentExerciseIndex, sessionExercises, completeSession]);
+
+
+
+
 
   // Manejar respuesta CON TRACKING INTELIGENTE
   const handleAnswer = useCallback(async (correct: boolean, xpEarned: number, selectedAnswer?: number, responseTime?: number) => {
@@ -226,39 +227,13 @@ const LessonSessionFixed: React.FC<LessonSessionProps> = ({
       ExerciseTracker.markExerciseAsUsed(userProgress.level, currentExercise.id);
     }
 
-    // AVANZAR INMEDIATAMENTE - SIN PAUSA INNECESARIA
+    // AVANZAR AL SIGUIENTE EJERCICIO DE LA SESIÓN
     setTimeout(() => {
-      if (exerciseNumber >= totalExercises) {
-        completeSession();
-      } else {
-        setExerciseNumber((prev) => prev + 1);
-      }
-    }, 200); // ✅ SÚPER RÁPIDO - Solo 0.2 segundos
-  }, [exerciseNumber, totalExercises, currentExercise, userProgress.level, userProgress.userId, currentTopic, sessionId]);
+      advanceToNextExercise();
+    }, 1500); // Pausa para mostrar resultado
+  }, [advanceToNextExercise, currentExercise, userProgress.level, userProgress.userId, currentTopic, sessionId]);
 
-  // Completar sesión
-  // ✅ FUNCIÓN SIMPLIFICADA - SIN LÓGICA DUPLICADA
-  const completeSession = useCallback(() => {
-    if (sessionComplete) return;
-    
-    const finalAccuracy = correctCount / totalExercises;
 
-    const results = {
-      exercisesCompleted: totalExercises,
-      correctAnswers: correctCount,
-      totalAnswers: totalExercises,
-      accuracy: finalAccuracy,
-      xpEarned: totalXP,
-      // ✅ NO calcular levelUp aquí - lo hace Dashboard
-    };
-
-    setSessionComplete(true);
-
-    setTimeout(() => {
-      onSessionComplete(results);
-    }, 3000);
-
-  }, [sessionComplete, correctCount, totalExercises, totalXP, onSessionComplete]);
 
   // EJERCICIO DE EMERGENCIA CUANDO LA IA FALLA
   const generateEmergencyExercise = (level: string): SmartExercise => {
@@ -356,6 +331,98 @@ const LessonSessionFixed: React.FC<LessonSessionProps> = ({
       difficulty: 'easy',
       learningFocus: [baseExercise.topic]
     };
+  };
+
+  // NUEVA función: generar 8 ejercicios de emergencia únicos para sesión completa
+  const generateEmergencySession = (level: string): any[] => {
+    const baseExercises = [
+      {
+        question: "I _____ hungry. / Tengo hambre.",
+        options: ["am", "is", "are", "be"],
+        correctAnswer: 0,
+        explanation: "🎯 Con 'I' (yo) siempre usamos 'am'. I am hungry = Tengo hambre.",
+        topic: "verb to be"
+      },
+      {
+        question: "What is this? 🍕 / ¿Qué es esto? 🍕",
+        options: ["pizza", "hamburger", "sandwich", "salad"],
+        correctAnswer: 0,
+        explanation: "🎯 🍕 es 'pizza'. Todas las opciones son comidas, por eso tiene sentido.",
+        topic: "food vocabulary"
+      },
+      {
+        question: "She _____ coffee every morning. / Ella bebe café cada mañana.",
+        options: ["drinks", "drink", "drinking", "drank"],
+        correctAnswer: 0,
+        explanation: "🎯 Con 'she' usamos 'drinks' (con -s). She drinks coffee = Ella bebe café.",
+        topic: "present simple"
+      },
+      {
+        question: "How do you say 'hola' in English? / ¿Cómo se dice 'hola' en inglés?",
+        options: ["hello", "goodbye", "thank you", "excuse me"],
+        correctAnswer: 0,
+        explanation: "🎯 'Hola' en inglés es 'hello'. Es el saludo más común.",
+        topic: "greetings"
+      },
+      {
+        question: "What color is this? 🔴 / ¿De qué color es esto? 🔴",
+        options: ["red", "blue", "green", "yellow"],
+        correctAnswer: 0,
+        explanation: "🎯 🔴 es 'red' (rojo). Todas las opciones son colores.",
+        topic: "colors"
+      },
+      {
+        question: "I _____ English every day. / Yo estudio inglés todos los días.",
+        options: ["study", "studies", "studied", "studying"],
+        correctAnswer: 0,
+        explanation: "🎯 Con 'I' usamos 'study' (sin -s). I study = Yo estudio.",
+        topic: "present simple"
+      },
+      {
+        question: "What do you eat for breakfast? / ¿Qué comes en el desayuno?",
+        options: ["cereal", "dinner", "lunch", "sleep"],
+        correctAnswer: 0,
+        explanation: "🎯 'Cereal' es una comida común para el desayuno. Las otras opciones no son comidas de desayuno.",
+        topic: "meals"
+      },
+      {
+        question: "Where _____ you live? / ¿Dónde vives?",
+        options: ["do", "does", "are", "is"],
+        correctAnswer: 0,
+        explanation: "🎯 Con 'you' y verbos normales usamos 'do'. Where do you live? = ¿Dónde vives?",
+        topic: "question formation"
+      }
+    ];
+
+    // Generar 8 ejercicios únicos con mezclado
+    return baseExercises.map((exercise, index) => {
+      // Mezclar opciones para cada ejercicio
+      const correctAnswerText = exercise.options[exercise.correctAnswer];
+      const shuffledOptions = [...exercise.options];
+      
+      // Fisher-Yates shuffle
+      for (let i = shuffledOptions.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [shuffledOptions[i], shuffledOptions[j]] = [shuffledOptions[j], shuffledOptions[i]];
+      }
+      
+      const newCorrectAnswer = shuffledOptions.findIndex(option => option === correctAnswerText);
+
+      return {
+        id: `emergency_session_${Date.now()}_${index}_${Math.random().toString(36).substr(2, 9)}`,
+        question: exercise.question,
+        instruction: "Selecciona la respuesta correcta",
+        options: shuffledOptions,
+        correctAnswer: newCorrectAnswer,
+        explanation: exercise.explanation,
+        xpReward: 10,
+        topic: exercise.topic,
+        level: level,
+        source: 'emergency',
+        difficulty: 'easy',
+        learningFocus: [exercise.topic]
+      };
+    });
   };
 
   // Pantalla de resultados
