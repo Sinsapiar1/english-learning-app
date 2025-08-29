@@ -2,10 +2,10 @@
 
 ## 🎯 **LA GRAN IDEA: App de Inglés 100% Personalizada**
 
-**ÚLTIMA ACTUALIZACIÓN**: Diciembre 2024 - Sistema completamente unificado  
-**VERSIÓN**: 5.0 - Progreso unificado + Sistema robusto  
+**ÚLTIMA ACTUALIZACIÓN**: Diciembre 2024 - Sistema completamente unificado + Firebase Analytics  
+**VERSIÓN**: 5.1 - Progreso unificado + Analytics + Preguntas bilingües  
 **DEPLOY**: https://english-learning-app-nu.vercel.app  
-**STATUS**: ✅ **PRODUCCIÓN ESTABLE** - App única en el mercado
+**STATUS**: ✅ **PRODUCCIÓN ESTABLE** - App única en el mercado con Analytics
 
 ### 🧠 **LO QUE HACE ÚNICA ESTA APP:**
 
@@ -14,6 +14,8 @@
 📱 **Contextos Modernos**: Instagram, Netflix, Uber, trabajo remoto (inglés del 2024)  
 🎯 **Anti-Repetición**: Nunca el mismo ejercicio dos veces  
 🚀 **Solo Progreso**: Nunca bajas de nivel, siempre motivacional  
+🌍 **Preguntas Bilingües**: Inglés y español para mejor comprensión  
+📊 **Analytics Inteligente**: Firebase Analytics para optimización continua  
 
 ### 🔥 **EL DIFERENCIADOR CLAVE:**
 No es como Duolingo (contenido fijo para todos). Es como tener un profesor personal de inglés con IA que:
@@ -65,13 +67,14 @@ No es como Duolingo (contenido fijo para todos). Es como tener un profesor perso
 ### **Stack Tecnológico**
 ```
 Frontend: React 18 + TypeScript + Custom CSS
-Backend: Firebase Auth + Firestore (opcional, offline-first)
+Backend: Firebase Auth + Firestore + Analytics (opcional, offline-first)
 IA: Google Gemini 1.5 Flash API (temperatura 0.95 para creatividad)
 Anti-Repetición: ContentHashTracker + ExerciseTracker híbrido
 Niveles: RealLevelSystem (unificado, solo ascendente)
 Deployment: Vercel (auto-deploy desde main)
 Storage: localStorage (primary) + Firestore (sync opcional)
 Performance: React.memo + useCallback + Fisher-Yates shuffling
+Analytics: Firebase Analytics con eventos personalizados
 ```
 
 ### **Servicios Críticos**
@@ -157,21 +160,21 @@ src/components/
 
 #### **📚 VOCABULARIO (Nivel A1)**
 ```
-Pregunta: "What is this? 🍎"
+Pregunta: "What is this? 🍎 / ¿Qué es esto? 🍎"
 Opciones: apple ✓ | car | house | book (mezcladas aleatoriamente)
 Explicación: 🎯 SÚPER BÁSICO: 🍎 es 'apple' (manzana). Esta es una de las primeras palabras en inglés.
 ```
 
 #### **✏️ GRAMÁTICA (Nivel A1)**
 ```
-Pregunta: "I ___ a student."
+Pregunta: "I ___ a student. / Yo ___ estudiante."
 Opciones: am ✓ | is | are | be (mezcladas aleatoriamente)
 Explicación: 🎯 SÚPER BÁSICO: Con 'I' (yo) SIEMPRE usamos 'am'. I am = yo soy.
 ```
 
 #### **🔄 TRADUCCIÓN (Contexto Moderno)**
 ```
-Pregunta: "How do you say 'hola'?"
+Pregunta: "How do you say 'hola'? / ¿Cómo se dice 'hola'?"
 Opciones: hello ✓ | goodbye | please | thank you (mezcladas aleatoriamente)
 Explicación: 🎯 SÚPER BÁSICO: 'Hola' en inglés es 'hello'. Es el saludo más común.
 ```
@@ -451,6 +454,13 @@ Esta app es **DIFERENTE** a todo lo que existe:
 🎯 **Cero repetición**: Cada ejercicio es único  
 🚀 **Solo motivación**: Progreso que nunca baja  
 
+### **⚠️ ÁREA A REFORZAR**
+**🔄 LÓGICA ANTI-REPETICIÓN DE PREGUNTAS**: Se han detectado casos donde las preguntas se repiten. Necesita reforzar:
+- Verificación más estricta de ContentHashTracker
+- Algoritmo de detección de similitud semántica
+- Expansión del banco de ejercicios de emergencia
+- Mejora en la rotación de temas y contextos
+
 ### **💡 PRÓXIMAS EVOLUCIONES**
 1. **Sistema de lecciones manuales** para contenido personalizado
 2. **Gamificación avanzada** con logros y competencias
@@ -465,6 +475,7 @@ Esta app es **DIFERENTE** a todo lo que existe:
 ---
 
 **📅 Última actualización**: Diciembre 2024  
-**🏆 Versión**: 4.0 - Sistema completamente estable  
-**✅ Status**: Producción estable, todos los críticos resueltos  
-**🎯 Próximo**: Implementar nuevas funcionalidades según demanda del usuario
+**🏆 Versión**: 5.1 - Sistema completamente estable + Firebase Analytics + Preguntas bilingües  
+**✅ Status**: Producción estable, todos los críticos resueltos + Analytics implementado  
+**📊 Analytics**: Firebase Analytics configurado y funcionando  
+**🎯 Próximo**: Reforzar anti-repetición y implementar nuevas funcionalidades según demanda

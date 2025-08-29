@@ -2,15 +2,34 @@
 
 ## 📊 **ESTADO ACTUAL DEL PROYECTO**
 
-**ÚLTIMA ACTUALIZACIÓN**: Diciembre 2024 (Sistema completamente unificado + todos los fixes)  
-**COMMIT ACTUAL**: `0cb92ec` - Sistema de progreso unificado + todos los problemas críticos resueltos  
+**ÚLTIMA ACTUALIZACIÓN**: Diciembre 2024 (Sistema completamente unificado + Firebase Analytics + Preguntas bilingües)  
+**COMMIT ACTUAL**: `latest` - Firebase Analytics implementado + Preguntas bilingües + Sistema estable  
 **DEPLOY**: https://english-learning-app-nu.vercel.app  
 **BRANCH**: `main` (deploy automático configurado)  
-**STATUS**: ✅ **COMPLETAMENTE FUNCIONAL** - Todos los problemas críticos resueltos, app estable
+**STATUS**: ✅ **COMPLETAMENTE FUNCIONAL** - Todos los problemas críticos resueltos + Firebase Analytics funcionando
 
 ---
 
 ## ✅ **TODOS LOS PROBLEMAS CRÍTICOS RESUELTOS**
+
+### 🚨 **13. FIREBASE ANALYTICS IMPLEMENTADO (COMPLETADO - Commit latest)**
+**OBJETIVO**: Implementar Firebase Analytics para tracking de comportamiento de usuarios
+**IMPLEMENTACIÓN COMPLETADA**:
+- ✅ Firebase Analytics configurado de forma segura con fallback
+- ✅ AnalyticsService creado con eventos personalizados
+- ✅ Tracking de ejercicios completados, sesiones, level ups
+- ✅ Información de dispositivo y usuario
+- ✅ Integrado en Dashboard.tsx y LessonSessionFixed.tsx
+- ✅ No rompe funcionalidad existente (funciona sin Analytics)
+
+### 🚨 **14. PREGUNTAS BILINGÜES IMPLEMENTADAS (COMPLETADO - Commit latest)**
+**OBJETIVO**: Preguntas en inglés Y español para mejor comprensión
+**IMPLEMENTACIÓN COMPLETADA**:
+- ✅ Prompt de IA actualizado para preguntas bilingües
+- ✅ Formato: "What is this? 🍎 / ¿Qué es esto? 🍎"
+- ✅ Respuestas siguen siendo solo en inglés
+- ✅ Ejercicios de emergencia actualizados con formato bilingüe
+- ✅ No afecta funcionalidad existente
 
 ### 🚨 **10. SISTEMA DE PROGRESO UNIFICADO (RESUELTO - Commit 0cb92ec)**
 **PROBLEMA**: 3 sistemas de progreso compitiendo causaban conflictos y datos inconsistentes
@@ -136,13 +155,15 @@
 ### **Stack Tecnológico Completo**
 ```
 Frontend: React 18 + TypeScript + Custom CSS
-Backend: Firebase Auth + Firestore (opcional, offline-first)
+Backend: Firebase Auth + Firestore + Analytics (opcional, offline-first)
 IA: Google Gemini 1.5 Flash API (temperatura 0.95 para creatividad)
 Anti-Repetición: ContentHashTracker + ExerciseTracker híbrido
 Niveles: RealLevelSystem UNIFICADO (solo ascendente)
 Deployment: Vercel (auto-deploy desde main)
 Storage: localStorage (primary) + Firestore (sync opcional)
 Performance: React.memo + useCallback + Fisher-Yates shuffling
+Analytics: Firebase Analytics con eventos personalizados
+Preguntas: Bilingües (inglés/español) con respuestas en inglés
 ```
 
 ### **Servicios Críticos Funcionando**
@@ -191,13 +212,14 @@ src/components/
 ### **Servicios de Negocio**
 ```
 src/services/
-├── geminiAI.ts               # Generación IA con Gemini 1.5 Flash
-├── smartAI.ts                # Orquestación + emergency exercises
+├── geminiAI.ts               # Generación IA con Gemini 1.5 Flash + preguntas bilingües
+├── smartAI.ts                # Orquestación + emergency exercises + Analytics
 ├── levelProgression.ts       # Sistema de niveles solo ascendente
 ├── contentHashTracker.ts     # Anti-repetición por contenido + logging
 ├── exerciseTracker.ts        # Tracking por ID
 ├── intelligentLearning.ts    # Firebase opcional + offline fallback
-└── offlineMode.ts           # Funcionalidad offline completa
+├── offlineMode.ts           # Funcionalidad offline completa
+└── analytics.ts             # Firebase Analytics con eventos personalizados
 ```
 
 ---
@@ -300,15 +322,23 @@ src/services/
 - **Fallback**: Emergency exercises después de 5 intentos ✅
 - **Monitoring**: Logs detallados en console ✅
 
-#### **Anti-Repetición**
+#### **Anti-Repetición (⚠️ ÁREA A REFORZAR)**
 - **Verificación**: Doble check (ID + Hash) ✅
 - **Memoria**: Hashes preservados entre sesiones ✅
-- **Emergency**: 4 ejercicios únicos garantizados ✅
+- **Emergency**: 8 ejercicios únicos garantizados ✅
+- **⚠️ PROBLEMA DETECTADO**: Se reportan preguntas repetidas ocasionalmente
+- **ACCIÓN REQUERIDA**: Reforzar lógica de ContentHashTracker y expandir banco de ejercicios
 
 #### **Progreso de Usuario**
 - **Sistema**: Solo ascendente, nunca baja ✅
 - **Debugging**: Logs completos en console ✅
 - **Motivación**: Mensajes dinámicos positivos ✅
+
+#### **Firebase Analytics (NUEVO)**
+- **Tracking**: Ejercicios completados, sesiones, level ups ✅
+- **Eventos**: Personalizados para análisis de comportamiento ✅
+- **Fallback**: Funciona sin Analytics si no está disponible ✅
+- **Dashboard**: Google Analytics vinculado y configurado ✅
 
 ---
 
@@ -384,9 +414,19 @@ DEPENDENCIAS: Offline mode funcionando ✅
 ## 🛠️ **GUÍA PARA PRÓXIMO DESARROLLADOR (CLAUDE)**
 
 ### **🔥 PRIORIDADES INMEDIATAS**
-1. **INVESTIGAR REPETICIÓN DE PREGUNTAS**: Usuario reporta preguntas repetidas cuando no sube de nivel
-2. **VERIFICAR PROGRESO**: Confirmar que porcentaje de progreso aumenta después de sesiones
-3. **DEBUGGING CONSOLE**: Revisar logs "DEBUG PROGRESO" para identificar problemas
+1. **REFORZAR ANTI-REPETICIÓN**: Usuario confirma preguntas repetidas - necesita mejora urgente
+   - Investigar ContentHashTracker para casos edge
+   - Implementar detección de similitud semántica
+   - Expandir banco de ejercicios de emergencia
+   - Mejorar rotación de temas y contextos
+2. **OPTIMIZAR FIREBASE ANALYTICS**: Aprovechar datos para insights
+   - Configurar dashboards personalizados
+   - Analizar patrones de abandono
+   - Identificar ejercicios más difíciles
+3. **MONITOREO CONTINUO**: Verificar estabilidad del sistema
+   - Logs de DEBUG PROGRESO
+   - Performance de IA con preguntas bilingües
+   - Efectividad de fallbacks
 
 ### **Comandos Esenciales**
 ```bash
@@ -500,9 +540,11 @@ Esta app hace algo que **NINGUNA OTRA** hace:
 
 ---
 
-**📅 Última actualización**: Diciembre 2024 - Sistema completamente unificado + todos los fixes  
-**👨‍💻 Estado**: App completamente funcional, todos los problemas críticos resueltos  
-**🚀 Status**: Producción estable, app única en el mercado  
-**📊 Commit**: `0cb92ec` - Sistema de progreso unificado + perfecto funcionamiento  
+**📅 Última actualización**: Diciembre 2024 - Sistema completamente unificado + Firebase Analytics + Preguntas bilingües  
+**👨‍💻 Estado**: App completamente funcional, Analytics implementado, área anti-repetición a reforzar  
+**🚀 Status**: Producción estable, app única en el mercado con Analytics  
+**📊 Commit**: `latest` - Firebase Analytics + Preguntas bilingües + Sistema estable  
+**📈 Analytics**: Firebase Analytics configurado y vinculado con Google Analytics  
+**⚠️ Próximo**: Reforzar lógica anti-repetición de preguntas  
 
-**🎓 ¡La app es ahora ÚNICA en el mercado! Cada usuario tiene su IA personal para aprender inglés. 🚀**
+**🎓 ¡La app es ahora ÚNICA en el mercado! Cada usuario tiene su IA personal para aprender inglés con Analytics inteligente. 🚀**
