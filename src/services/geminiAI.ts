@@ -29,42 +29,85 @@ export class PersonalizedLessonGenerator {
     previousErrors?: string[];
     timestamp?: number;
   }): Promise<GeneratedExercise> {
-    // PROMPT MEJORADO para ejercicios más únicos
-    const enhancedPrompt = `Eres un profesor experto de inglés. Crea un ejercicio COMPLETAMENTE ÚNICO para hispanohablantes nivel ${params.level}.
+    // Contextos modernos específicos
+    const modernContexts = [
+      "using Uber Eats to order food",
+      "posting on Instagram stories", 
+      "watching Netflix shows",
+      "working from home on Zoom",
+      "shopping on Amazon online",
+      "chatting on WhatsApp",
+      "leaving Google reviews"
+    ];
+    const selectedContext = modernContexts[params.exerciseNumber % modernContexts.length];
 
-CONTEXTO ÚNICO: Timestamp ${Date.now()} - Ejercicio #${params.exerciseNumber}
+    const enhancedPrompt = `Eres un profesor experto de inglés. Crea un ejercicio LÓGICO y EDUCATIVO para hispanohablantes nivel ${params.level}.
+
+CONTEXTO: ${selectedContext}
 TEMA: ${params.topic}
-DEBILIDADES DEL USUARIO: ${params.userWeaknesses?.join(', ') || 'ninguna'}
+EJERCICIO #: ${params.exerciseNumber}
 
-TIPOS DE EJERCICIO (rotar según número):
-${params.exerciseNumber % 4 === 0 ? 'VOCABULARIO: Palabra inglesa → opciones en español' : ''}
-${params.exerciseNumber % 4 === 1 ? 'GRAMÁTICA: Oración con espacio → opciones gramática inglesa' : ''}
-${params.exerciseNumber % 4 === 2 ? 'TRADUCCIÓN: Frase español → opciones traducción inglesa' : ''}
-${params.exerciseNumber % 4 === 3 ? 'COMPRENSIÓN: Texto inglés corto + pregunta → opciones respuesta' : ''}
+REGLAS CRÍTICAS - EJERCICIOS DEBEN SER LÓGICOS:
+❌ PROHIBIDO: Preguntas donde la respuesta obvia no esté entre las opciones
+❌ PROHIBIDO: "Ordené pizza, ¿qué ordené?" con opciones irrelevantes
+❌ PROHIBIDO: Preguntas confusas o que no enseñen inglés real
+✅ OBLIGATORIO: Todas las opciones deben ser relevantes a la pregunta
+✅ OBLIGATORIO: La respuesta correcta debe ser obvia y educativa
+✅ OBLIGATORIO: Enseñar inglés real y útil
 
-CONTEXTOS MODERNOS OBLIGATORIOS (usar uno):
-- Usando apps como Uber Eats, Instagram, TikTok
-- Trabajando remotamente en Zoom calls
-- Viendo Netflix/streaming
-- Comprando en Amazon online
-- Chateando por WhatsApp
-- Dejando reviews en Google
+TIPOS DE EJERCICIO VÁLIDOS:
 
-REGLAS CRÍTICAS:
-🌍 PREGUNTA: BILINGÜE - Inglés Y español separados por " / " (Ejemplo: "What is this? 🍎 / ¿Qué es esto? 🍎")
-🇬🇧 OPCIONES: SOLO en inglés (apple, car, house, book)
-🇪🇸 EXPLICACIÓN: Siempre en ESPAÑOL PERFECTO para principiantes
-📱 CONTEXTO: Usar vocabulario moderno 2024
-❌ FORMATO: Sin letras A) B) C) D) (se agregan automáticamente)
+VOCABULARIO (nivel ${params.level}):
+- "What does 'order' mean in 'I order food on Uber Eats'? / ¿Qué significa 'order' en 'I order food on Uber Eats'?" 
+- Opciones: ["pedir/ordenar", "comer", "cocinar", "pagar"]
+
+GRAMÁTICA:
+- "I _____ pizza last night. / Yo _____ pizza anoche."
+- Opciones: ["ordered", "order", "ordering", "orders"]
+
+TRADUCCIÓN:
+- "¿Cómo se dice 'pedí comida' en inglés? / How do you say 'pedí comida' in English?"
+- Opciones: ["I ordered food", "I eat food", "I cook food", "I like food"]
+
+COMPRENSIÓN:
+- "Text: 'Maria ordered sushi on Uber Eats. She loves Japanese food.' Question: What kind of food does Maria like? / ¿Qué tipo de comida le gusta a María?"
+- Opciones: ["Japanese food", "Italian food", "Mexican food", "Chinese food"]
+
+INSTRUCCIONES ESPECÍFICAS PARA NIVEL ${params.level}:
+${params.level === 'A1' ? `
+- Usar vocabulario SÚPER básico: eat, drink, like, want, have, go, come, etc.
+- Preguntas sobre: comida básica, colores, números 1-10, familia, casa
+- Ejemplo: "What is this? 🍕 / ¿Qué es esto? 🍕" → opciones: ["pizza", "hamburger", "sandwich", "salad"] (CORRECTO - todas son comidas)
+` : ''}
+
+${params.level === 'A2' ? `
+- Vocabulario intermedio: order, deliver, prefer, usually, sometimes, etc.
+- Preguntas sobre: rutinas diarias, presente perfecto básico, preposiciones simples
+- Contextos: apps de comida, trabajo, familia
+` : ''}
+
+VALIDACIÓN OBLIGATORIA:
+1. ¿La pregunta tiene sentido lógico?
+2. ¿Todas las opciones son relevantes?
+3. ¿La respuesta correcta es obvia?
+4. ¿Realmente enseña inglés útil?
+5. ¿Un principiante lo entendería?
 
 JSON REQUERIDO:
 {
-  "question": "[Pregunta BILINGÜE: inglés / español con contexto moderno]",
+  "question": "[Pregunta lógica y educativa en inglés Y español separada por ' / ']",
   "instruction": "Selecciona la respuesta correcta",
-  "options": ["opción1", "opción2", "opción3", "opción4"],
+  "options": ["opción relevante 1", "opción relevante 2", "opción relevante 3", "opción relevante 4"],
   "correctAnswer": 0,
-  "explanation": "🎯 [Explicación detallada en español perfecto para principiantes, explicando por qué es correcta y por qué las otras están mal]"
-}`;
+  "explanation": "🎯 EXPLICACIÓN CLARA: [Por qué es correcta y qué enseña este ejercicio]"
+}
+
+EJEMPLOS DE PREGUNTAS BUENAS:
+- "I _____ sushi from Uber Eats yesterday. / Yo _____ sushi de Uber Eats ayer." → ["ordered", "eat", "cook", "deliver"]
+- "What does 'delivery' mean? / ¿Qué significa 'delivery'?" → ["entrega a domicilio", "cocinar", "comer", "pagar"]
+- "How do you say 'me gusta la pizza'? / ¿Cómo se dice 'me gusta la pizza'?" → ["I like pizza", "I eat pizza", "I want pizza", "I cook pizza"]
+
+¡GENERA SOLO EJERCICIOS LÓGICOS QUE REALMENTE ENSEÑEN INGLÉS!`;
 
     try {
       const model = this.genAI.getGenerativeModel({
@@ -130,6 +173,13 @@ JSON REQUERIDO:
         };
       }
 
+      // ✅ VALIDAR QUE EL EJERCICIO SEA LÓGICO
+      const isLogical = this.validateExerciseLogic(exerciseData);
+      if (!isLogical) {
+        console.warn("❌ Ejercicio ilógico detectado, regenerando...");
+        throw new Error("Ejercicio ilógico generado por IA");
+      }
+
       return {
         question: exerciseData.question,
         instruction: exerciseData.instruction || "Selecciona la respuesta correcta",
@@ -153,6 +203,39 @@ JSON REQUERIDO:
   }
 
   // MÉTODO ELIMINADO - NO MÁS EJERCICIOS ESTÁTICOS
+
+  /**
+   * Valida que el ejercicio sea lógico y educativo
+   */
+  private validateExerciseLogic(exercise: any): boolean {
+    // Verificar que no sea absurdo
+    const question = exercise.question.toLowerCase();
+    const options = exercise.options.map((opt: string) => opt.toLowerCase());
+    const correctOption = options[exercise.correctAnswer];
+    
+    // Casos absurdos comunes
+    if (question.includes('sushi') && !correctOption.includes('sushi') && !options.some((opt: string) => opt.includes('japanese') || opt.includes('fish'))) {
+      console.warn("❌ Pregunta sobre sushi sin opciones relevantes");
+      return false;
+    }
+    
+    if (question.includes('pizza') && !correctOption.includes('pizza') && !options.some((opt: string) => opt.includes('italian') || opt.includes('food'))) {
+      console.warn("❌ Pregunta sobre pizza sin opciones relevantes");
+      return false;
+    }
+    
+    // Verificar que las opciones tengan sentido
+    const irrelevantOptions = ['car', 'house', 'book'];
+    if (question.includes('food') || question.includes('eat') || question.includes('order')) {
+      const hasIrrelevant = options.some((opt: string) => irrelevantOptions.includes(opt));
+      if (hasIrrelevant) {
+        console.warn("❌ Pregunta de comida con opciones irrelevantes");
+        return false;
+      }
+    }
+    
+    return true;
+  }
 
   /**
    * Genera ejemplos específicos para cada tipo de ejercicio

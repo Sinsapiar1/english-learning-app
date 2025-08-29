@@ -1,3 +1,7 @@
+// AGREGAR estas importaciones al inicio del archivo:
+import { doc, setDoc, getDoc } from 'firebase/firestore';
+import { db } from '../firebase';
+
 export interface RealUserProgress {
   userId: string;
   currentLevel: 'A1' | 'A2' | 'B1' | 'B2' | 'C1';
@@ -219,6 +223,19 @@ export class RealLevelSystem {
   
   // CARGAR PROGRESO DEL USUARIO
   static loadUserProgress(userId: string): RealUserProgress {
+    console.log("📊 CARGANDO PROGRESO DEL USUARIO:", userId);
+    
+    // ✅ INTENTAR CARGAR DESDE FIREBASE PRIMERO
+    this.loadFromFirebase(userId).then(firebaseProgress => {
+      if (firebaseProgress) {
+        console.log("☁️ PROGRESO CARGADO DESDE FIREBASE");
+        this.saveUserProgress(firebaseProgress); // Sincronizar local
+      }
+    }).catch(error => {
+      console.warn("⚠️ Firebase no disponible, usando datos locales");
+    });
+    
+    // Cargar desde localStorage mientras tanto
     const saved = localStorage.getItem(`real_progress_${userId}`);
     
     if (saved) {
@@ -230,9 +247,9 @@ export class RealLevelSystem {
     }
     
     // Progreso inicial para usuario nuevo
-    return {
+    const newProgress = {
       userId,
-      currentLevel: 'A1',
+      currentLevel: 'A1' as const,
       totalCorrectAnswers: 0,
       totalExercises: 0,
       overallAccuracy: 0,
@@ -246,10 +263,58 @@ export class RealLevelSystem {
       lastActive: new Date(),
       streak: 1
     };
+    
+    // Guardar inicial en ambos lados
+    this.saveUserProgress(newProgress);
+    return newProgress;
   }
   
   // GUARDAR PROGRESO
   static saveUserProgress(progress: RealUserProgress): void {
+    console.log("💾 GUARDANDO PROGRESO:", progress.userId);
+    
+    // ✅ GUARDAR LOCAL
     localStorage.setItem(`real_progress_${progress.userId}`, JSON.stringify(progress));
+    
+    // ✅ GUARDAR EN FIREBASE (con retry)
+    this.saveToFirebase(progress).catch(error => {
+      console.warn("⚠️ Error guardando en Firebase, datos guardados localmente");
+    });
+  }
+
+  // AGREGAR estas funciones nuevas:
+  private static async loadFromFirebase(userId: string): Promise<RealUserProgress | null> {
+    try {
+      const docRef = doc(db, 'user_real_progress', userId);
+      const docSnap = await getDoc(docRef);
+      
+      if (docSnap.exists()) {
+        const data = docSnap.data();
+        return {
+          ...data,
+          lastActive: data.lastActive?.toDate() || new Date()
+        } as RealUserProgress;
+      }
+      
+      return null;
+    } catch (error) {
+      console.warn("⚠️ Error cargando desde Firebase:", error);
+      return null;
+    }
+  }
+
+  private static async saveToFirebase(progress: RealUserProgress): Promise<void> {
+    try {
+      const docRef = doc(db, 'user_real_progress', progress.userId);
+      await setDoc(docRef, {
+        ...progress,
+        lastUpdated: new Date()
+      }, { merge: true });
+      
+      console.log("☁️ Progreso sincronizado con Firebase");
+    } catch (error) {
+      console.warn("⚠️ Error guardando en Firebase:", error);
+      throw error;
+    }
   }
 }

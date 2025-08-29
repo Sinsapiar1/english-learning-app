@@ -1,4 +1,4 @@
-import { analytics } from './firebase';
+import { analytics } from '../firebase';
 import { logEvent, setUserProperties, setUserId } from 'firebase/analytics';
 
 // 📊 SERVICIO DE ANALYTICS - SIN ROMPER NADA EXISTENTE

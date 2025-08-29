@@ -262,70 +262,77 @@ const LessonSessionFixed: React.FC<LessonSessionProps> = ({
 
   // EJERCICIO DE EMERGENCIA CUANDO LA IA FALLA
   const generateEmergencyExercise = (level: string): SmartExercise => {
-    const emergencyExercises = [
+    const logicalExercises = [
       {
-        question: "What is this? 🍎 / ¿Qué es esto? 🍎",
-        options: ["apple", "car", "house", "book"],
-        correctAnswer: 0,
-        explanation: "🎯 SÚPER BÁSICO: 🍎 es 'apple' (manzana). Esta es una de las primeras palabras en inglés.",
-        topic: "basic vocabulary"
-      },
-      {
-        question: "How do you say 'hola'? / ¿Cómo se dice 'hola'?",
-        options: ["hello", "goodbye", "please", "thank you"], 
-        correctAnswer: 0,
-        explanation: "🎯 SÚPER BÁSICO: 'Hola' en inglés es 'hello'. Es el saludo más común.",
-        topic: "greetings"
-      },
-      {
-        question: "I ___ a student. / Yo ___ un estudiante.",
+        question: "I _____ hungry. / Tengo hambre.",
         options: ["am", "is", "are", "be"],
-        correctAnswer: 0, 
-        explanation: "🎯 SÚPER BÁSICO: Con 'I' (yo) SIEMPRE usamos 'am'. I am = yo soy.",
+        correctAnswer: 0,
+        explanation: "🎯 Con 'I' (yo) siempre usamos 'am'. I am hungry = Tengo hambre.",
         topic: "verb to be"
       },
       {
-        question: "What color is this? ⚪ / ¿De qué color es esto? ⚪",
-        options: ["white", "black", "red", "blue"],
-        correctAnswer: 0, 
-        explanation: "🎯 SÚPER BÁSICO: ⚪ es 'white' (blanco). Los colores son importantes.",
-        topic: "colors"
-      },
-      {
-        question: "What do you say when you meet someone? / ¿Qué dices cuando conoces a alguien?",
-        options: ["Nice to meet you", "Goodbye", "I'm sorry", "Excuse me"],
+        question: "What is this? 🍕 / ¿Qué es esto? 🍕",
+        options: ["pizza", "hamburger", "sandwich", "salad"],
         correctAnswer: 0,
-        explanation: "🎯 SÚPER BÁSICO: 'Nice to meet you' es lo que dices cuando conoces a alguien.",
-        topic: "greetings"
+        explanation: "🎯 🍕 es 'pizza'. Todas las opciones son comidas, por eso tiene sentido.",
+        topic: "food vocabulary"
       },
       {
-        question: "How do you say 'gracias'? / ¿Cómo se dice 'gracias'?",
-        options: ["thank you", "sorry", "hello", "goodbye"],
-        correctAnswer: 0,
-        explanation: "🎯 SÚPER BÁSICO: 'Gracias' en inglés es 'thank you'. Es muy importante ser educado.",
-        topic: "politeness"
-      },
-      {
-        question: "She ___ coffee every morning. / Ella ___ café cada mañana.",
+        question: "She _____ coffee every morning. / Ella bebe café cada mañana.",
         options: ["drinks", "drink", "drinking", "drank"],
         correctAnswer: 0,
-        explanation: "🎯 Con 'She' (tercera persona singular) añadimos -s al verbo en presente simple.",
+        explanation: "🎯 Con 'she' usamos 'drinks' (con -s). She drinks coffee = Ella bebe café.",
         topic: "present simple"
       },
       {
-        question: "Where ___ you from? / ¿De dónde ___ tú?",
-        options: ["are", "is", "am", "be"],
+        question: "How do you say 'hola' in English? / ¿Cómo se dice 'hola' en inglés?",
+        options: ["hello", "goodbye", "thank you", "excuse me"],
         correctAnswer: 0,
-        explanation: "🎯 Con 'you' siempre usamos 'are'. Es una pregunta básica para conocer el origen de alguien.",
-        topic: "verb to be"
+        explanation: "🎯 'Hola' en inglés es 'hello'. Es el saludo más común.",
+        topic: "greetings"
+      },
+      {
+        question: "What color is this? 🔴 / ¿De qué color es esto? 🔴",
+        options: ["red", "blue", "green", "yellow"],
+        correctAnswer: 0,
+        explanation: "🎯 🔴 es 'red' (rojo). Todas las opciones son colores.",
+        topic: "colors"
+      },
+      {
+        question: "I _____ English every day. / Yo estudio inglés todos los días.",
+        options: ["study", "studies", "studied", "studying"],
+        correctAnswer: 0,
+        explanation: "🎯 Con 'I' usamos 'study' (sin -s). I study = Yo estudio.",
+        topic: "present simple"
+      },
+      {
+        question: "What do you eat for breakfast? / ¿Qué comes en el desayuno?",
+        options: ["cereal", "dinner", "lunch", "sleep"],
+        correctAnswer: 0,
+        explanation: "🎯 'Cereal' es una comida común para el desayuno. Las otras opciones no son comidas de desayuno.",
+        topic: "meals"
+      },
+      {
+        question: "Where _____ you live? / ¿Dónde vives?",
+        options: ["do", "does", "are", "is"],
+        correctAnswer: 0,
+        explanation: "🎯 Con 'you' y verbos normales usamos 'do'. Where do you live? = ¿Dónde vives?",
+        topic: "question formation"
       }
     ];
     
-    const baseExercise = emergencyExercises[Math.floor(Math.random() * emergencyExercises.length)];
+    const baseExercise = logicalExercises[Math.floor(Math.random() * logicalExercises.length)];
     
-    // ✅ MEZCLAR OPCIONES OBLIGATORIAMENTE
+    // ✅ MEZCLAR OPCIONES CON FISHER-YATES
     const correctAnswerText = baseExercise.options[baseExercise.correctAnswer];
-    const shuffledOptions = [...baseExercise.options].sort(() => Math.random() - 0.5);
+    const shuffledOptions = [...baseExercise.options];
+    
+    // Fisher-Yates shuffle para mejor mezclado
+    for (let i = shuffledOptions.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffledOptions[i], shuffledOptions[j]] = [shuffledOptions[j], shuffledOptions[i]];
+    }
+    
     const newCorrectAnswer = shuffledOptions.findIndex(option => option === correctAnswerText);
     
     console.log("🔀 EMERGENCY EXERCISE SHUFFLE:", {
@@ -336,7 +343,7 @@ const LessonSessionFixed: React.FC<LessonSessionProps> = ({
     });
     
     return {
-      id: `emergency_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      id: `logical_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
       question: baseExercise.question,
       instruction: "Selecciona la respuesta correcta",
       options: shuffledOptions, // ✅ OPCIONES MEZCLADAS
