@@ -261,8 +261,6 @@ const Dashboard: React.FC<DashboardProps> = ({ user }) => {
   };
 
   const renderLevelProgress = () => {
-    const progressInfo = RealLevelSystem.calculateRealProgress(userProgress);
-    
     console.log("🔍 DEBUG PROGRESO SIMPLIFICADO:", {
       currentLevel: userProgress.currentLevel,
       totalXP: userProgress.totalXP,
@@ -286,7 +284,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user }) => {
             <h3 className={`text-xl font-bold ${
               progressInfo.canLevelUp ? 'text-green-800' : 'text-blue-800'
             }`}>
-              📈 Nivel {userProgress.currentLevel} → {progressInfo.nextLevel}
+              📈 Nivel {displayLevel} → {nextLevel}
             </h3>
             <p className={`text-sm ${
               progressInfo.canLevelUp ? 'text-green-700' : 'text-blue-700'
@@ -451,6 +449,12 @@ const Dashboard: React.FC<DashboardProps> = ({ user }) => {
     );
   }
 
+  // ✅ UNIFICAR FUENTE DE DATOS PARA TODO EL COMPONENTE
+  const progressInfo = RealLevelSystem.calculateRealProgress(userProgress);
+  const displayLevel = userProgress.currentLevel; // UNA SOLA FUENTE
+  const nextLevel = progressInfo.nextLevel;
+  const completedLessons = Math.floor(userProgress.totalExercises / 8);
+
   // Dashboard principal
   return (
     <div className="min-h-screen bg-gray-50">
@@ -469,8 +473,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user }) => {
                   {user.email?.split("@")[0]}! 👋
                 </p>
                 <p className="text-xs text-gray-500">
-                  Nivel {userProgress.currentLevel} • {userProgress.totalExercises}{" "}
-                  lecciones
+                  Nivel {displayLevel} • {completedLessons} lecciones
                 </p>
               </div>
               <button

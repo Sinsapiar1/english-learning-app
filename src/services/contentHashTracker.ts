@@ -1,25 +1,39 @@
 export class ContentHashTracker {
   static hashExerciseContent(exercise: any): string {
-    // Limpiar opciones de cualquier formato previo
-    const cleanOptions = exercise.options.map((opt: string) => 
-      opt.replace(/^[A-D]\)\s*/, '').trim()
-    );
+    // ✅ NORMALIZAR contenido para hash más robusto
+    const normalizedQuestion = exercise.question
+      .toLowerCase()
+      .replace(/[^\w\s]/g, '') // Remover puntuación
+      .replace(/\s+/g, ' ')    // Normalizar espacios
+      .trim();
     
-    const content = `${exercise.question.trim()}_${cleanOptions.join('_')}_${exercise.correctAnswer}`;
+    const normalizedOptions = exercise.options
+      .map((opt: string) => opt
+        .toLowerCase()
+        .replace(/^[a-d]\)\s*/i, '') // Remover A) B) C) D)
+        .replace(/[^\w\s]/g, '')     // Remover puntuación  
+        .trim()
+      )
+      .sort() // ✅ ORDENAR opciones para detectar mismo contenido mezclado
+      .join('|');
     
+    const contentToHash = `${normalizedQuestion}__${normalizedOptions}__${exercise.correctAnswer}`;
+    
+    // ✅ HASH MÁS FUERTE
     let hash = 0;
-    for (let i = 0; i < content.length; i++) {
-      const char = content.charCodeAt(i);
+    for (let i = 0; i < contentToHash.length; i++) {
+      const char = contentToHash.charCodeAt(i);
       hash = ((hash << 5) - hash) + char;
-      hash = hash & hash;
+      hash = hash & hash; // Convert to 32bit integer
     }
-    const finalHash = Math.abs(hash).toString(36).slice(0, 16);
     
-    console.log(`🔢 HASH GENERADO:`, {
-      question: exercise.question.trim(),
-      cleanOptions: cleanOptions,
-      content: content.substring(0, 100) + "...",
-      hash: finalHash
+    const finalHash = Math.abs(hash).toString(36).padStart(8, '0');
+    
+    console.log(`🔍 HASH MEJORADO:`, {
+      question: normalizedQuestion.substring(0, 50),
+      optionsCount: exercise.options.length,
+      hash: finalHash,
+      contentLength: contentToHash.length
     });
     
     return finalHash;

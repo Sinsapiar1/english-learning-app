@@ -38,36 +38,36 @@ export class RealLevelSystem {
   // REQUISITOS INTELIGENTES Y REALISTAS
   private static LEVEL_REQUIREMENTS = {
     'A1': {
-      minCorrectAnswers: 30,      // Reducido de 40 - más realista
-      minSessions: 5,             // Reducido de 8 - más accesible
-      minAccuracy: 0.70,          // Reducido de 0.75 - más alcanzable
-      xpRequired: 300,            // Reducido de 500 - progresión más rápida
-      description: "Inglés básico para supervivencia",
-      skillsUnlocked: ['basic_vocabulary', 'present_simple', 'verb_to_be']
+      minCorrectAnswers: 25,      // Más realista
+      minSessions: 4,             // Más alcanzable  
+      minAccuracy: 0.65,          // Más permisivo
+      xpRequired: 250,            // Más bajo
+      description: "Inglés básico supervivencia",
+      skillsUnlocked: ['basic_vocabulary', 'present_simple']
     },
     'A2': {
-      minCorrectAnswers: 60,      // Reducido de 100 - más realista
-      minSessions: 10,            // Reducido de 15 - más accesible
-      minAccuracy: 0.75,          // Reducido de 0.80 - más alcanzable
-      xpRequired: 800,            // Reducido de 1200 - progresión más rápida
-      description: "Conversaciones básicas y gramática elemental",
-      skillsUnlocked: ['present_perfect', 'past_simple', 'prepositions', 'basic_conversation']
+      minCorrectAnswers: 50,      // Progresión natural
+      minSessions: 8,             
+      minAccuracy: 0.70,          
+      xpRequired: 600,            
+      description: "Conversaciones básicas",
+      skillsUnlocked: ['present_perfect', 'past_simple', 'basic_conversation']
     },
     'B1': {
-      minCorrectAnswers: 120,     // Reducido de 200 - más realista
-      minSessions: 18,            // Reducido de 25 - más accesible
-      minAccuracy: 0.80,          // Reducido de 0.85 - más alcanzable
-      xpRequired: 1500,           // Reducido de 2500 - progresión más rápida
-      description: "Condicionales, voz pasiva, gramática avanzada",
-      skillsUnlocked: ['conditionals', 'passive_voice', 'advanced_grammar', 'fluent_conversation']
+      minCorrectAnswers: 100,     
+      minSessions: 15,            
+      minAccuracy: 0.75,          
+      xpRequired: 1200,           
+      description: "Inglés intermedio funcional",
+      skillsUnlocked: ['conditionals', 'passive_voice', 'advanced_grammar']
     },
     'B2': {
-      minCorrectAnswers: 200,     // Reducido de 350 - más realista
-      minSessions: 25,            // Reducido de 40 - más accesible
-      minAccuracy: 0.85,          // Reducido de 0.90 - más alcanzable
-      xpRequired: 2500,           // Reducido de 4000 - progresión más rápida
-      description: "Vocabulario avanzado, expresiones nativas, fluidez",
-      skillsUnlocked: ['advanced_vocabulary', 'nuanced_expressions', 'native_patterns', 'business_english']
+      minCorrectAnswers: 200,     
+      minSessions: 25,            
+      minAccuracy: 0.80,          
+      xpRequired: 2500,           
+      description: "Inglés avanzado y fluido",
+      skillsUnlocked: ['advanced_vocabulary', 'native_patterns', 'business_english']
     }
   };
   
@@ -218,16 +218,36 @@ export class RealLevelSystem {
   static levelUp(progress: RealUserProgress): RealUserProgress {
     const levels = ['A1', 'A2', 'B1', 'B2', 'C1'];
     const currentIndex = levels.indexOf(progress.currentLevel);
-    const newLevel = levels[Math.min(currentIndex + 1, levels.length - 1)] as 'A1' | 'A2' | 'B1' | 'B2' | 'C1';
     
+    // ✅ VERIFICAR que realmente puede subir
+    if (currentIndex === -1 || currentIndex >= levels.length - 1) {
+      console.warn("❌ No se puede subir más de nivel");
+      return progress;
+    }
+    
+    const newLevel = levels[currentIndex + 1] as 'A1' | 'A2' | 'B1' | 'B2' | 'C1';
     const requirements = this.LEVEL_REQUIREMENTS[newLevel as keyof typeof this.LEVEL_REQUIREMENTS];
     
-    return {
+    console.log(`🎉 LEVEL UP REAL: ${progress.currentLevel} → ${newLevel}`);
+    
+    const leveledUpProgress = {
       ...progress,
       currentLevel: newLevel,
+      progressToNext: 0, // ✅ RESETEAR PARA NUEVO NIVEL
       unlockedSkills: [...progress.unlockedSkills, ...(requirements?.skillsUnlocked || [])],
-      progressToNext: 0 // Resetear progreso para el siguiente nivel
+      totalXP: progress.totalXP + 100, // ✅ BONUS XP por subir de nivel
+      lastActive: new Date()
     };
+    
+    // ✅ GUARDAR INMEDIATAMENTE
+    this.saveUserProgress(leveledUpProgress);
+    
+    // ✅ LIMPIAR PROGRESO ANTERIOR DEL NIVEL ANTERIOR
+    const oldProgressKey = `level_progress_${progress.currentLevel}`;
+    localStorage.removeItem(oldProgressKey);
+    
+    console.log("✅ LEVEL UP COMPLETADO Y GUARDADO");
+    return leveledUpProgress;
   }
   
   // ACTUALIZAR PROGRESO DESPUÉS DE CADA SESIÓN
@@ -258,10 +278,16 @@ export class RealLevelSystem {
       lastActive: new Date()
     };
     
-    // Calcular nuevo progreso hacia siguiente nivel
-    const progressCalculation = this.calculateRealProgress(updatedProgress);
-    updatedProgress.progressToNext = progressCalculation.progressPercentage;
+    // ✅ VERIFICAR SI DEBE SUBIR DE NIVEL AUTOMÁTICAMENTE
+    const progressCheck = this.calculateRealProgress(updatedProgress);
     
+    if (progressCheck.canLevelUp) {
+      console.log("🚀 LEVEL UP AUTOMÁTICO DETECTADO");
+      return this.levelUp(updatedProgress); // ✅ SUBIR REALMENTE
+    }
+    
+    // ✅ SI NO SUBE, SOLO ACTUALIZAR PROGRESO NORMAL
+    updatedProgress.progressToNext = progressCheck.progressPercentage;
     return updatedProgress;
   }
   
