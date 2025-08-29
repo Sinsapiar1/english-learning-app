@@ -30,8 +30,8 @@ const Dashboard: React.FC<DashboardProps> = ({ user }) => {
 
   const { apiKey, hasApiKey, saveApiKey } = useAPIKey();
   
-  // Estados para sistema inteligente
-  const [detectedLevel, setDetectedLevel] = useState<string>("");
+  // ❌ ELIMINADO: detectedLevel - causaba inconsistencias
+  // const [detectedLevel, setDetectedLevel] = useState<string>("");
   const [personalizedRecommendations, setPersonalizedRecommendations] = useState<any>(null);
   const [learningAnalytics, setLearningAnalytics] = useState<any>(null);
   const [isLoadingIntelligence, setIsLoadingIntelligence] = useState(false);
@@ -126,9 +126,9 @@ const Dashboard: React.FC<DashboardProps> = ({ user }) => {
       try {
         console.log("🧠 INICIALIZANDO SISTEMA INTELIGENTE");
         
-        // Detectar nivel automáticamente
-        const level = await IntelligentLearningSystem.detectUserLevel(user.uid);
-        setDetectedLevel(level);
+        // ❌ ELIMINADO: Detección automática causaba inconsistencias
+        // const level = await IntelligentLearningSystem.detectUserLevel(user.uid);
+        // setDetectedLevel(level);
         
         // Obtener recomendaciones personalizadas
         const recommendations = await IntelligentLearningSystem.getPersonalizedRecommendations(user.uid);
@@ -185,7 +185,8 @@ const Dashboard: React.FC<DashboardProps> = ({ user }) => {
   };
 
   const handleSessionComplete = (sessionResults: any) => {
-    console.log("📊 SESIÓN COMPLETADA:", sessionResults);
+    console.log("📊 SESIÓN COMPLETADA EN DASHBOARD:", sessionResults);
+    console.log("📊 PROGRESO ACTUAL ANTES DE ACTUALIZAR:", userProgress);
     
     try {
       // ✅ USAR SOLO RealLevelSystem - UN SOLO SISTEMA
@@ -215,6 +216,11 @@ const Dashboard: React.FC<DashboardProps> = ({ user }) => {
       
       // ✅ GUARDAR UNA SOLA VEZ
       saveUserProgress(finalProgress);
+      
+      // ✅ ACTUALIZAR ESTADO DEL COMPONENTE
+      setUserProgress(finalProgress);
+      
+      console.log("✅ PROGRESO GUARDADO Y ESTADO ACTUALIZADO:", finalProgress);
       
       // 📊 TRACKEAR SESIÓN COMPLETADA (SIN ROMPER NADA)
       try {
@@ -284,7 +290,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user }) => {
             <h3 className={`text-xl font-bold ${
               progressInfo.canLevelUp ? 'text-green-800' : 'text-blue-800'
             }`}>
-              📈 Nivel {displayLevel} → {nextLevel}
+              📈 Nivel {ACTUAL_USER_LEVEL} → {NEXT_LEVEL}
             </h3>
             <p className={`text-sm ${
               progressInfo.canLevelUp ? 'text-green-700' : 'text-blue-700'
@@ -449,11 +455,18 @@ const Dashboard: React.FC<DashboardProps> = ({ user }) => {
     );
   }
 
-  // ✅ UNIFICAR FUENTE DE DATOS PARA TODO EL COMPONENTE
+  // ✅ UNA SOLA FUENTE DE VERDAD PARA EL NIVEL - SOLUCIÓN DEFINITIVA
+  const ACTUAL_USER_LEVEL = userProgress.currentLevel;
   const progressInfo = RealLevelSystem.calculateRealProgress(userProgress);
-  const displayLevel = userProgress.currentLevel; // UNA SOLA FUENTE
-  const nextLevel = progressInfo.nextLevel;
+  const NEXT_LEVEL = progressInfo.nextLevel;
   const completedLessons = Math.floor(userProgress.totalExercises / 8);
+
+  console.log("🔍 DEBUG NIVEL UNIFICADO:", {
+    actualLevel: ACTUAL_USER_LEVEL,
+    nextLevel: NEXT_LEVEL,
+    userProgressLevel: userProgress.currentLevel,
+    allProgressData: userProgress
+  });
 
   // Dashboard principal
   return (
@@ -473,7 +486,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user }) => {
                   {user.email?.split("@")[0]}! 👋
                 </p>
                 <p className="text-xs text-gray-500">
-                  Nivel {displayLevel} • {completedLessons} lecciones
+                  Nivel {ACTUAL_USER_LEVEL} • {completedLessons} lecciones
                 </p>
               </div>
               <button
@@ -494,10 +507,10 @@ const Dashboard: React.FC<DashboardProps> = ({ user }) => {
             <h2 className="text-3xl font-bold text-gray-900">
               ¡Bienvenido a tu Dashboard! 🎉
             </h2>
-            {detectedLevel && (
+            {ACTUAL_USER_LEVEL && (
               <div className="flex items-center gap-3">
                 <div className="bg-blue-100 text-blue-700 px-4 py-2 rounded-full text-sm font-semibold">
-                  🧠 Nivel IA: {detectedLevel}
+                  🧠 Nivel Actual: {ACTUAL_USER_LEVEL}
                 </div>
                 {personalizedRecommendations && (
                   <div className="bg-green-100 text-green-700 px-4 py-2 rounded-full text-sm font-semibold">

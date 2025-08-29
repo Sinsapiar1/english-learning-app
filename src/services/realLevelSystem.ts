@@ -261,6 +261,16 @@ export class RealLevelSystem {
     }
   ): RealUserProgress {
     
+    // ✅ DEBUGGING DETALLADO - ANTES
+    console.log("🔍 DEBUG UPDATEPROGRESS - ANTES:", {
+      currentLevel: progress.currentLevel,
+      totalCorrectBefore: progress.totalCorrectAnswers,
+      totalExercisesBefore: progress.totalExercises,
+      totalXPBefore: progress.totalXP,
+      accuracyBefore: progress.overallAccuracy,
+      sessionResults: sessionResults
+    });
+    
     // Actualizar estadísticas acumulativas (SOLO SUBE)
     const newTotalCorrect = progress.totalCorrectAnswers + sessionResults.correctAnswers;
     const newTotalExercises = progress.totalExercises + sessionResults.totalAnswers;
@@ -288,6 +298,18 @@ export class RealLevelSystem {
     
     // ✅ SI NO SUBE, SOLO ACTUALIZAR PROGRESO NORMAL
     updatedProgress.progressToNext = progressCheck.progressPercentage;
+    
+    // ✅ DEBUGGING DETALLADO - DESPUÉS
+    console.log("✅ DEBUG UPDATEPROGRESS - DESPUÉS:", {
+      currentLevel: updatedProgress.currentLevel,
+      totalCorrectAfter: updatedProgress.totalCorrectAnswers,
+      totalExercisesAfter: updatedProgress.totalExercises,
+      totalXPAfter: updatedProgress.totalXP,
+      accuracyAfter: updatedProgress.overallAccuracy,
+      progressToNext: updatedProgress.progressToNext,
+      canLevelUp: progressCheck.canLevelUp
+    });
+    
     return updatedProgress;
   }
   
