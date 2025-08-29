@@ -38,34 +38,34 @@ export class RealLevelSystem {
   // REQUISITOS INTELIGENTES Y REALISTAS
   private static LEVEL_REQUIREMENTS = {
     'A1': {
-      minCorrectAnswers: 40,      // 5 sesiones perfectas
-      minSessions: 8,             // 8 sesiones mínimo
-      minAccuracy: 0.75,          // 75% precisión
-      xpRequired: 500,
-      description: "Palabras básicas, presente simple, verbo to be",
+      minCorrectAnswers: 30,      // Reducido de 40 - más realista
+      minSessions: 5,             // Reducido de 8 - más accesible
+      minAccuracy: 0.70,          // Reducido de 0.75 - más alcanzable
+      xpRequired: 300,            // Reducido de 500 - progresión más rápida
+      description: "Inglés básico para supervivencia",
       skillsUnlocked: ['basic_vocabulary', 'present_simple', 'verb_to_be']
     },
     'A2': {
-      minCorrectAnswers: 100,     // Más exigente
-      minSessions: 15,
-      minAccuracy: 0.80,          // 80% precisión
-      xpRequired: 1200,
-      description: "Present perfect, pasado simple, preposiciones",
+      minCorrectAnswers: 60,      // Reducido de 100 - más realista
+      minSessions: 10,            // Reducido de 15 - más accesible
+      minAccuracy: 0.75,          // Reducido de 0.80 - más alcanzable
+      xpRequired: 800,            // Reducido de 1200 - progresión más rápida
+      description: "Conversaciones básicas y gramática elemental",
       skillsUnlocked: ['present_perfect', 'past_simple', 'prepositions', 'basic_conversation']
     },
     'B1': {
-      minCorrectAnswers: 200,
-      minSessions: 25,
-      minAccuracy: 0.85,          // 85% precisión
-      xpRequired: 2500,
+      minCorrectAnswers: 120,     // Reducido de 200 - más realista
+      minSessions: 18,            // Reducido de 25 - más accesible
+      minAccuracy: 0.80,          // Reducido de 0.85 - más alcanzable
+      xpRequired: 1500,           // Reducido de 2500 - progresión más rápida
       description: "Condicionales, voz pasiva, gramática avanzada",
       skillsUnlocked: ['conditionals', 'passive_voice', 'advanced_grammar', 'fluent_conversation']
     },
     'B2': {
-      minCorrectAnswers: 350,
-      minSessions: 40,
-      minAccuracy: 0.90,          // 90% precisión para nivel alto
-      xpRequired: 4000,
+      minCorrectAnswers: 200,     // Reducido de 350 - más realista
+      minSessions: 25,            // Reducido de 40 - más accesible
+      minAccuracy: 0.85,          // Reducido de 0.90 - más alcanzable
+      xpRequired: 2500,           // Reducido de 4000 - progresión más rápida
       description: "Vocabulario avanzado, expresiones nativas, fluidez",
       skillsUnlocked: ['advanced_vocabulary', 'nuanced_expressions', 'native_patterns', 'business_english']
     }
@@ -362,32 +362,37 @@ export class RealLevelSystem {
     }
   }
 
-  // ✅ FUNCIÓN TEMPORAL PARA DESBLOQUEAR USUARIO
+  // ✅ FUNCIÓN PARA FORZAR LEVEL UP DEFINITIVO
   static debugUnblockUser(userId: string): RealUserProgress {
     const progress = this.loadUserProgress(userId);
     
-    console.log("🚨 DESBLOQUEANDO USUARIO - SITUACIÓN DE EMERGENCIA");
+    console.log("🆘 FORZANDO LEVEL UP DEFINITIVO");
     console.log("Estado actual:", progress);
     
-    // Si está muy cerca del level up, forzarlo
-    const progressCheck = this.calculateRealProgress(progress);
-    if (progressCheck.progressPercentage >= 95 && !progressCheck.canLevelUp) {
-      console.log("🆘 FORZANDO LEVEL UP - Usuario bloqueado al 95%+");
-      
-      // Ajustar ligeramente los valores para permitir level up
-      const adjustedProgress = {
-        ...progress,
-        totalCorrectAnswers: Math.max(progress.totalCorrectAnswers, 50),
-        overallAccuracy: Math.max(progress.overallAccuracy, 0.80),
-        totalXP: Math.max(progress.totalXP, 600),
-        sessionsA1: Math.max(progress.sessionsA1, 10) // Asegurar sesiones suficientes
-      };
-      
-      this.saveUserProgress(adjustedProgress);
-      console.log("✅ Usuario desbloqueado con valores ajustados:", adjustedProgress);
-      return adjustedProgress;
-    }
+    // FORZAR level up inmediatamente sin condiciones
+    const levels = ['A1', 'A2', 'B1', 'B2', 'C1'];
+    const currentIndex = levels.indexOf(progress.currentLevel);
+    const newLevel = levels[Math.min(currentIndex + 1, levels.length - 1)] as 'A1' | 'A2' | 'B1' | 'B2' | 'C1';
     
-    return progress;
+    const forcedProgress = {
+      ...progress,
+      currentLevel: newLevel,
+      progressToNext: 0, // Resetear para nuevo nivel
+      totalXP: progress.totalXP + 200, // Bonus XP por desbloqueo
+      unlockedSkills: [...progress.unlockedSkills, 'level_up_forced'],
+      // Asegurar que cumple requisitos mínimos del nuevo nivel
+      totalCorrectAnswers: Math.max(progress.totalCorrectAnswers, 35),
+      overallAccuracy: Math.max(progress.overallAccuracy, 0.72),
+      sessionsA1: currentIndex === 0 ? Math.max(progress.sessionsA1, 6) : progress.sessionsA1,
+      sessionsA2: currentIndex === 1 ? Math.max(progress.sessionsA2, 11) : progress.sessionsA2
+    };
+    
+    // Guardar inmediatamente
+    this.saveUserProgress(forcedProgress);
+    
+    console.log(`🎉 LEVEL UP FORZADO EXITOSO: ${progress.currentLevel} → ${newLevel}`);
+    console.log("Nuevo progreso:", forcedProgress);
+    
+    return forcedProgress;
   }
 }

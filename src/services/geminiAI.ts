@@ -214,74 +214,99 @@ EJEMPLOS DE PREGUNTAS BUENAS:
     completedLessons?: number;
   }): Promise<SmartExercise[]> {
 
-    const enhancedPrompt = `Eres un profesor EXPERTO de inglés para hispanohablantes nivel ${params.level}.
+    const enhancedPrompt = `Eres un profesor EXPERTO que crea ejercicios REALMENTE ÚTILES para hispanohablantes nivel ${params.level}.
 
-TAREA CRÍTICA: Generar exactamente 8 ejercicios ÚNICOS, LÓGICOS y EDUCATIVOS para una sesión completa.
+🎯 OBJETIVO: Generar 8 ejercicios que REALMENTE enseñen inglés práctico y útil.
 
 NIVEL DEL ESTUDIANTE: ${params.level}
 EJERCICIOS COMPLETADOS: ${params.completedLessons || 0}
 DEBILIDADES: ${params.userWeaknesses?.join(', ') || 'ninguna detectada'}
 
-REGLAS CRÍTICAS - VALIDACIÓN PEDAGÓGICA:
+❌ PROHIBIDO ABSOLUTO - EJERCICIOS INÚTILES:
+- Vocabulario obvio ("What does 'sister' mean?" → hermana)
+- Preguntas donde la respuesta está literal en el texto
+- Colores básicos, números, familia (son demasiado básicos)
+- Traducción directa palabra por palabra
+- Ejercicios que no enseñan inglés REAL
 
-❌ PROHIBIDO ABSOLUTO:
-- Preguntas donde la respuesta esté en la pregunta misma
-- "I saw sunset yesterday" → "What did I see yesterday?" (ABSURDO)
-- Emojis incorrectos (🐶 para gato)
-- Preguntas obvias o redundantes
-- Ejercicios repetidos o muy similares entre sí
-- OPCIONES MUY SIMILARES que confunden al usuario
+✅ OBLIGATORIO - EJERCICIOS EDUCATIVOS ÚTILES:
 
-✅ OBLIGATORIO PARA PRINCIPIANTES:
-- 8 ejercicios COMPLETAMENTE diferentes
-- Cada ejercicio debe enseñar algo específico y único
-- TODAS las preguntas DEBEN ser bilingües (inglés/español)
-- TODAS las explicaciones DEBEN estar en español
-- Vocabulario BÁSICO y COTIDIANO (familia, comida, casa, colores)
-- NO usar palabras avanzadas como "seamless", "bandwidth", "workload"
-- Contextos FAMILIARES para principiantes (casa, familia, comida básica)
-- Emojis correctos si se usan
+**TIPO 1: CONSTRUCCIÓN DE ORACIONES (25% de ejercicios)**
+Ejemplo: "Ordena las palabras para formar una oración correcta:"
+- Palabras desordenadas: [every, go, I, to, day, work]
+- Respuesta: "I go to work every day"
+- Opciones: ["I go to work every day", "Every day I work go to", "Work I go every day to", "To work every I go day"]
 
-TIPOS DE EJERCICIO BILINGÜES (2 de cada tipo en orden):
-1-2. VOCABULARIO: "What does '[word]' mean? / ¿Qué significa '[word]'?" (PALABRAS BÁSICAS)
-3-4. GRAMÁTICA: "I _____ happy. / Yo estoy feliz." (ESTRUCTURAS SIMPLES)
-5-6. TRADUCCIÓN: "¿Cómo se dice '[frase básica]'? / How do you say '[frase básica]'?"
-7-8. COMPRENSIÓN: "Texto bilingüe corto + pregunta en español e inglés"
+**TIPO 2: GRAMÁTICA EN CONTEXTO REAL (25% de ejercicios)**
+Ejemplo: "Complete the conversation between friends:"
+- "Hi! How _____ your weekend?"
+- Opciones: ["was", "were", "is", "are"]
+- Contexto: Conversación real entre amigos
+
+**TIPO 3: SITUACIONES PRÁCTICAS (25% de ejercicios)**
+Ejemplo: "You're at a restaurant. How do you ask for the menu?"
+- Opciones: ["Can I have the menu, please?", "Where is food?", "Give me eating", "Menu I want"]
+- Enseña inglés que SÍ se usa en la vida real
+
+**TIPO 4: COMPRENSIÓN CON INFERENCIA (25% de ejercicios)**
+Ejemplo: "Sarah says 'I'm exhausted!' after running. What does 'exhausted' probably mean?"
+- Opciones: ["very tired", "very happy", "very hungry", "very cold"]
+- Enseña vocabulario por CONTEXTO, no memorización
+
+REGLAS PEDAGÓGICAS CRÍTICAS:
+1. Cada ejercicio debe enseñar algo NUEVO y ÚTIL
+2. Enfocar en ESTRUCTURAS que se usan diariamente
+3. Crear SITUACIONES REALES (restaurante, trabajo, amigos)
+4. Opciones deben ser TODAS plausibles (no obvias)
+5. Enseñar por CONTEXTO e INFERENCIA, no memorización
+
+VOCABULARIO ÚTIL PARA NIVEL ${params.level}:
+${params.level === 'A1' ? `
+- Verbos de acción: want, need, like, have, go, come, see, hear
+- Situaciones: ordering food, asking directions, shopping, making friends
+- Estructuras: "Can I...?", "I would like...", "How much is...?"
+` : ''}
+
+${params.level === 'A2' ? `
+- Tiempos verbales: present perfect, past continuous, future plans
+- Situaciones: job interviews, making appointments, explaining problems
+- Estructuras: "I have been...", "I was doing...", "I'm going to..."
+` : ''}
 
 EJEMPLOS ESPECÍFICOS POR NIVEL:
 
 ${params.level === 'A1' ? `
-NIVEL A1 - SÚPER BÁSICO Y BILINGÜE:
-1. "What does 'cat' mean? / ¿Qué significa 'cat'?" → opciones: ["gato", "perro", "casa", "mesa"]
-2. "I _____ hungry. / Yo tengo hambre." → opciones: ["am", "is", "are", "be"] 
-3. "¿Cómo se dice 'hola'? / How do you say 'hola'?" → opciones: ["hello", "goodbye", "thanks", "sorry"]
-4. "She _____ pizza. / Ella come pizza." → opciones: ["eats", "eat", "eating", "ate"]
-5. "¿Cómo se dice 'mi casa'? / How do you say 'mi casa'?" → opciones: ["my house", "my family", "my friend", "my work"]
-6. "We _____ happy. / Nosotros estamos felices." → opciones: ["are", "is", "am", "be"]
-7. "Texto: 'Hi, I am Ana. I like apples.' / Hola, soy Ana. Me gustan las manzanas. ¿Qué le gusta a Ana? / What does Ana like?" → opciones: ["apples", "oranges", "bananas", "grapes"]
-8. "What color is this? / ¿De qué color es esto? 🔴" → opciones: ["red", "blue", "green", "yellow"]
+NIVEL A1 - INGLÉS PRÁCTICO Y ÚTIL:
+1. "At a restaurant, how do you ask for water? / En un restaurante, ¿cómo pides agua?" → opciones: ["Can I have water, please?", "Water me give", "I want water now", "Where water is?"]
+2. "Complete the conversation: 'Hi! How _____ you?' / Completa la conversación: '¡Hola! ¿Cómo _____ tú?'" → opciones: ["are", "is", "am", "be"]
+3. "You're lost. How do you ask for directions? / Estás perdido. ¿Cómo pides direcciones?" → opciones: ["Excuse me, where is...?", "Tell me place now", "I need go there", "Direction please give"]
+4. "Order these words to make a sentence: [want, I, to, home, go] / Ordena estas palabras para hacer una oración:" → opciones: ["I want to go home", "Want I to go home", "Home I want go to", "Go home I want to"]
+5. "At a store, the clerk says 'Can I help you?' What does this mean? / En una tienda, el empleado dice 'Can I help you?' ¿Qué significa esto?" → opciones: ["¿Puedo ayudarte?", "¿Tienes dinero?", "¿Qué quieres comprar?", "¿De dónde eres?"]
+6. "Complete: 'I _____ coffee every morning.' / Completa: 'Yo _____ café cada mañana.'" → opciones: ["drink", "drinks", "drinking", "drank"]
+7. "Someone says 'Nice to meet you!' What do you respond? / Alguien dice '¡Mucho gusto!' ¿Qué respondes?" → opciones: ["Nice to meet you too!", "Thank you very much!", "I am fine, thanks!", "See you later!"]
+8. "You want to buy something but don't know the price. What do you ask? / Quieres comprar algo pero no sabes el precio. ¿Qué preguntas?" → opciones: ["How much is this?", "What price this?", "Money how much?", "Cost what is?"]
 ` : ''}
 
 ${params.level === 'A2' ? `
-NIVEL A2 - ELEMENTAL Y BILINGÜE:
-1. "What does 'breakfast' mean? / ¿Qué significa 'breakfast'?" → opciones: ["desayuno", "almuerzo", "cena", "merienda"]
-2. "She _____ to work every day. / Ella va al trabajo todos los días." → opciones: ["goes", "go", "going", "went"]
-3. "¿Cómo se dice 'me gusta leer'? / How do you say 'me gusta leer'?" → opciones: ["I like reading", "I love books", "I read always", "I want read"]
-4. "They _____ at home yesterday. / Ellos estuvieron en casa ayer." → opciones: ["were", "was", "are", "is"]
-5. "¿Cómo se dice 'tengo que trabajar'? / How do you say 'tengo que trabajar'?" → opciones: ["I have to work", "I want to work", "I like to work", "I can work"]
-6. "He _____ his homework every night. / Él hace su tarea todas las noches." → opciones: ["does", "do", "doing", "did"]
-7. "Texto: 'Tom works at a school. He teaches math.' / Tom trabaja en una escuela. Enseña matemáticas. ¿Qué enseña Tom? / What does Tom teach?" → opciones: ["math", "English", "science", "history"]
-8. "What does 'tired' mean? / ¿Qué significa 'tired'?" → opciones: ["cansado", "feliz", "triste", "enojado"]
+NIVEL A2 - INGLÉS PRÁCTICO AVANZADO:
+1. "At a job interview, they ask 'What are your strengths?' How do you respond? / En una entrevista de trabajo, preguntan '¿Cuáles son tus fortalezas?' ¿Cómo respondes?" → opciones: ["I am hardworking and reliable", "I like work very much", "I have many good things", "Work is good for me"]
+2. "Complete the conversation: 'I _____ working here since 2020.' / Completa la conversación: 'Yo _____ trabajando aquí desde 2020.'" → opciones: ["have been", "am", "was", "will be"]
+3. "You need to reschedule a meeting. What do you say? / Necesitas reprogramar una reunión. ¿Qué dices?" → opciones: ["Can we reschedule for tomorrow?", "Meeting change tomorrow please", "I no can meeting today", "Tomorrow better for meeting"]
+4. "Order these words: [going, I'm, to, the, visit, museum] / Ordena estas palabras:" → opciones: ["I'm going to visit the museum", "Going I'm to visit the museum", "The museum I'm going to visit", "Visit the museum I'm going to"]
+5. "Someone says 'I'm feeling under the weather.' What do they mean? / Alguien dice 'I'm feeling under the weather.' ¿Qué quieren decir?" → opciones: ["I'm feeling sick", "I'm feeling cold", "I'm feeling happy", "I'm feeling confused"]
+6. "Complete: 'If I _____ time, I would travel more.' / Completa: 'Si yo _____ tiempo, viajaría más.'" → opciones: ["had", "have", "has", "having"]
+7. "You're explaining a problem at work. How do you start? / Estás explicando un problema en el trabajo. ¿Cómo empiezas?" → opciones: ["I've been having an issue with...", "Problem I have with...", "Bad thing happen with...", "Issue is with..."]
+8. "Someone asks 'How long have you been studying English?' You started 2 years ago. What do you answer? / Alguien pregunta '¿Cuánto tiempo has estado estudiando inglés?' Empezaste hace 2 años. ¿Qué respondes?" → opciones: ["I've been studying for 2 years", "I study English 2 years", "2 years I am studying", "Since 2 years I study"]
 ` : ''}
 
 INSTRUCCIONES DE VALIDACIÓN INTERNA:
-1. ¿Cada pregunta enseña algo diferente?
-2. ¿Las 8 preguntas son completamente únicas?
-3. ¿La respuesta no está obvia en la pregunta?
-4. ¿Los emojis coinciden con el contenido?
-5. ¿Realmente enseñan inglés práctico?
-6. ¿Las opciones son SUFICIENTEMENTE DIFERENTES entre sí?
-7. ¿No hay dos opciones que significan casi lo mismo?
+1. ¿Cada pregunta enseña inglés ÚTIL para la vida real?
+2. ¿Las situaciones son PRÁCTICAS (restaurante, trabajo, tienda)?
+3. ¿Las opciones enseñan ESTRUCTURAS que se usan diariamente?
+4. ¿Evita vocabulario obvio como colores, números, familia?
+5. ¿Enseña por CONTEXTO e INFERENCIA, no memorización?
+6. ¿Las opciones son TODAS plausibles pero solo una correcta?
+7. ¿Realmente prepara al estudiante para USAR inglés real?
 
 ❌ PROHIBIDO ABSOLUTO - OPCIONES SIMILARES:
 - "Me gusta las manzanas" y "Me gustan las manzanas" (demasiado similares)
@@ -294,28 +319,28 @@ INSTRUCCIONES DE VALIDACIÓN INTERNA:
 - Para vocabulario: usar palabras de CATEGORÍAS diferentes (apple/car/house/red)
 - Para traducción: opciones que NO se parezcan fonéticamente
 
-FORMATO JSON REQUERIDO (array de 8 ejercicios):
+FORMATO JSON REQUERIDO - 8 ejercicios ÚNICOS y ÚTILES:
 {
   "exercises": [
     {
-      "question": "[Pregunta bilingüe: English question / Pregunta en español]",
-      "instruction": "Selecciona la respuesta correcta",
-      "options": ["opción1", "opción2", "opción3", "opción4"],
+      "question": "[Situación real práctica en inglés / Situación en español]",
+      "instruction": "[Instrucción clara de qué hacer]",
+      "options": ["[opción útil 1]", "[opción útil 2]", "[opción útil 3]", "[opción útil 4]"],
       "correctAnswer": 0,
-      "explanation": "🎯 [Explicación COMPLETA en español para principiantes]",
-      "topic": "[tema básico]"
+      "explanation": "🎯 [Por qué esta estructura es útil en inglés real + cuándo usarla]",
+      "topic": "[gramática práctica, conversación real, situaciones útiles]"
     }
   ]
 }
 
-🚨 RECORDATORIO CRÍTICO PARA PRINCIPIANTES:
-- TODAS las preguntas deben tener formato: "English question / Pregunta en español"
-- TODAS las explicaciones deben estar en español claro
-- Vocabulario debe ser BÁSICO (casa, familia, comida, colores, números)
-- NO usar palabras técnicas como "seamless", "bandwidth", "workload"
-- Contextos familiares: hogar, familia, comida, trabajo básico
+🚨 RECORDATORIO CRÍTICO PARA INGLÉS PRÁCTICO:
+- TODAS las preguntas deben enseñar inglés que se USA en la vida real
+- TODAS las explicaciones deben explicar CUÁNDO y CÓMO usar la estructura
+- Situaciones REALES: restaurante, tienda, trabajo, conversaciones
+- NO vocabulario obvio: evitar colores, números, familia básica
+- Contextos ÚTILES: pedir ayuda, hacer preguntas, expresar necesidades
 
-¡GENERA 8 EJERCICIOS ÚNICOS, BILINGÜES Y EDUCATIVOS PARA PRINCIPIANTES!`;
+¡GENERA 8 EJERCICIOS QUE REALMENTE ENSEÑEN INGLÉS ÚTIL PARA LA VIDA REAL!`;
 
     try {
       const model = this.genAI.getGenerativeModel({
@@ -478,6 +503,63 @@ FORMATO JSON REQUERIDO (array de 8 ejercicios):
     
     console.log(`✅ Ejercicio ${exerciseNumber}: Validación APROBADA`);
     return true;
+  }
+
+  // ✅ NUEVA FUNCIÓN: Generar ejercicios prácticos específicos
+  private generatePracticalExercise(level: string, exerciseNumber: number): string {
+    const practicalExercises = {
+      'A1': [
+        {
+          type: "ordering",
+          question: "Ordena las palabras para pedir comida en un restaurante: / Order the words to ask for food at a restaurant:",
+          words: ["I", "would", "like", "pizza", "please"],
+          correct: "I would like pizza, please",
+          options: ["I would like pizza, please", "Pizza I would please like", "Please pizza I would like", "Like I would pizza please"]
+        },
+        {
+          type: "conversation",
+          question: "You want to know the time. What do you ask? / Quieres saber la hora. ¿Qué preguntas?",
+          options: ["What time is it?", "How much time?", "Time please give", "Where is time?"]
+        },
+        {
+          type: "situation",
+          question: "At a store, you can't find something. How do you ask for help? / En una tienda, no encuentras algo. ¿Cómo pides ayuda?",
+          options: ["Excuse me, where is the bathroom?", "Help me find something", "I need assistance, please", "Where are things?"]
+        },
+        {
+          type: "practical_response",
+          question: "Someone says 'How are you?' What's the most common response? / Alguien dice '¿Cómo estás?' ¿Cuál es la respuesta más común?",
+          options: ["I'm fine, thank you", "I am very good person", "My life is okay", "I feel many things"]
+        }
+      ],
+      'A2': [
+        {
+          type: "workplace",
+          question: "Your boss asks 'Can you finish this by tomorrow?' How do you respond positively? / Tu jefe pregunta '¿Puedes terminar esto para mañana?' ¿Cómo respondes positivamente?",
+          options: ["Yes, I can do that", "Tomorrow I will finish", "I think maybe yes", "Work tomorrow is possible"]
+        },
+        {
+          type: "appointment",
+          question: "You need to reschedule a meeting. What do you say? / Necesitas reprogramar una reunión. ¿Qué dices?",
+          options: ["Can we reschedule for tomorrow?", "Meeting change tomorrow please", "I no can meeting today", "Tomorrow better for meeting"]
+        },
+        {
+          type: "problem_solving",
+          question: "You're explaining a problem at work. How do you start? / Estás explicando un problema en el trabajo. ¿Cómo empiezas?",
+          options: ["I've been having an issue with...", "Problem I have with...", "Bad thing happen with...", "Issue is with..."]
+        }
+      ]
+    };
+    
+    const levelExercises = practicalExercises[level as keyof typeof practicalExercises] || practicalExercises['A1'];
+    const selected = levelExercises[exerciseNumber % levelExercises.length];
+    
+    return `
+**SITUACIÓN PRÁCTICA:**
+Pregunta: "${selected.question}"
+Opciones educativas que enseñan inglés REAL:
+${selected.options.map((opt, i) => `${i === 0 ? '✓' : ''} ${opt}`).join('\n')}
+`;
   }
 
   // ✅ NUEVA FUNCIÓN: Calcular similitud entre textos
