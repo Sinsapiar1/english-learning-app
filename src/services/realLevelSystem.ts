@@ -38,34 +38,34 @@ export class RealLevelSystem {
   // REQUISITOS INTELIGENTES Y REALISTAS
   private static LEVEL_REQUIREMENTS = {
     'A1': {
-      minCorrectAnswers: 25,      // Más realista
-      minSessions: 4,             // Más alcanzable  
-      minAccuracy: 0.65,          // Más permisivo
-      xpRequired: 250,            // Más bajo
+      minCorrectAnswers: 12,      // 🚀 ULTRA RÁPIDO: 2 sesiones buenas
+      minSessions: 2,             // 🚀 SOLO 2 SESIONES  
+      minAccuracy: 0.60,          // 🚀 MÁS PERMISIVO
+      xpRequired: 120,            // 🚀 SÚPER BAJO
       description: "Inglés básico supervivencia",
       skillsUnlocked: ['basic_vocabulary', 'present_simple']
     },
     'A2': {
-      minCorrectAnswers: 50,      // Progresión natural
-      minSessions: 8,             
-      minAccuracy: 0.70,          
-      xpRequired: 600,            
+      minCorrectAnswers: 24,      // 🚀 ULTRA RÁPIDO: 3-4 sesiones
+      minSessions: 3,             
+      minAccuracy: 0.65,          
+      xpRequired: 240,            
       description: "Conversaciones básicas",
       skillsUnlocked: ['present_perfect', 'past_simple', 'basic_conversation']
     },
     'B1': {
-      minCorrectAnswers: 100,     
-      minSessions: 15,            
-      minAccuracy: 0.75,          
-      xpRequired: 1200,           
+      minCorrectAnswers: 40,      // 🚀 ULTRA RÁPIDO: 5-6 sesiones
+      minSessions: 5,            
+      minAccuracy: 0.70,          
+      xpRequired: 400,           
       description: "Inglés intermedio funcional",
       skillsUnlocked: ['conditionals', 'passive_voice', 'advanced_grammar']
     },
     'B2': {
-      minCorrectAnswers: 200,     
-      minSessions: 25,            
-      minAccuracy: 0.80,          
-      xpRequired: 2500,           
+      minCorrectAnswers: 60,      // 🚀 ULTRA RÁPIDO: 7-8 sesiones
+      minSessions: 7,            
+      minAccuracy: 0.75,          
+      xpRequired: 600,           
       description: "Inglés avanzado y fluido",
       skillsUnlocked: ['advanced_vocabulary', 'native_patterns', 'business_english']
     }
@@ -242,11 +242,26 @@ export class RealLevelSystem {
     // ✅ GUARDAR INMEDIATAMENTE
     this.saveUserProgress(leveledUpProgress);
     
-    // ✅ LIMPIAR PROGRESO ANTERIOR DEL NIVEL ANTERIOR
+    // 🚨 LIMPIAR TODO EL SISTEMA ANTI-REPETICIÓN AL SUBIR DE NIVEL
+    console.log("🧹 LIMPIANDO SISTEMA ANTI-REPETICIÓN PARA NIVEL:", newLevel);
+    
+    // Limpiar hashes de contenido del nivel anterior Y nuevo
+    localStorage.removeItem(`content_hashes_${progress.currentLevel}`);
+    localStorage.removeItem(`content_hashes_${newLevel}`);
+    
+    // Limpiar sesiones usadas del nivel anterior Y nuevo
+    localStorage.removeItem(`used_sessions_${progress.currentLevel}`);
+    localStorage.removeItem(`used_sessions_${newLevel}`);
+    
+    // Limpiar hashes de ejercicios individuales
+    localStorage.removeItem(`all_exercise_hashes_${progress.currentLevel}`);
+    localStorage.removeItem(`all_exercise_hashes_${newLevel}`);
+    
+    // Limpiar progreso anterior
     const oldProgressKey = `level_progress_${progress.currentLevel}`;
     localStorage.removeItem(oldProgressKey);
     
-    console.log("✅ LEVEL UP COMPLETADO Y GUARDADO");
+    console.log("✅ LEVEL UP COMPLETADO - SISTEMA ANTI-REPETICIÓN LIMPIADO");
     return leveledUpProgress;
   }
   
@@ -408,6 +423,28 @@ export class RealLevelSystem {
       console.warn("⚠️ Error guardando en Firebase:", error);
       throw error;
     }
+  }
+
+  // 🚨 FUNCIÓN PARA LIMPIAR TODO EL SISTEMA ANTI-REPETICIÓN
+  static forceCleanAllRepetition(userId: string): void {
+    console.log("🧹 LIMPIEZA FORZADA DE TODO EL SISTEMA ANTI-REPETICIÓN");
+    
+    const levels = ['A1', 'A2', 'B1', 'B2', 'C1'];
+    levels.forEach(level => {
+      // Limpiar hashes de contenido
+      localStorage.removeItem(`content_hashes_${level}`);
+      console.log(`✅ Limpiado content_hashes_${level}`);
+      
+      // Limpiar sesiones usadas
+      localStorage.removeItem(`used_sessions_${level}`);
+      console.log(`✅ Limpiado used_sessions_${level}`);
+      
+      // Limpiar hashes de ejercicios individuales
+      localStorage.removeItem(`all_exercise_hashes_${level}`);
+      console.log(`✅ Limpiado all_exercise_hashes_${level}`);
+    });
+    
+    console.log("🎉 LIMPIEZA COMPLETA - TODAS LAS PREGUNTAS SERÁN NUEVAS");
   }
 
   // ✅ FUNCIÓN PARA FORZAR LEVEL UP DEFINITIVO

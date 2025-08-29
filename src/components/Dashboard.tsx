@@ -360,19 +360,31 @@ const Dashboard: React.FC<DashboardProps> = ({ user }) => {
           </button>
         )}
 
-        {/* BOTÓN TEMPORAL DE DEBUG - REMOVER DESPUÉS */}
-        {progressInfo.progressPercentage >= 95 && !progressInfo.canLevelUp && (
+        {/* BOTONES DE EMERGENCIA */}
+        <div className="flex gap-2 mt-4">
+          {progressInfo.progressPercentage >= 95 && !progressInfo.canLevelUp && (
+            <button
+              onClick={() => {
+                const unblocked = RealLevelSystem.debugUnblockUser(user.uid);
+                setUserProgress(unblocked);
+                console.log("🆘 Usuario desbloqueado manualmente");
+              }}
+              className="flex-1 bg-red-500 text-white py-2 rounded-lg text-sm font-medium hover:bg-red-600 transition-colors"
+            >
+              🆘 Desbloquear Progreso
+            </button>
+          )}
+          
           <button
             onClick={() => {
-              const unblocked = RealLevelSystem.debugUnblockUser(user.uid);
-              setUserProgress(unblocked);
-              console.log("🆘 Usuario desbloqueado manualmente");
+              RealLevelSystem.forceCleanAllRepetition(user.uid);
+              alert("🎉 ¡LIMPIEZA COMPLETA! Las próximas preguntas serán completamente nuevas.");
             }}
-            className="w-full bg-red-500 text-white py-2 rounded-lg text-sm font-medium hover:bg-red-600 transition-colors mt-2"
+            className="flex-1 bg-purple-500 text-white py-2 rounded-lg text-sm font-medium hover:bg-purple-600 transition-colors"
           >
-            🆘 DEBUG: Desbloquear Progreso
+            🧹 Limpiar Preguntas
           </button>
-        )}
+        </div>
       </div>
     );
   };
