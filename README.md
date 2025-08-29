@@ -82,4 +82,4 @@ Variables requeridas en Vercel:
 
 **🎯 Misión**: Inglés real para hispanohablantes con IA personalizada que funciona.
 
-*Hecho con ❤️ para la comunidad hispanohablante.*
+*Hecho con ❤️ para la comunidad hispanohablante.*# Force Vercel Redeploy - Fri Aug 29 06:44:19 PM UTC 2025
