@@ -5,7 +5,7 @@
 
 export interface ExercisePromptParams {
   userId: string;
-  level: 'A1' | 'A2' | 'B1' | 'B2';
+  level: 'A1' | 'A2' | 'B1' | 'B2' | 'C1';
   weakAreas?: string[];
   completedExercises: number;
   sessionNumber: number;
@@ -227,14 +227,90 @@ GENERATE 8 B2 EXERCISES for PROFESSIONAL FLUENCY.`;
   }
 
   /**
+   * PROMPT C1 - DOMINIO ACADÉMICO Y PROFESIONAL AVANZADO
+   */
+  static getC1Prompt(params: ExercisePromptParams): string {
+    return `ERES UN PROFESOR DE INGLÉS ACADÉMICO Y PROFESIONAL PARA EXPERTOS HISPANOHABLANTES.
+
+CONTEXTO:
+- El estudiante tiene dominio avanzado del inglés (A1-B2 completado)
+- Necesita refinamiento en comunicación académica, profesional y especializada
+- Ha completado ${params.completedExercises} ejercicios C1
+- Áreas débiles: ${params.weakAreas?.join(', ') || 'ninguna identificada'}
+
+🎯 OBJETIVO C1: Comunicación académica, profesional y especializada de alto nivel
+
+METODOLOGÍA: 100% inglés académico y profesional avanzado
+
+✅ SITUACIONES C1 OBLIGATORIAS:
+
+**COMUNICACIÓN ACADÉMICA AVANZADA (25%)**:
+- Debates filosóficos y epistemológicos
+- Presentación de teorías complejas
+- Análisis crítico de paradigmas
+- Argumentación académica sofisticada
+
+**ANÁLISIS PROFESIONAL EXPERTO (25%)**:
+- Estrategia corporativa y gestión
+- Análisis de políticas públicas
+- Consultoría de alto nivel
+- Liderazgo organizacional
+
+**COMUNICACIÓN CIENTÍFICA ESPECIALIZADA (25%)**:
+- Investigación interdisciplinaria
+- Metodologías complejas
+- Análisis de datos sofisticados
+- Comunicación técnica experta
+
+**FACILITACIÓN Y MODERACIÓN EXPERTA (25%)**:
+- Moderación de debates complejos
+- Facilitación de consenso
+- Mediación entre expertos
+- Síntesis de perspectivas divergentes
+
+VOCABULARIO C1 OBLIGATORIO:
+- Términos académicos: epistemological, ontological, phenomenological, hermeneutic
+- Análisis crítico: paradigmatic, systemic, dialectical, nuanced
+- Profesional avanzado: strategic, institutional, organizational, operational
+- Científico: empirical, methodological, theoretical, analytical
+
+GRAMÁTICA C1 FOCUS:
+- Subjunctive mood y condicionales complejas
+- Construcciones pasivas sofisticadas
+- Discourse markers avanzados
+- Registro académico formal
+
+FORMATO JSON OBLIGATORIO:
+{
+  "exercises": [
+    {
+      "id": "c1_academic_001",
+      "type": "multiple_choice",
+      "situation": "[Situación académica o profesional de alto nivel]",
+      "question": "[Pregunta que requiere análisis sofisticado]",
+      "options": ["[respuesta académicamente rigurosa]", "[respuesta simplificada]", "[respuesta incorrecta]", "[respuesta inadecuada]"],
+      "correct_answer": 0,
+      "explanation": "[Explicación del registro académico/profesional requerido]",
+      "level": "C1",
+      "skill_focus": "[área de especialización académica]",
+      "difficulty": 0.9
+    }
+  ]
+}
+
+GENERAR 8 EJERCICIOS C1 para COMUNICACIÓN ACADÉMICA Y PROFESIONAL AVANZADA.`;
+  }
+
+  /**
    * Obtener prompt específico por nivel
    */
-  static getPromptForLevel(level: 'A1' | 'A2' | 'B1' | 'B2', params: ExercisePromptParams): string {
+  static getPromptForLevel(level: 'A1' | 'A2' | 'B1' | 'B2' | 'C1', params: ExercisePromptParams): string {
     switch (level) {
       case 'A1': return this.getA1Prompt(params);
       case 'A2': return this.getA2Prompt(params);
       case 'B1': return this.getB1Prompt(params);
       case 'B2': return this.getB2Prompt(params);
+      case 'C1': return this.getC1Prompt(params);
       default: return this.getA1Prompt(params);
     }
   }

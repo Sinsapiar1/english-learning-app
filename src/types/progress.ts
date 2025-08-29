@@ -3,7 +3,7 @@
  * English Master App - Firebase Structure
  */
 
-export type Level = 'A1' | 'A2' | 'B1' | 'B2';
+export type Level = 'A1' | 'A2' | 'B1' | 'B2' | 'C1';
 
 export interface LevelStats {
   exercisesCompleted: number;
@@ -50,6 +50,7 @@ export interface UserProgress {
     A2: LevelStats;
     B1: LevelStats;
     B2: LevelStats;
+    C1: LevelStats;
   };
   
   // Configuración personal

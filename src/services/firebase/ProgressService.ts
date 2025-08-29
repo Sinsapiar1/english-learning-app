@@ -67,6 +67,14 @@ export class ProgressService {
       minTimeSpent: 240, // 4 horas
       skillsRequired: ['professional_communication', 'analysis', 'complex_grammar', 'nuanced_vocabulary'],
       description: 'Fluidez profesional'
+    },
+    C1: {
+      minExercises: 200,
+      minAccuracy: 0.90,
+      minSessions: 25,
+      minTimeSpent: 300, // 5 horas
+      skillsRequired: ['existential_risk_analysis', 'paradigm_innovation', 'epistemological_argumentation', 'advanced_bioethics'],
+      description: 'Dominio académico y profesional avanzado'
     }
   };
 
@@ -90,7 +98,8 @@ export class ProgressService {
         A1: this.createInitialLevelStats(true),
         A2: this.createInitialLevelStats(false),
         B1: this.createInitialLevelStats(false),
-        B2: this.createInitialLevelStats(false)
+        B2: this.createInitialLevelStats(false),
+        C1: this.createInitialLevelStats(false)
       },
       
       apiKey: this.encryptAPIKey(apiKey),
@@ -356,7 +365,7 @@ export class ProgressService {
   }
 
   private getNextLevel(currentLevel: Level): Level {
-    const levels: Level[] = ['A1', 'A2', 'B1', 'B2'];
+    const levels: Level[] = ['A1', 'A2', 'B1', 'B2', 'C1'];
     const currentIndex = levels.indexOf(currentLevel);
     return levels[Math.min(currentIndex + 1, levels.length - 1)];
   }
@@ -422,6 +431,11 @@ export class ProgressService {
           ...data.levelProgress.B2,
           completedAt: data.levelProgress.B2.completedAt?.toDate(),
           lastSession: data.levelProgress.B2.lastSession?.toDate()
+        },
+        C1: {
+          ...data.levelProgress.C1,
+          completedAt: data.levelProgress.C1.completedAt?.toDate(),
+          lastSession: data.levelProgress.C1.lastSession?.toDate()
         }
       }
     };

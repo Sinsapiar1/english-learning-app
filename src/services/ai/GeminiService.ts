@@ -531,10 +531,12 @@ FORMATO JSON - 8 EJERCICIOS ÚNICOS:
   }
 
   /**
-   * GENERAR EJERCICIOS DE EMERGENCIA ÚNICOS
+   * GENERAR EJERCICIOS DE EMERGENCIA POR NIVEL REAL
    */
   private generateEmergencyExercisesUnique(level: Level, userId: string): Exercise[] {
     const timestamp = Date.now();
+    
+    // 🚨 CRÍTICO: Ejercicios específicos por nivel real
     const emergencyBank: Record<Level, any[]> = {
       A1: [
         {
@@ -610,9 +612,194 @@ FORMATO JSON - 8 EJERCICIOS ÚNICOS:
           skill_focus: "giving_directions"
         }
       ],
-      A2: [],
-      B1: [],
-      B2: []
+      A2: [
+        {
+          id: `emergency_${userId}_${timestamp}_1`,
+          situation: "En una reunión de trabajo, tu jefe pregunta tu opinión sobre el nuevo proyecto",
+          question: "¿Cómo expresas una opinión profesional pero con reservas?",
+          options: ["While I see the potential, I have some concerns about the timeline", "I don't like it", "Maybe it's good", "I think it's okay"],
+          correct_answer: 0,
+          explanation: "Para expresar reservas profesionalmente, usamos 'While I see... I have concerns about...'",
+          skill_focus: "professional_opinions"
+        },
+        {
+          id: `emergency_${userId}_${timestamp}_2`,
+          situation: "Estás describiendo un problema técnico complejo a un colega",
+          question: "¿Cómo explicas que el sistema ha estado fallando intermitentemente?",
+          options: ["The system has been experiencing intermittent failures", "The computer is broken sometimes", "It doesn't work good", "There are problems"],
+          correct_answer: 0,
+          explanation: "'Intermittent failures' es el término técnico correcto para fallas esporádicas.",
+          skill_focus: "technical_communication"
+        }
+      ],
+      B1: [
+        {
+          id: `emergency_${userId}_${timestamp}_1`,
+          situation: "En una negociación comercial, necesitas proponer una alternativa",
+          question: "¿Cómo sugieres una alternativa manteniendo la flexibilidad?",
+          options: ["Perhaps we could explore alternative approaches that might better serve both parties", "Maybe we can do something else", "I have another idea", "What about this option?"],
+          correct_answer: 0,
+          explanation: "En negociaciones, 'explore alternative approaches that serve both parties' es diplomático y profesional.",
+          skill_focus: "business_negotiation"
+        },
+        {
+          id: `emergency_${userId}_${timestamp}_2`,
+          situation: "Estás presentando datos contradictorios en una investigación",
+          question: "¿Cómo presentas hallazgos que contradicen la hipótesis inicial?",
+          options: ["Contrary to our initial hypothesis, the data suggests a different pattern", "The results are wrong", "We were mistaken", "The numbers don't match"],
+          correct_answer: 0,
+          explanation: "'Contrary to our initial hypothesis, the data suggests...' es la forma académica correcta.",
+          skill_focus: "academic_presentation"
+        }
+      ],
+      B2: [
+        {
+          id: `emergency_${userId}_${timestamp}_1`,
+          situation: "En un debate académico sobre políticas públicas",
+          question: "¿Cómo articulas una crítica constructiva a una propuesta gubernamental?",
+          options: ["While the policy addresses legitimate concerns, its implementation framework may inadvertently exacerbate existing inequalities", "The government policy is bad", "I disagree with this law", "This won't work"],
+          correct_answer: 0,
+          explanation: "Crítica académica requiere 'While... addresses legitimate concerns, its implementation may inadvertently...'",
+          skill_focus: "policy_analysis"
+        },
+        {
+          id: `emergency_${userId}_${timestamp}_2`,
+          situation: "Moderando una discusión entre expertos con opiniones divergentes",
+          question: "¿Cómo facilitas consenso entre perspectivas aparentemente irreconciliables?",
+          options: ["Perhaps we can synthesize these seemingly divergent viewpoints by identifying underlying commonalities", "Let's agree to disagree", "Both sides have points", "We need to find middle ground"],
+          correct_answer: 0,
+          explanation: "'Synthesize divergent viewpoints by identifying underlying commonalities' es facilitación experta.",
+          skill_focus: "expert_moderation"
+        },
+        {
+          id: `emergency_${userId}_${timestamp}_3`,
+          situation: "Analizando las implicaciones éticas de una innovación tecnológica",
+          question: "¿Cómo evalúas los dilemas éticos de la IA en medicina?",
+          options: ["The ethical implications of AI in healthcare necessitate a nuanced examination of autonomy, beneficence, and distributive justice", "AI in medicine has ethical problems", "We need to be careful with medical AI", "There are moral issues to consider"],
+          correct_answer: 0,
+          explanation: "Análisis ético académico requiere terminología específica: 'autonomy, beneficence, distributive justice'.",
+          skill_focus: "ethical_analysis"
+        },
+        {
+          id: `emergency_${userId}_${timestamp}_4`,
+          situation: "Presentando una propuesta de investigación interdisciplinaria",
+          question: "¿Cómo justificas la metodología mixta en tu estudio?",
+          options: ["This mixed-methods approach leverages quantitative rigor while capturing qualitative nuances that purely statistical analyses might overlook", "We use both numbers and interviews", "Mixed methods work better", "We combine different research types"],
+          correct_answer: 0,
+          explanation: "Justificación metodológica académica: 'leverages quantitative rigor while capturing qualitative nuances'.",
+          skill_focus: "research_methodology"
+        },
+        {
+          id: `emergency_${userId}_${timestamp}_5`,
+          situation: "Debatiendo sobre sostenibilidad corporativa en un foro internacional",
+          question: "¿Cómo criticas el 'greenwashing' corporativo de manera académicamente rigurosa?",
+          options: ["Corporate sustainability initiatives often constitute performative environmentalism that obscures rather than addresses systemic ecological challenges", "Companies pretend to be green", "Greenwashing is bad", "Corporations lie about environment"],
+          correct_answer: 0,
+          explanation: "'Performative environmentalism that obscures systemic ecological challenges' es crítica académica rigurosa.",
+          skill_focus: "corporate_sustainability_analysis"
+        },
+        {
+          id: `emergency_${userId}_${timestamp}_6`,
+          situation: "Facilitando un workshop sobre innovación disruptiva",
+          question: "¿Cómo explicas por qué las empresas establecidas fallan ante la disrupción?",
+          options: ["Incumbent organizations often suffer from competency traps and institutional inertia that impede adaptive responses to paradigmatic shifts", "Big companies are slow to change", "Old businesses resist innovation", "Established firms don't adapt well"],
+          correct_answer: 0,
+          explanation: "'Competency traps and institutional inertia impeding adaptive responses to paradigmatic shifts' es terminología de management strategy.",
+          skill_focus: "strategic_innovation"
+        },
+        {
+          id: `emergency_${userId}_${timestamp}_7`,
+          situation: "Analizando tendencias geopolíticas en una conferencia internacional",
+          question: "¿Cómo describes el impacto de la multipolaridad en las relaciones internacionales?",
+          options: ["The emergence of multipolarity fundamentally reconfigures traditional alliance structures and necessitates more nuanced diplomatic strategies", "Many countries are becoming powerful", "The world is changing politically", "International relations are complex now"],
+          correct_answer: 0,
+          explanation: "'Multipolarity reconfigures alliance structures and necessitates nuanced diplomatic strategies' es análisis geopolítico experto.",
+          skill_focus: "geopolitical_analysis"
+        },
+        {
+          id: `emergency_${userId}_${timestamp}_8`,
+          situation: "Discutiendo neuroplasticidad en un simposio científico",
+          question: "¿Cómo explicas las implicaciones terapéuticas de la neuroplasticidad?",
+          options: ["Neuroplasticity research suggests that targeted cognitive interventions can facilitate synaptic reorganization and functional recovery", "Brain plasticity helps therapy", "The brain can change with treatment", "Neural connections can improve"],
+          correct_answer: 0,
+          explanation: "'Targeted cognitive interventions facilitate synaptic reorganization and functional recovery' es terminología neurocientífica precisa.",
+          skill_focus: "scientific_communication"
+        }
+      ],
+      C1: [
+        {
+          id: `emergency_${userId}_${timestamp}_1`,
+          situation: "Liderando una mesa redonda sobre el futuro de la inteligencia artificial en la sociedad",
+          question: "¿Cómo articulas los riesgos existenciales de la superinteligencia artificial?",
+          options: ["The trajectory toward artificial general intelligence raises profound questions about existential risk mitigation and the alignment problem in advanced AI systems", "AI might be dangerous in the future", "Super smart AI could be risky", "Advanced AI systems need safety measures"],
+          correct_answer: 0,
+          explanation: "Discusión sobre riesgos existenciales requiere terminología específica: 'existential risk mitigation' y 'alignment problem'.",
+          skill_focus: "existential_risk_analysis"
+        },
+        {
+          id: `emergency_${userId}_${timestamp}_2`,
+          situation: "Presentando una teoría revolucionaria en un congreso académico internacional",
+          question: "¿Cómo introduces un paradigma que desafía los fundamentos teóricos establecidos?",
+          options: ["This framework fundamentally reconceptualizes our understanding by challenging the ontological assumptions that underpin conventional theoretical paradigms", "This theory changes how we think", "Our new model is different", "This approach questions existing ideas"],
+          correct_answer: 0,
+          explanation: "'Reconceptualizes understanding by challenging ontological assumptions that underpin paradigms' es discurso académico de alto nivel.",
+          skill_focus: "paradigm_innovation"
+        },
+        {
+          id: `emergency_${userId}_${timestamp}_3`,
+          situation: "Debatiendo sobre la epistemología de la ciencia en un simposio filosófico",
+          question: "¿Cómo defiendes el realismo científico ante críticas postmodernas?",
+          options: ["While acknowledging the social construction of scientific knowledge, the convergence of independent methodologies toward consistent empirical findings suggests an objective reality constraining theoretical possibilities", "Science finds real truths despite social influences", "Scientific methods reveal objective facts", "Research shows what's really true"],
+          correct_answer: 0,
+          explanation: "Defensa epistemológica sofisticada: 'convergence of methodologies toward empirical findings suggests objective reality constraining theoretical possibilities'.",
+          skill_focus: "epistemological_argumentation"
+        },
+        {
+          id: `emergency_${userId}_${timestamp}_4`,
+          situation: "Moderando un debate sobre bioética y edición genética en humanos",
+          question: "¿Cómo navegas las tensiones entre autonomía reproductiva y justicia distributiva?",
+          options: ["The intersection of reproductive autonomy and distributive justice in genetic enhancement technologies necessitates a nuanced framework that balances individual liberty with societal equity concerns", "Genetic editing raises questions about fairness and choice", "Gene therapy involves personal freedom and social justice", "Genetic enhancement affects individual rights and equality"],
+          correct_answer: 0,
+          explanation: "Bioética avanzada: 'intersection of reproductive autonomy and distributive justice necessitates nuanced framework balancing liberty with equity'.",
+          skill_focus: "advanced_bioethics"
+        },
+        {
+          id: `emergency_${userId}_${timestamp}_5`,
+          situation: "Analizando la fenomenología de la conciencia en un seminario de filosofía de la mente",
+          question: "¿Cómo abordas el problema difícil de la conciencia desde una perspectiva fenomenológica?",
+          options: ["The phenomenological approach to consciousness illuminates the irreducible qualitative dimension of subjective experience that resists reduction to purely computational or neurophysiological explanations", "Consciousness is hard to explain with just brain science", "Subjective experience can't be fully explained by neurons", "Personal awareness involves more than brain activity"],
+          correct_answer: 0,
+          explanation: "Filosofía de la mente: 'phenomenological approach illuminates irreducible qualitative dimension resisting reduction to computational explanations'.",
+          skill_focus: "consciousness_studies"
+        },
+        {
+          id: `emergency_${userId}_${timestamp}_6`,
+          situation: "Discutiendo teoría de sistemas complejos en un instituto de investigación avanzada",
+          question: "¿Cómo explicas la emergencia de propiedades sistémicas en redes complejas?",
+          options: ["Emergent properties in complex networks arise from nonlinear interactions among heterogeneous agents, generating system-level behaviors that transcend the sum of individual component capabilities", "Complex systems create new behaviors from simple parts", "Network effects produce unexpected outcomes", "System properties emerge from component interactions"],
+          correct_answer: 0,
+          explanation: "Teoría de sistemas: 'nonlinear interactions among heterogeneous agents generating behaviors that transcend sum of component capabilities'.",
+          skill_focus: "complex_systems_theory"
+        },
+        {
+          id: `emergency_${userId}_${timestamp}_7`,
+          situation: "Presentando investigación sobre metacognición y aprendizaje autorregulado",
+          question: "¿Cómo describes los mecanismos metacognitivos en el aprendizaje experto?",
+          options: ["Expert learning involves sophisticated metacognitive orchestration of cognitive resources, including strategic knowledge deployment, error monitoring, and adaptive strategy selection based on task demands", "Experts think about their thinking while learning", "Advanced learners monitor their knowledge", "Skilled people use good learning strategies"],
+          correct_answer: 0,
+          explanation: "Metacognición experta: 'metacognitive orchestration of resources including strategic deployment, error monitoring, adaptive selection based on task demands'.",
+          skill_focus: "metacognitive_expertise"
+        },
+        {
+          id: `emergency_${userId}_${timestamp}_8`,
+          situation: "Facilitando un seminario sobre hermenéutica y interpretación textual",
+          question: "¿Cómo explicas la circularidad hermenéutica en la interpretación de textos complejos?",
+          options: ["The hermeneutic circle reveals how understanding emerges through the dialectical interplay between preunderstanding and textual encounter, where each interpretive iteration refines both comprehension and contextual horizon", "Understanding texts involves going back and forth between parts and whole", "Interpretation requires multiple readings to understand meaning", "Reading comprehension improves through repeated analysis"],
+          correct_answer: 0,
+          explanation: "Hermenéutica: 'dialectical interplay between preunderstanding and textual encounter, where interpretive iteration refines comprehension and contextual horizon'.",
+          skill_focus: "hermeneutic_interpretation"
+        }
+      ]
     };
 
     const exercises = emergencyBank[level] || emergencyBank.A1;

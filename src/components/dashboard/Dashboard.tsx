@@ -265,8 +265,8 @@ export const Dashboard: React.FC<DashboardProps> = ({
             className="bg-white rounded-2xl p-6 shadow-xl border border-gray-200/50"
           >
             <h3 className="text-xl font-bold text-gray-900 mb-6">Tu Camino de Aprendizaje</h3>
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              {(['A1', 'A2', 'B1', 'B2'] as Level[]).map((level, index) => {
+            <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+              {(['A1', 'A2', 'B1', 'B2', 'C1'] as Level[]).map((level, index) => {
                 const stats = userProgress.levelProgress[level];
                 const isCurrent = userProgress.currentLevel === level;
                 const isCompleted = stats.isCompleted;
