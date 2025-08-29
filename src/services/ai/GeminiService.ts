@@ -5,6 +5,7 @@
 
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { PromptTemplates, ExercisePromptParams } from './PromptTemplates';
+import { DiversityEngine } from './DiversityEngine';
 import { Level } from '../../types/progress';
 
 export interface Exercise {
@@ -29,88 +30,178 @@ export interface ExerciseValidationResult {
 
 export class GeminiService {
   private genAI: GoogleGenerativeAI;
+  private diversityEngine: DiversityEngine;
 
   constructor(apiKey: string) {
     this.genAI = new GoogleGenerativeAI(apiKey);
+    this.diversityEngine = new DiversityEngine();
   }
 
   /**
-   * GENERAR EJERCICIOS ESPECÍFICOS POR NIVEL
+   * GENERAR EJERCICIOS ESPECÍFICOS POR NIVEL CON DIVERSIDAD GARANTIZADA
    */
   async generateExercises(params: ExercisePromptParams): Promise<Exercise[]> {
     try {
-      console.log(`🤖 Generando ejercicios ${params.level} para usuario ${params.userId}`);
+      console.log(`🎯 Generando ejercicios DIVERSOS ${params.level} para usuario ${params.userId}`);
       
-      const prompt = PromptTemplates.getPromptForLevel(params.level, params);
+      // 🚀 USAR DIVERSITY ENGINE PARA GARANTIZAR VARIEDAD
+      const diverseExercises = await this.diversityEngine.generateDiverseExercises(
+        params.userId,
+        params.level,
+        8 // Siempre 8 ejercicios
+      );
+
+      // Procesar con IA real si hay ejercicios diversos
+      if (diverseExercises.length > 0) {
+        const processedExercises = await this.enhanceWithAI(diverseExercises, params);
+        
+        if (processedExercises.length >= 4) { // Mínimo 4 ejercicios válidos
+          console.log(`✅ ${processedExercises.length} ejercicios DIVERSOS generados exitosamente`);
+          return processedExercises;
+        }
+      }
+
+      // Fallback: generar con constraints estrictos
+      console.warn('⚠️ Diversity engine falló, usando método alternativo');
+      return await this.generateWithStrictConstraints(params);
+
+    } catch (error) {
+      console.error('❌ Error generando ejercicios diversos:', error);
       
+      // Último recurso: ejercicios de emergencia ÚNICOS
+      return this.generateEmergencyExercisesUnique(params.level, params.userId);
+    }
+  }
+
+  /**
+   * MEJORAR EJERCICIOS DIVERSOS CON IA
+   */
+  private async enhanceWithAI(diverseExercises: any[], params: ExercisePromptParams): Promise<Exercise[]> {
+    const enhancedExercises: Exercise[] = [];
+
+    for (const baseExercise of diverseExercises) {
+      try {
+        const enhancedPrompt = `MEJORA ESTE EJERCICIO BASE MANTENIENDO SU UNIQUENESS:
+
+EJERCICIO BASE:
+${JSON.stringify(baseExercise, null, 2)}
+
+REGLAS ESTRICTAS:
+1. MANTENER la situación exacta: "${baseExercise.situation}"
+2. MANTENER el skill focus: "${baseExercise.skill_focus}"
+3. MEJORAR la pregunta para ser más natural y pedagógica
+4. GENERAR opciones completamente diferentes pero lógicas
+5. NUNCA usar estas frases prohibidas: "Good morning", "Hello", "Thank you", "I'm hungry"
+
+FORMATO JSON EXACTO:
+{
+  "id": "${baseExercise.id}",
+  "type": "multiple_choice",
+  "situation": "${baseExercise.situation}",
+  "question": "[PREGUNTA MEJORADA EN ESPAÑOL]",
+  "options": ["[opción única 1]", "[opción única 2]", "[opción única 3]", "[opción única 4]"],
+  "correct_answer": 0,
+  "explanation": "[Explicación pedagógica detallada]",
+  "level": "${params.level}",
+  "skill_focus": "${baseExercise.skill_focus}",
+  "difficulty": ${baseExercise.difficulty}
+}`;
+
+        const model = this.genAI.getGenerativeModel({
+          model: "gemini-1.5-flash",
+          generationConfig: {
+            temperature: 0.9, // Más creatividad para diversidad
+            topP: 0.9,
+            topK: 50,
+            maxOutputTokens: 1024,
+          }
+        });
+
+        const result = await model.generateContent(enhancedPrompt);
+        const text = result.response.text();
+
+        const jsonMatch = text.match(/\{[\s\S]*\}/);
+        if (jsonMatch) {
+          const enhancedExercise = JSON.parse(jsonMatch[0]);
+          
+          // Validar que es realmente diferente
+          if (this.validateUniqueness(enhancedExercise, enhancedExercises)) {
+            const processedExercise = this.shuffleOptions(enhancedExercise as Exercise);
+            enhancedExercises.push(processedExercise);
+            console.log(`✅ Ejercicio mejorado: ${enhancedExercise.skill_focus}`);
+          }
+        }
+      } catch (error) {
+        console.warn('⚠️ Error mejorando ejercicio:', error);
+      }
+    }
+
+    return enhancedExercises;
+  }
+
+  /**
+   * GENERAR CON CONSTRAINTS ESTRICTOS (FALLBACK)
+   */
+  private async generateWithStrictConstraints(params: ExercisePromptParams): Promise<Exercise[]> {
+    const uniquePrompt = `GENERA 8 EJERCICIOS COMPLETAMENTE ÚNICOS PARA NIVEL ${params.level}
+
+🚨 CONSTRAINTS ESTRICTOS:
+1. CADA EJERCICIO debe tener una situación COMPLETAMENTE DIFERENTE
+2. NUNCA repetir estas frases: "Good morning", "Hello", "Thank you", "I'm hungry", "What time is it", "My name is"
+3. Usar situaciones ESPECÍFICAS y REALISTAS
+4. Variar entre diferentes skills: social_greetings, basic_needs, courtesy, personal_info, emergency_help
+
+EJEMPLOS DE SITUACIONES ÚNICAS:
+- "Estás en el dentista y necesitas explicar que te duele"
+- "Un compañero de trabajo te invita a almorzar"
+- "Necesitas pedir direcciones para llegar al aeropuerto"
+- "Tu vecino te pregunta si puedes cuidar su gato"
+- "Estás en una farmacia y necesitas medicina"
+
+FORMATO JSON - 8 EJERCICIOS ÚNICOS:
+{
+  "exercises": [
+    {
+      "id": "unique_${Date.now()}_1",
+      "situation": "[SITUACIÓN COMPLETAMENTE ÚNICA]",
+      "question": "[PREGUNTA ÚNICA EN ESPAÑOL]",
+      "options": ["[opción 1]", "[opción 2]", "[opción 3]", "[opción 4]"],
+      "correct_answer": 0,
+      "explanation": "[Explicación pedagógica]",
+      "level": "${params.level}",
+      "skill_focus": "[skill específico]"
+    }
+  ]
+}`;
+
+    try {
       const model = this.genAI.getGenerativeModel({
         model: "gemini-1.5-flash",
         generationConfig: {
-          temperature: 0.7,
-          topP: 0.8,
-          topK: 40,
-          maxOutputTokens: 2048,
+          temperature: 1.0, // Máxima creatividad
+          topP: 0.95,
+          topK: 60,
+          maxOutputTokens: 3000,
         }
       });
 
-      const result = await model.generateContent(prompt);
-      const response = result.response;
-      const text = response.text();
+      const result = await model.generateContent(uniquePrompt);
+      const text = result.response.text();
 
-      // Parsear respuesta JSON
       const jsonMatch = text.match(/\{[\s\S]*\}/);
-      if (!jsonMatch) {
-        throw new Error('No se pudo extraer JSON de la respuesta de IA');
+      if (jsonMatch) {
+        const data = JSON.parse(jsonMatch[0]);
+        return data.exercises.map((ex: any, i: number) => this.shuffleOptions({
+          ...ex,
+          id: `unique_${params.userId}_${Date.now()}_${i}`,
+          difficulty: this.calculateDifficulty(ex, params.level)
+        }));
       }
-
-      const exerciseData = JSON.parse(jsonMatch[0]);
-      
-      if (!exerciseData.exercises || !Array.isArray(exerciseData.exercises)) {
-        throw new Error('Formato de ejercicios inválido');
-      }
-
-      // Validar y procesar ejercicios
-      const validatedExercises: Exercise[] = [];
-      
-      for (let i = 0; i < exerciseData.exercises.length; i++) {
-        const exercise = exerciseData.exercises[i];
-        
-        // Validación pedagógica
-        const validation = this.validateExercise(exercise, params.level);
-        
-        if (validation.isValid) {
-          // Generar ID único y procesar ejercicio
-          const processedExercise: Exercise = {
-            ...exercise,
-            id: `${params.level.toLowerCase()}_${Date.now()}_${i}`,
-            correct_answer: typeof exercise.correct_answer === 'string' ? 
-              exercise.options.indexOf(exercise.correct_answer) : exercise.correct_answer,
-            difficulty: this.calculateDifficulty(exercise, params.level)
-          };
-
-          // Mezclar opciones manteniendo respuesta correcta
-          const shuffledExercise = this.shuffleOptions(processedExercise);
-          validatedExercises.push(shuffledExercise);
-          
-          console.log(`✅ Ejercicio ${i + 1} validado: ${exercise.skill_focus}`);
-        } else {
-          console.warn(`❌ Ejercicio ${i + 1} rechazado:`, validation.errors);
-        }
-      }
-
-      if (validatedExercises.length === 0) {
-        throw new Error('No se generaron ejercicios válidos');
-      }
-
-      console.log(`🎯 ${validatedExercises.length} ejercicios ${params.level} generados exitosamente`);
-      return validatedExercises;
-
     } catch (error) {
-      console.error('❌ Error generando ejercicios:', error);
-      
-      // Fallback a ejercicios de emergencia
-      return this.generateEmergencyExercises(params.level);
+      console.error('❌ Error con constraints estrictos:', error);
     }
+
+    return this.generateEmergencyExercisesUnique(params.level, params.userId);
   }
 
   /**
@@ -419,7 +510,123 @@ export class GeminiService {
   }
 
   /**
-   * EJERCICIOS DE EMERGENCIA POR NIVEL
+   * VALIDAR UNIQUENESS DE EJERCICIOS
+   */
+  private validateUniqueness(exercise: any, existingExercises: Exercise[]): boolean {
+    // Verificar que no sea similar a ejercicios existentes
+    const questionWords = exercise.question.toLowerCase().split(' ');
+    
+    for (const existing of existingExercises) {
+      const existingWords = existing.question.toLowerCase().split(' ');
+      const commonWords = questionWords.filter((word: string) => existingWords.includes(word));
+      
+      // Si más del 50% de palabras son comunes, rechazar
+      if (commonWords.length > questionWords.length * 0.5) {
+        console.warn(`❌ Ejercicio muy similar rechazado: ${exercise.question}`);
+        return false;
+      }
+    }
+    
+    return true;
+  }
+
+  /**
+   * GENERAR EJERCICIOS DE EMERGENCIA ÚNICOS
+   */
+  private generateEmergencyExercisesUnique(level: Level, userId: string): Exercise[] {
+    const timestamp = Date.now();
+    const emergencyBank: Record<Level, any[]> = {
+      A1: [
+        {
+          id: `emergency_${userId}_${timestamp}_1`,
+          situation: "Estás en el dentista y necesitas explicar que te duele una muela",
+          question: "¿Cómo expresas que tienes dolor de muelas?",
+          options: ["My tooth hurts", "I'm happy", "I'm cold", "I'm tired"],
+          correct_answer: 0,
+          explanation: "Para expresar dolor usamos 'hurts'. 'My tooth hurts' = Me duele la muela.",
+          skill_focus: "health_emergencies"
+        },
+        {
+          id: `emergency_${userId}_${timestamp}_2`,
+          situation: "Un compañero de trabajo te invita a almorzar",
+          question: "¿Cómo aceptas la invitación educadamente?",
+          options: ["Yes, I'd like that", "No, never", "Maybe tomorrow", "I don't know"],
+          correct_answer: 0,
+          explanation: "'Yes, I'd like that' es una forma educada de aceptar una invitación.",
+          skill_focus: "workplace_social"
+        },
+        {
+          id: `emergency_${userId}_${timestamp}_3`,
+          situation: "Necesitas pedir direcciones para llegar al aeropuerto",
+          question: "¿Cómo pides direcciones al aeropuerto?",
+          options: ["How do I get to the airport?", "Where is food?", "What time is it?", "I like planes"],
+          correct_answer: 0,
+          explanation: "'How do I get to...' es la forma correcta de pedir direcciones.",
+          skill_focus: "navigation"
+        },
+        {
+          id: `emergency_${userId}_${timestamp}_4`,
+          situation: "Tu vecino te pregunta si puedes cuidar su gato mientras viaja",
+          question: "¿Cómo respondes que sí puedes ayudar?",
+          options: ["Sure, I can help", "I hate cats", "Maybe not", "I don't understand"],
+          correct_answer: 0,
+          explanation: "'Sure, I can help' es una respuesta positiva y útil para ofrecer ayuda.",
+          skill_focus: "neighborly_help"
+        },
+        {
+          id: `emergency_${userId}_${timestamp}_5`,
+          situation: "Estás en una farmacia y necesitas medicina para el dolor de cabeza",
+          question: "¿Cómo pides medicina para el dolor de cabeza?",
+          options: ["I need something for headache", "I want candy", "Where is water?", "I'm very happy"],
+          correct_answer: 0,
+          explanation: "'I need something for...' es la forma correcta de pedir medicina específica.",
+          skill_focus: "pharmacy_needs"
+        },
+        {
+          id: `emergency_${userId}_${timestamp}_6`,
+          situation: "Llegas tarde al trabajo y necesitas disculparte con tu jefe",
+          question: "¿Cómo te disculpas por llegar tarde?",
+          options: ["Sorry I'm late", "Hello boss", "Good morning", "I'm here now"],
+          correct_answer: 0,
+          explanation: "'Sorry I'm late' es la disculpa apropiada cuando llegas tarde.",
+          skill_focus: "workplace_apology"
+        },
+        {
+          id: `emergency_${userId}_${timestamp}_7`,
+          situation: "Estás en un restaurante y la comida está fría",
+          question: "¿Cómo reportas que la comida está fría?",
+          options: ["This food is cold", "I'm very cold", "The weather is cold", "Cold is good"],
+          correct_answer: 0,
+          explanation: "'This food is cold' identifica específicamente el problema con la comida.",
+          skill_focus: "restaurant_complaints"
+        },
+        {
+          id: `emergency_${userId}_${timestamp}_8`,
+          situation: "Un turista te pregunta dónde está la estación de tren",
+          question: "¿Cómo direccionas a alguien hacia la estación de tren?",
+          options: ["The train station is over there", "I don't like trains", "Trains are fast", "What is a train?"],
+          correct_answer: 0,
+          explanation: "Para dar direcciones usamos 'The [lugar] is over there' (está por allá).",
+          skill_focus: "giving_directions"
+        }
+      ],
+      A2: [],
+      B1: [],
+      B2: []
+    };
+
+    const exercises = emergencyBank[level] || emergencyBank.A1;
+    
+    return exercises.map((ex: any) => this.shuffleOptions({
+      ...ex,
+      type: 'multiple_choice' as const,
+      level,
+      difficulty: 0.3
+    } as Exercise));
+  }
+
+  /**
+   * EJERCICIOS DE EMERGENCIA POR NIVEL (MÉTODO ORIGINAL MANTENIDO)
    */
   private generateEmergencyExercises(level: Level): Exercise[] {
     const emergencyExercises = {

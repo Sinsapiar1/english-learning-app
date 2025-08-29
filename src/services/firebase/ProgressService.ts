@@ -117,7 +117,7 @@ export class ProgressService {
   }
 
   /**
-   * ACTUALIZAR PROGRESO DESPUÉS DE SESIÓN
+   * ACTUALIZAR PROGRESO DESPUÉS DE SESIÓN - SOLO PROGRESO POSITIVO
    */
   async updateProgress(userId: string, sessionResults: SessionResults): Promise<UserProgress> {
     return await runTransaction(this.db, async (transaction) => {
@@ -131,30 +131,49 @@ export class ProgressService {
       const currentProgress = this.convertFirestoreToProgress(progressDoc.data());
       
       // 1. ACTUALIZAR ESTADÍSTICAS GLOBALES
-      const newTotalExercises = currentProgress.totalExercises + sessionResults.totalAnswers;
-      const newTotalCorrect = currentProgress.totalCorrectAnswers + sessionResults.correctAnswers;
-      const newOverallAccuracy = newTotalCorrect / newTotalExercises;
+      const globalTotalExercises = currentProgress.totalExercises + sessionResults.totalAnswers;
+      const globalTotalCorrect = currentProgress.totalCorrectAnswers + sessionResults.correctAnswers;
+      const newOverallAccuracy = globalTotalCorrect / globalTotalExercises;
       
-      // 2. ACTUALIZAR PROGRESO DEL NIVEL ACTUAL
+      // 2. ACTUALIZAR PROGRESO DEL NIVEL ACTUAL - SOLO POSITIVO
       const currentLevel = currentProgress.currentLevel;
       const levelStats = currentProgress.levelProgress[currentLevel];
       
+      // Calcular nueva precisión, pero nunca menor a la actual
+      const levelTotalExercises = levelStats.exercisesCompleted + sessionResults.totalAnswers;
+      const levelTotalCorrect = levelStats.correctAnswers + sessionResults.correctAnswers;
+      const newAccuracy = levelTotalCorrect / levelTotalExercises;
+      
+      // 🚀 REGLA CRÍTICA: La precisión nunca baja, solo sube o se mantiene
+      const finalAccuracy = Math.max(levelStats.accuracy, newAccuracy);
+      
       const updatedLevelStats: LevelStats = {
         ...levelStats,
-        exercisesCompleted: levelStats.exercisesCompleted + sessionResults.totalAnswers,
-        correctAnswers: levelStats.correctAnswers + sessionResults.correctAnswers,
-        accuracy: (levelStats.correctAnswers + sessionResults.correctAnswers) / 
-                 (levelStats.exercisesCompleted + sessionResults.totalAnswers),
+        exercisesCompleted: levelTotalExercises,
+        correctAnswers: levelTotalCorrect,
+        accuracy: finalAccuracy, // 🚀 NUNCA RETROCEDE
         xpEarned: levelStats.xpEarned + sessionResults.xpEarned,
         timeSpent: levelStats.timeSpent + sessionResults.timeSpent,
         sessionsCompleted: levelStats.sessionsCompleted + 1,
         lastSession: new Date(),
-        averageTime: (levelStats.averageTime * levelStats.exercisesCompleted + 
-                     sessionResults.timeSpent * 60 / sessionResults.totalAnswers) / 
-                    (levelStats.exercisesCompleted + sessionResults.totalAnswers),
+        averageTime: Math.min( // Mejorar tiempo promedio
+          levelStats.averageTime || 60,
+          (levelStats.averageTime * levelStats.exercisesCompleted + 
+           sessionResults.timeSpent * 60 / sessionResults.totalAnswers) / 
+          levelTotalExercises
+        ),
         weakAreas: this.updateWeakAreas(levelStats.weakAreas, sessionResults.weakAreasIdentified),
         strongAreas: this.updateStrongAreas(levelStats.strongAreas, sessionResults.skillsFocused, sessionResults.accuracy)
       };
+
+      console.log(`📊 PROGRESO ACTUALIZADO:`, {
+        level: currentLevel,
+        oldAccuracy: levelStats.accuracy,
+        newAccuracy: newAccuracy,
+        finalAccuracy: finalAccuracy,
+        exercisesCompleted: updatedLevelStats.exercisesCompleted,
+        onlyPositiveProgress: finalAccuracy >= levelStats.accuracy
+      });
 
       // 3. VERIFICAR LEVEL UP
       const progressCalc = this.calculateProgress(currentLevel, updatedLevelStats);
@@ -190,8 +209,8 @@ export class ProgressService {
       const updatedProgress: UserProgress = {
         ...currentProgress,
         currentLevel: newLevel,
-        totalExercises: newTotalExercises,
-        totalCorrectAnswers: newTotalCorrect,
+        totalExercises: globalTotalExercises,
+        totalCorrectAnswers: globalTotalCorrect,
         overallAccuracy: newOverallAccuracy,
         totalXP: currentProgress.totalXP + sessionResults.xpEarned,
         totalTimeSpent: currentProgress.totalTimeSpent + sessionResults.timeSpent,

@@ -21,6 +21,7 @@ import {
 
 import { UserProgress, Level, ProgressCalculation } from '../../types/progress';
 import { ProgressService } from '../../services/firebase/ProgressService';
+import { RepetitionCleaner } from '../../services/firebase/RepetitionCleaner';
 
 interface DashboardProps {
   userProgress: UserProgress;
@@ -39,6 +40,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
   const [showLevelUpCelebration, setShowLevelUpCelebration] = useState(false);
 
   const progressService = new ProgressService();
+  const repetitionCleaner = new RepetitionCleaner();
 
   useEffect(() => {
     const currentLevelStats = userProgress.levelProgress[userProgress.currentLevel];
@@ -288,37 +290,65 @@ export const Dashboard: React.FC<DashboardProps> = ({
           {/* Action Buttons */}
           <motion.div
             variants={itemVariants}
-            className="grid grid-cols-1 md:grid-cols-2 gap-6"
+            className="space-y-6"
           >
-            <motion.button
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              onClick={onStartSession}
-              className="bg-gradient-to-r from-blue-500 to-purple-600 text-white p-6 rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300"
-            >
-              <div className="flex items-center justify-center space-x-3">
-                <Play className="w-8 h-8" />
-                <div className="text-left">
-                  <h3 className="text-xl font-bold">Comenzar Sesión</h3>
-                  <p className="text-blue-100">8 ejercicios personalizados</p>
+            {/* Main Actions */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={onStartSession}
+                className="bg-gradient-to-r from-blue-500 to-purple-600 text-white p-6 rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300"
+              >
+                <div className="flex items-center justify-center space-x-3">
+                  <Play className="w-8 h-8" />
+                  <div className="text-left">
+                    <h3 className="text-xl font-bold">Comenzar Sesión</h3>
+                    <p className="text-blue-100">8 ejercicios únicos y personalizados</p>
+                  </div>
                 </div>
-              </div>
-            </motion.button>
+              </motion.button>
 
-            <motion.button
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              onClick={onViewProgress}
-              className="bg-white border-2 border-gray-200 text-gray-900 p-6 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300"
-            >
-              <div className="flex items-center justify-center space-x-3">
-                <BarChart3 className="w-8 h-8 text-blue-600" />
-                <div className="text-left">
-                  <h3 className="text-xl font-bold">Ver Progreso</h3>
-                  <p className="text-gray-600">Análisis detallado</p>
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={onViewProgress}
+                className="bg-white border-2 border-gray-200 text-gray-900 p-6 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300"
+              >
+                <div className="flex items-center justify-center space-x-3">
+                  <BarChart3 className="w-8 h-8 text-blue-600" />
+                  <div className="text-left">
+                    <h3 className="text-xl font-bold">Ver Progreso</h3>
+                    <p className="text-gray-600">Análisis detallado</p>
+                  </div>
                 </div>
+              </motion.button>
+            </div>
+
+            {/* Emergency Clean Button */}
+            <div className="bg-yellow-50 border-2 border-yellow-200 rounded-2xl p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h4 className="font-bold text-yellow-800">¿Ves preguntas repetidas?</h4>
+                  <p className="text-sm text-yellow-700">Limpia el historial para obtener ejercicios completamente nuevos</p>
+                </div>
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={async () => {
+                    try {
+                      await repetitionCleaner.cleanAllUserHistory(userProgress.userId);
+                      alert('🎉 ¡Historial limpiado! Las próximas sesiones tendrán ejercicios completamente nuevos.');
+                    } catch (error) {
+                      alert('❌ Error limpiando historial. Inténtalo de nuevo.');
+                    }
+                  }}
+                  className="bg-yellow-500 hover:bg-yellow-600 text-white px-6 py-2 rounded-lg font-medium transition-colors"
+                >
+                  🧹 Limpiar Historial
+                </motion.button>
               </div>
-            </motion.button>
+            </div>
           </motion.div>
         </div>
       </main>
