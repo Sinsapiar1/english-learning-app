@@ -7,6 +7,13 @@ import { ExerciseTracker } from "../services/exerciseTracker";
 import { ContentHashTracker } from "../services/contentHashTracker";
 import { ImprovedLevelSystem } from '../services/levelProgression';
 import { LevelExerciseManager } from '../data/levelExercises';
+import { AnalyticsService } from '../services/analytics';
+
+// 📊 HELPER PARA ANALYTICS - DETERMINAR TIPO DE EJERCICIO
+const getExerciseType = (exerciseNum: number): 'vocabulary' | 'grammar' | 'translation' | 'comprehension' => {
+  const types: ('vocabulary' | 'grammar' | 'translation' | 'comprehension')[] = ['vocabulary', 'grammar', 'translation', 'comprehension'];
+  return types[exerciseNum % 4];
+};
 
 interface LessonSessionProps {
   apiKey: string;
@@ -195,6 +202,23 @@ const LessonSessionFixed: React.FC<LessonSessionProps> = ({
       } catch (error: any) {
         console.error("❌ Error registrando interacción:", error);
       }
+    }
+
+    // 📊 ANALYTICS - TRACKEAR CADA EJERCICIO (SIN ROMPER NADA)
+    try {
+      if (currentExercise) {
+        AnalyticsService.logExerciseCompleted({
+          exerciseId: currentExercise.id,
+          exerciseType: getExerciseType(exerciseNumber),
+          level: userProgress.level || 'A1',
+          isCorrect: correct,
+          responseTime: responseTime || 5,
+          source: currentExercise.source === 'emergency' ? 'emergency' : 'ai',
+          topic: currentExercise.topic || currentTopic
+        });
+      }
+    } catch (error) {
+      console.log("📊 Analytics exercise error (no crítico):", error);
     }
 
     // MARCAR EJERCICIO COMO USADO CON SISTEMA ROBUSTO

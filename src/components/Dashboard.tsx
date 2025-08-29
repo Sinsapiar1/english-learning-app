@@ -11,6 +11,7 @@ import LevelUpCelebration from './LevelUpCelebration';
 import { ImprovedLevelSystem } from '../services/levelProgression';
 import { ContentHashTracker } from '../services/contentHashTracker';
 import { RealLevelSystem, RealUserProgress } from '../services/realLevelSystem';
+import { AnalyticsService, getDeviceType } from '../services/analytics';
 
 interface DashboardProps {
   user: User;
@@ -68,6 +69,26 @@ const Dashboard: React.FC<DashboardProps> = ({ user }) => {
     }
     
     console.log("✅ Sistema de progreso unificado iniciado");
+  
+  // 📊 CONFIGURAR ANALYTICS PARA ESTE USUARIO (SIN ROMPER NADA)
+  try {
+    AnalyticsService.setUser(user.uid || 'anonymous', {
+      level: userProgress.currentLevel,
+      totalXP: userProgress.totalXP,
+      accuracy: userProgress.overallAccuracy,
+      device: getDeviceType()
+    });
+    
+    AnalyticsService.logDeviceInfo();
+    
+    AnalyticsService.logCustomEvent('user_session_start', {
+      user_level: userProgress.currentLevel,
+      total_xp: userProgress.totalXP,
+      device_type: getDeviceType()
+    });
+  } catch (error) {
+    console.log("📊 Analytics setup error (no crítico):", error);
+  }
   }, []);
 
   // El progreso real ya no puede bajar, este efecto ya no es necesario
@@ -194,6 +215,30 @@ const Dashboard: React.FC<DashboardProps> = ({ user }) => {
       
       // ✅ GUARDAR UNA SOLA VEZ
       saveUserProgress(finalProgress);
+      
+      // 📊 TRACKEAR SESIÓN COMPLETADA (SIN ROMPER NADA)
+      try {
+        AnalyticsService.logSessionCompleted({
+          exercisesCompleted: sessionResults.totalAnswers || 8,
+          correctAnswers: sessionResults.correctAnswers || 0,
+          accuracy: sessionResults.accuracy || 0,
+          xpEarned: sessionResults.xpEarned || 0,
+          timeSpent: 300, // Estimado 5 minutos
+          level: finalProgress.currentLevel
+        });
+        
+        if (leveledUp) {
+          AnalyticsService.logLevelUp({
+            fromLevel: userProgress.currentLevel,
+            toLevel: finalProgress.currentLevel,
+            totalXP: finalProgress.totalXP,
+            totalExercises: finalProgress.totalExercises,
+            daysToComplete: Math.ceil((Date.now() - userProgress.lastActive.getTime()) / (1000 * 60 * 60 * 24))
+          });
+        }
+      } catch (error) {
+        console.log("📊 Analytics session error (no crítico):", error);
+      }
       
       console.log("✅ PROGRESO GUARDADO EXITOSAMENTE:", {
         currentLevel: finalProgress.currentLevel,

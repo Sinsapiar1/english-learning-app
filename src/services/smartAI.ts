@@ -2,6 +2,7 @@
 import { PersonalizedLessonGenerator } from './geminiAI';
 import { IntelligentLearningSystem } from './intelligentLearning';
 import { getUniqueExercises, Exercise } from '../data/exercises';
+import { AnalyticsService } from './analytics';
 
 export interface SmartExerciseRequest {
   userId: string;

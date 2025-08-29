@@ -1,6 +1,7 @@
 import { initializeApp } from "firebase/app";
 import { getFirestore, connectFirestoreEmulator, enableNetwork, disableNetwork } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
+import { getAnalytics, isSupported } from "firebase/analytics";
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
@@ -18,6 +19,29 @@ const app = initializeApp(firebaseConfig);
 // Configuración optimizada de Firestore
 export const db = getFirestore(app);
 export const auth = getAuth(app);
+
+// 📊 ANALYTICS - INICIALIZACIÓN SEGURA
+let analytics: any = null;
+
+// Inicializar Analytics solo si está soportado (evita errores en algunos navegadores)
+const initializeAnalytics = async () => {
+  try {
+    const supported = await isSupported();
+    if (supported) {
+      analytics = getAnalytics(app);
+      console.log("📊 Firebase Analytics inicializado correctamente");
+    } else {
+      console.log("📊 Analytics no soportado en este navegador - funcionando sin analytics");
+    }
+  } catch (error) {
+    console.log("📊 Error inicializando Analytics (no crítico):", error);
+  }
+};
+
+// Inicializar Analytics de forma asíncrona
+initializeAnalytics();
+
+export { analytics };
 
 // Manejo de conectividad mejorado
 export const enableFirestore = async () => {
