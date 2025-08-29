@@ -80,45 +80,64 @@ const LessonSessionFixed: React.FC<LessonSessionProps> = ({
       }
       
       if (apiKey) {
-        // Intentar con IA primero
-        try {
-          const generator = new PersonalizedLessonGenerator(apiKey);
-          const exercises = await generator.generateCompleteSession({
-            level: userProgress.level,
-            userId: userProgress.userId || 'anonymous',
-            userWeaknesses: userWeaknesses,
-            userStrengths: userProgress.strengths || [],
-            completedLessons: userProgress.completedLessons || 0
-          });
+        // Intentar con IA con retry en caso de validación
+        let attempts = 0;
+        const maxAttempts = 3;
+        
+        while (attempts < maxAttempts) {
+          attempts++;
+          console.log(`🔄 INTENTO ${attempts}/${maxAttempts} - GENERACIÓN SESIÓN IA`);
           
-          // Verificar que no sea sesión repetida
-          if (SessionHashTracker.isSessionRepeated(exercises, userProgress.level)) {
-            console.warn("⚠️ SESIÓN REPETIDA DETECTADA - regenerando...");
-            throw new Error("Sesión repetida");
-          }
-          
-          // Marcar sesión como usada
-          SessionHashTracker.markSessionAsUsed(exercises, userProgress.level);
-          
-          setSessionExercises(exercises);
-          setCurrentExercise(exercises[0]);
-          setCurrentTopic(exercises[0].topic);
-          
-          console.log("✅ SESIÓN COMPLETA GENERADA - 8 EJERCICIOS ÚNICOS");
-          return;
-          
-        } catch (error: any) {
-          console.warn("⚠️ Error generando sesión con IA:", error);
-          
-          // DETECTAR error específico de cuota
-          if (error?.message?.includes('quota') || error?.message?.includes('429')) {
-            console.log("🔋 CUOTA DE IA AGOTADA - Marcando para UX");
-            localStorage.setItem('last_quota_error', new Date().toISOString());
+          try {
+            const generator = new PersonalizedLessonGenerator(apiKey);
+            const exercises = await generator.generateCompleteSession({
+              level: userProgress.level,
+              userId: userProgress.userId || 'anonymous',
+              userWeaknesses: userWeaknesses,
+              userStrengths: userProgress.strengths || [],
+              completedLessons: userProgress.completedLessons || 0
+            });
+            
+            // Verificar que no sea sesión repetida
+            if (!SessionHashTracker.isSessionRepeated(exercises, userProgress.level)) {
+              SessionHashTracker.markSessionAsUsed(exercises, userProgress.level);
+              
+              setSessionExercises(exercises);
+              setCurrentExercise(exercises[0]);
+              setCurrentTopic(exercises[0].topic);
+              
+              console.log("✅ SESIÓN COMPLETA GENERADA - 8 EJERCICIOS ÚNICOS");
+              return;
+            } else {
+              console.warn("⚠️ SESIÓN REPETIDA DETECTADA - reintentando...");
+              if (attempts === maxAttempts) {
+                throw new Error("Sesión repetida después de múltiples intentos");
+              }
+              continue;
+            }
+            
+          } catch (error: any) {
+            console.warn(`⚠️ Intento ${attempts} falló:`, error?.message);
+            
+            // DETECTAR error específico de cuota
+            if (error?.message?.includes('quota') || error?.message?.includes('429')) {
+              console.log("🔋 CUOTA DE IA AGOTADA - Marcando para UX");
+              localStorage.setItem('last_quota_error', new Date().toISOString());
+            }
+            
+            if (attempts === maxAttempts) {
+              console.warn("⚠️ IA agotada después de 3 intentos, usando ejercicios de emergencia");
+              break;
+            }
+            
+            // Esperar un poco antes del siguiente intento
+            await new Promise(resolve => setTimeout(resolve, 1000));
           }
         }
       }
       
       // Fallback: generar 8 ejercicios de emergencia únicos
+      console.log("🚨 USANDO EJERCICIOS DE EMERGENCIA MEJORADOS");
       const emergencyExercises = generateEmergencySession(userProgress.level);
       setSessionExercises(emergencyExercises);
       setCurrentExercise(emergencyExercises[0]);
@@ -335,67 +354,67 @@ const LessonSessionFixed: React.FC<LessonSessionProps> = ({
 
   // NUEVA función: generar 8 ejercicios de emergencia únicos para sesión completa
   const generateEmergencySession = (level: string): any[] => {
-    const baseExercises = [
+    const emergencyExercises = [
       {
         question: "I _____ hungry. / Tengo hambre.",
         options: ["am", "is", "are", "be"],
         correctAnswer: 0,
-        explanation: "🎯 Con 'I' (yo) siempre usamos 'am'. I am hungry = Tengo hambre.",
+        explanation: "🎯 Con 'I' siempre usamos 'am'. I am hungry = Tengo hambre.",
         topic: "verb to be"
       },
       {
         question: "What is this? 🍕 / ¿Qué es esto? 🍕",
-        options: ["pizza", "hamburger", "sandwich", "salad"],
+        options: ["pizza", "hamburger", "sandwich", "soup"],
         correctAnswer: 0,
-        explanation: "🎯 🍕 es 'pizza'. Todas las opciones son comidas, por eso tiene sentido.",
-        topic: "food vocabulary"
+        explanation: "🎯 🍕 es 'pizza'. Comida italiana muy popular.",
+        topic: "food"
       },
       {
         question: "She _____ coffee every morning. / Ella bebe café cada mañana.",
         options: ["drinks", "drink", "drinking", "drank"],
         correctAnswer: 0,
-        explanation: "🎯 Con 'she' usamos 'drinks' (con -s). She drinks coffee = Ella bebe café.",
+        explanation: "🎯 Con 'she' usamos 'drinks' (con -s en presente simple).",
         topic: "present simple"
       },
       {
         question: "How do you say 'hola' in English? / ¿Cómo se dice 'hola' en inglés?",
-        options: ["hello", "goodbye", "thank you", "excuse me"],
+        options: ["hello", "goodbye", "thank you", "please"],
         correctAnswer: 0,
-        explanation: "🎯 'Hola' en inglés es 'hello'. Es el saludo más común.",
+        explanation: "🎯 'Hola' en inglés es 'hello'. Saludo básico universal.",
         topic: "greetings"
       },
       {
         question: "What color is this? 🔴 / ¿De qué color es esto? 🔴",
         options: ["red", "blue", "green", "yellow"],
         correctAnswer: 0,
-        explanation: "🎯 🔴 es 'red' (rojo). Todas las opciones son colores.",
+        explanation: "🎯 🔴 es 'red' (rojo). Color básico importante.",
         topic: "colors"
       },
       {
-        question: "I _____ English every day. / Yo estudio inglés todos los días.",
-        options: ["study", "studies", "studied", "studying"],
+        question: "We _____ students. / Nosotros somos estudiantes.",
+        options: ["are", "is", "am", "be"],
         correctAnswer: 0,
-        explanation: "🎯 Con 'I' usamos 'study' (sin -s). I study = Yo estudio.",
+        explanation: "🎯 Con 'we' (nosotros) usamos 'are'. We are students = Somos estudiantes.",
+        topic: "verb to be"
+      },
+      {
+        question: "How do you say 'me gusta' in English? / ¿Cómo se dice 'me gusta' en inglés?",
+        options: ["I like", "I love", "I want", "I need"],
+        correctAnswer: 0,
+        explanation: "🎯 'Me gusta' se traduce como 'I like'. Expresión básica de preferencia.",
+        topic: "basic expressions"
+      },
+      {
+        question: "They _____ pizza on Fridays. / Ellos comen pizza los viernes.",
+        options: ["eat", "eats", "eating", "ate"],
+        correctAnswer: 0,
+        explanation: "🎯 Con 'they' usamos 'eat' (sin -s). They eat = Ellos comen.",
         topic: "present simple"
-      },
-      {
-        question: "What do you eat for breakfast? / ¿Qué comes en el desayuno?",
-        options: ["cereal", "dinner", "lunch", "sleep"],
-        correctAnswer: 0,
-        explanation: "🎯 'Cereal' es una comida común para el desayuno. Las otras opciones no son comidas de desayuno.",
-        topic: "meals"
-      },
-      {
-        question: "Where _____ you live? / ¿Dónde vives?",
-        options: ["do", "does", "are", "is"],
-        correctAnswer: 0,
-        explanation: "🎯 Con 'you' y verbos normales usamos 'do'. Where do you live? = ¿Dónde vives?",
-        topic: "question formation"
       }
     ];
 
     // Generar 8 ejercicios únicos con mezclado
-    return baseExercises.map((exercise, index) => {
+    return emergencyExercises.map((exercise, index) => {
       // Mezclar opciones para cada ejercicio
       const correctAnswerText = exercise.options[exercise.correctAnswer];
       const shuffledOptions = [...exercise.options];

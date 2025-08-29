@@ -319,11 +319,35 @@ FORMATO JSON REQUERIDO (array de 8 ejercicios):
         throw new Error("IA no generó exactamente 8 ejercicios");
       }
 
-      // Validar cada ejercicio
+      // Validar cada ejercicio con fallback más permisivo
       const validatedExercises = sessionData.exercises.map((exercise: any, index: number) => {
-        // Validación pedagógica
-        if (!this.validateExerciseLogic(exercise, index + 1)) {
-          throw new Error(`Ejercicio ${index + 1} falló validación lógica`);
+        
+        // ✅ INTENTAR VALIDACIÓN ESTRICTA PRIMERO
+        let isValid = true;
+        try {
+          isValid = this.validateExerciseLogic(exercise, index + 1);
+        } catch (error) {
+          console.warn(`⚠️ Error en validación ejercicio ${index + 1}:`, error);
+          isValid = false;
+        }
+        
+        // ✅ SI FALLA VALIDACIÓN, USAR VALIDACIÓN BÁSICA
+        if (!isValid) {
+          console.warn(`⚠️ Ejercicio ${index + 1} falló validación estricta, aplicando validación básica`);
+          
+          // Validación básica mínima
+          const hasValidStructure = exercise.question && 
+                                   exercise.options && 
+                                   exercise.options.length === 4 &&
+                                   exercise.correctAnswer >= 0 && 
+                                   exercise.correctAnswer < 4;
+          
+          if (!hasValidStructure) {
+            // Solo aquí rechazar completamente
+            throw new Error(`Ejercicio ${index + 1} tiene estructura inválida básica`);
+          }
+          
+          console.log(`✅ Ejercicio ${index + 1} aprobado con validación básica`);
         }
 
         // Mezclar opciones para cada ejercicio
@@ -345,11 +369,11 @@ FORMATO JSON REQUERIDO (array de 8 ejercicios):
           correctAnswer: newCorrectAnswer,
           explanation: exercise.explanation,
           xpReward: 10,
-          topic: exercise.topic,
+          topic: exercise.topic || 'general',
           level: params.level,
           source: 'ai' as const,
           difficulty: 'medium' as const,
-          learningFocus: [exercise.topic]
+          learningFocus: [exercise.topic || 'general']
         };
       });
 
@@ -362,45 +386,57 @@ FORMATO JSON REQUERIDO (array de 8 ejercicios):
     }
   }
 
-  // VALIDACIÓN MEJORADA
+  // VALIDACIÓN MEJORADA - MENOS ESTRICTA, MÁS INTELIGENTE
   private validateExerciseLogic(exercise: any, exerciseNumber: number): boolean {
+    console.log(`🔍 VALIDANDO EJERCICIO ${exerciseNumber}:`, {
+      question: exercise.question,
+      options: exercise.options,
+      correctAnswer: exercise.correctAnswer,
+      correctOption: exercise.options[exercise.correctAnswer]
+    });
+    
     const question = exercise.question.toLowerCase();
     const options = exercise.options;
-    const correctOption = options[exercise.correctAnswer].toLowerCase();
     
-    // ❌ Validar redundancia: respuesta no debe estar en pregunta
-    const questionWords = question.split(' ');
-    const correctWords = correctOption.split(' ');
-    const overlap = questionWords.filter((word: string) => correctWords.includes(word));
-    
-    if (overlap.length > 2) { // Más de 2 palabras iguales = redundante
-      console.warn(`❌ Ejercicio ${exerciseNumber}: Respuesta redundante con pregunta`);
+    // ✅ VALIDACIONES BÁSICAS (menos estrictas)
+    if (!exercise.question || !exercise.options || exercise.options.length !== 4) {
+      console.warn(`❌ Ejercicio ${exerciseNumber}: Estructura inválida`);
       return false;
     }
     
-    // ❌ Validar emojis coherentes
-    if (question.includes('cat') && question.includes('🐶')) {
-      console.warn(`❌ Ejercicio ${exerciseNumber}: Emoji incorrecto para gato`);
+    if (exercise.correctAnswer < 0 || exercise.correctAnswer >= 4) {
+      console.warn(`❌ Ejercicio ${exerciseNumber}: Índice de respuesta correcta inválido`);
       return false;
     }
     
-    if (question.includes('dog') && question.includes('🐱')) {
-      console.warn(`❌ Ejercicio ${exerciseNumber}: Emoji incorrecto para perro`);
-      return false;
-    }
+    const correctOption = options[exercise.correctAnswer]?.toLowerCase() || '';
     
-    // ❌ Validar preguntas obvias
-    const obviousPatterns = [
-      'where did i post it',
-      'what did i see',
-      'what did i do'
+    // ✅ VALIDACIONES ESPECÍFICAS MÁS INTELIGENTES
+    
+    // Solo rechazar casos OBVIAMENTE problemáticos
+    const obviouslyProblematic = [
+      // Respuesta exacta en pregunta
+      question.includes(correctOption) && correctOption.length > 5,
+      // Emojis incorrectos específicos
+      (question.includes('cat') || question.includes('gato')) && question.includes('🐶'),
+      (question.includes('dog') || question.includes('perro')) && question.includes('🐱'),
+      // Preguntas completamente redundantes
+      question.includes('what did i see') && question.includes('sunset') && correctOption.includes('sunset')
     ];
     
-    if (obviousPatterns.some((pattern: string) => question.includes(pattern))) {
-      console.warn(`❌ Ejercicio ${exerciseNumber}: Pregunta obvia detectada`);
+    if (obviouslyProblematic.some(problem => problem)) {
+      console.warn(`❌ Ejercicio ${exerciseNumber}: Problema obvio detectado`);
       return false;
     }
     
+    // ✅ VALIDAR QUE LAS OPCIONES SEAN DIFERENTES
+    const uniqueOptions = new Set(options.map((opt: string) => opt.toLowerCase()));
+    if (uniqueOptions.size < 4) {
+      console.warn(`❌ Ejercicio ${exerciseNumber}: Opciones duplicadas`);
+      return false;
+    }
+    
+    console.log(`✅ Ejercicio ${exerciseNumber}: Validación APROBADA`);
     return true;
   }
 

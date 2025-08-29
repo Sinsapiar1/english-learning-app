@@ -1,4 +1,4 @@
-import React, { useState, useCallback, memo } from "react";
+import React, { useState, useCallback, memo, useEffect } from "react";
 
 interface Question {
   id: string | number;
@@ -25,6 +25,19 @@ const MultipleChoice: React.FC<MultipleChoiceProps> = memo(({
   const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
   const [showResult, setShowResult] = useState(false);
   const [answered, setAnswered] = useState(false);
+
+  // ✅ RESETEAR ESTADO CUANDO CAMBIA LA PREGUNTA (FIX CRÍTICO)
+  useEffect(() => {
+    console.log("🔄 NUEVA PREGUNTA - RESETEANDO ESTADO:", {
+      questionId: question.id,
+      question: question.question,
+      correctAnswer: question.correctAnswer
+    });
+    
+    setSelectedAnswer(null);
+    setShowResult(false);
+    setAnswered(false);
+  }, [question.id, question.question]); // Reset cuando cambia ID o pregunta
 
   const handleSubmit = useCallback(() => {
     if (selectedAnswer === null || question.isError) return;
