@@ -240,57 +240,56 @@ const LessonSessionFixed: React.FC<LessonSessionProps> = ({
   const generateEmergencyExercise = (level: string): SmartExercise => {
     const emergencyExercises = [
       {
-        question: "What do you usually have for breakfast?",
-        options: ["Coffee and toast", "Nothing", "Cereal", "Fruit"],
+        question: "What is this? 🍎 / ¿Qué es esto? 🍎",
+        options: ["apple", "car", "house", "book"],
         correctAnswer: 0,
-        explanation: "🎯 Una pregunta común sobre hábitos alimenticios. 'Usually' indica rutina diaria.",
-        topic: "daily routines"
+        explanation: "🎯 SÚPER BÁSICO: 🍎 es 'apple' (manzana). Esta es una de las primeras palabras en inglés.",
+        topic: "basic vocabulary"
       },
       {
-        question: "How often do you exercise?", 
-        options: ["Every day", "Never", "Sometimes", "Once a week"],
-        correctAnswer: 2,
-        explanation: "🎯 'How often' pregunta sobre frecuencia. 'Sometimes' es una respuesta común y realista.",
-        topic: "frequency"
-      },
-      {
-        question: "Where do you work?",
-        options: ["In an office", "At home", "In a store", "I don't work"],
-        correctAnswer: 1,
-        explanation: "🎯 'Where do you work?' pregunta sobre ubicación laboral. 'At home' es muy común post-2020.",
-        topic: "work"
-      },
-      {
-        question: "What's your favorite movie genre?",
-        options: ["Action", "Comedy", "Drama", "Horror"], 
-        correctAnswer: 1,
-        explanation: "🎯 'Favorite' significa favorito. Los géneros de películas son vocabulario útil para conversaciones.",
-        topic: "entertainment"
-      },
-      // Más ejercicios de emergencia únicos
-      {
-        question: "I _____ working from home since 2020.",
-        options: ["have been", "am", "was", "will be"],
+        question: "How do you say 'hola'? / ¿Cómo se dice 'hola'?",
+        options: ["hello", "goodbye", "please", "thank you"], 
         correctAnswer: 0,
-        explanation: "🎯 Present Perfect Continuous con 'since' indica acción que empezó en el pasado y continúa ahora.",
-        topic: "present perfect"
+        explanation: "🎯 SÚPER BÁSICO: 'Hola' en inglés es 'hello'. Es el saludo más común.",
+        topic: "greetings"
       },
       {
-        question: "She _____ coffee every morning.",
-        options: ["drink", "drinks", "drinking", "drank"],
-        correctAnswer: 1,
+        question: "I ___ a student. / Yo ___ un estudiante.",
+        options: ["am", "is", "are", "be"],
+        correctAnswer: 0, 
+        explanation: "🎯 SÚPER BÁSICO: Con 'I' (yo) SIEMPRE usamos 'am'. I am = yo soy.",
+        topic: "verb to be"
+      },
+      {
+        question: "What color is this? ⚪ / ¿De qué color es esto? ⚪",
+        options: ["white", "black", "red", "blue"],
+        correctAnswer: 0, 
+        explanation: "🎯 SÚPER BÁSICO: ⚪ es 'white' (blanco). Los colores son importantes.",
+        topic: "colors"
+      },
+      {
+        question: "What do you say when you meet someone? / ¿Qué dices cuando conoces a alguien?",
+        options: ["Nice to meet you", "Goodbye", "I'm sorry", "Excuse me"],
+        correctAnswer: 0,
+        explanation: "🎯 SÚPER BÁSICO: 'Nice to meet you' es lo que dices cuando conoces a alguien.",
+        topic: "greetings"
+      },
+      {
+        question: "How do you say 'gracias'? / ¿Cómo se dice 'gracias'?",
+        options: ["thank you", "sorry", "hello", "goodbye"],
+        correctAnswer: 0,
+        explanation: "🎯 SÚPER BÁSICO: 'Gracias' en inglés es 'thank you'. Es muy importante ser educado.",
+        topic: "politeness"
+      },
+      {
+        question: "She ___ coffee every morning. / Ella ___ café cada mañana.",
+        options: ["drinks", "drink", "drinking", "drank"],
+        correctAnswer: 0,
         explanation: "🎯 Con 'She' (tercera persona singular) añadimos -s al verbo en presente simple.",
         topic: "present simple"
       },
       {
-        question: "What does 'awesome' mean?",
-        options: ["increíble/genial", "horrible", "aburrido", "normal"],
-        correctAnswer: 0,
-        explanation: "🎯 'Awesome' es una palabra muy común que significa increíble o genial. Se usa mucho en conversaciones informales.",
-        topic: "vocabulary"
-      },
-      {
-        question: "Where _____ you from?",
+        question: "Where ___ you from? / ¿De dónde ___ tú?",
         options: ["are", "is", "am", "be"],
         correctAnswer: 0,
         explanation: "🎯 Con 'you' siempre usamos 'are'. Es una pregunta básica para conocer el origen de alguien.",

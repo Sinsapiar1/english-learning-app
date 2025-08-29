@@ -51,14 +51,15 @@ CONTEXTOS MODERNOS OBLIGATORIOS (usar uno):
 - Dejando reviews en Google
 
 REGLAS CRÍTICAS:
-🇬🇧 PREGUNTA: Siempre en INGLÉS
+🌍 PREGUNTA: BILINGÜE - Inglés Y español separados por " / " (Ejemplo: "What is this? 🍎 / ¿Qué es esto? 🍎")
+🇬🇧 OPCIONES: SOLO en inglés (apple, car, house, book)
 🇪🇸 EXPLICACIÓN: Siempre en ESPAÑOL PERFECTO para principiantes
 📱 CONTEXTO: Usar vocabulario moderno 2024
-❌ OPCIONES: Sin letras A) B) C) D) (se agregan automáticamente)
+❌ FORMATO: Sin letras A) B) C) D) (se agregan automáticamente)
 
 JSON REQUERIDO:
 {
-  "question": "[Pregunta en inglés con contexto moderno]",
+  "question": "[Pregunta BILINGÜE: inglés / español con contexto moderno]",
   "instruction": "Selecciona la respuesta correcta",
   "options": ["opción1", "opción2", "opción3", "opción4"],
   "correctAnswer": 0,
