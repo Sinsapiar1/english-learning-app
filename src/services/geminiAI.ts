@@ -231,43 +231,46 @@ REGLAS CRÍTICAS - VALIDACIÓN PEDAGÓGICA:
 - Preguntas obvias o redundantes
 - Ejercicios repetidos o muy similares entre sí
 
-✅ OBLIGATORIO:
+✅ OBLIGATORIO PARA PRINCIPIANTES:
 - 8 ejercicios COMPLETAMENTE diferentes
 - Cada ejercicio debe enseñar algo específico y único
-- Progresión lógica de dificultad dentro de la sesión
-- Contextos modernos variados (apps, trabajo remoto, redes sociales)
+- TODAS las preguntas DEBEN ser bilingües (inglés/español)
+- TODAS las explicaciones DEBEN estar en español
+- Vocabulario BÁSICO y COTIDIANO (familia, comida, casa, colores)
+- NO usar palabras avanzadas como "seamless", "bandwidth", "workload"
+- Contextos FAMILIARES para principiantes (casa, familia, comida básica)
 - Emojis correctos si se usan
 
-TIPOS DE EJERCICIO (2 de cada tipo en orden):
-1-2. VOCABULARIO: "What does '[word]' mean in this context?"
-3-4. GRAMÁTICA: Completar oraciones con formas correctas
-5-6. TRADUCCIÓN: Español → Inglés (frases útiles)
-7-8. COMPRENSIÓN: Texto corto + pregunta específica
+TIPOS DE EJERCICIO BILINGÜES (2 de cada tipo en orden):
+1-2. VOCABULARIO: "What does '[word]' mean? / ¿Qué significa '[word]'?" (PALABRAS BÁSICAS)
+3-4. GRAMÁTICA: "I _____ happy. / Yo estoy feliz." (ESTRUCTURAS SIMPLES)
+5-6. TRADUCCIÓN: "¿Cómo se dice '[frase básica]'? / How do you say '[frase básica]'?"
+7-8. COMPRENSIÓN: "Texto bilingüe corto + pregunta en español e inglés"
 
 EJEMPLOS ESPECÍFICOS POR NIVEL:
 
 ${params.level === 'A1' ? `
-NIVEL A1 - SÚPER BÁSICO:
-1. "What does 'hello' mean?" → opciones: ["hola", "adiós", "gracias", "perdón"]
-2. "I _____ hungry." → opciones: ["am", "is", "are", "be"] 
-3. "¿Cómo se dice 'me gusta'?" → opciones: ["I like", "I love", "I want", "I need"]
-4. "She _____ pizza." → opciones: ["likes", "like", "liking", "liked"]
-5. "¿Cómo se dice 'mi familia'?" → opciones: ["my family", "my house", "my friend", "my work"]
-6. "We _____ students." → opciones: ["are", "is", "am", "be"]
-7. "Text: 'Hi, I am Maria. I like pizza.' Question: What does Maria like?" → opciones: ["pizza", "hamburgers", "salad", "soup"]
-8. "What color is this? 🔴" → opciones: ["red", "blue", "green", "yellow"]
+NIVEL A1 - SÚPER BÁSICO Y BILINGÜE:
+1. "What does 'cat' mean? / ¿Qué significa 'cat'?" → opciones: ["gato", "perro", "casa", "mesa"]
+2. "I _____ hungry. / Yo tengo hambre." → opciones: ["am", "is", "are", "be"] 
+3. "¿Cómo se dice 'hola'? / How do you say 'hola'?" → opciones: ["hello", "goodbye", "thanks", "sorry"]
+4. "She _____ pizza. / Ella come pizza." → opciones: ["eats", "eat", "eating", "ate"]
+5. "¿Cómo se dice 'mi casa'? / How do you say 'mi casa'?" → opciones: ["my house", "my family", "my friend", "my work"]
+6. "We _____ happy. / Nosotros estamos felices." → opciones: ["are", "is", "am", "be"]
+7. "Texto: 'Hi, I am Ana. I like apples.' / Hola, soy Ana. Me gustan las manzanas. ¿Qué le gusta a Ana? / What does Ana like?" → opciones: ["apples", "oranges", "bananas", "grapes"]
+8. "What color is this? / ¿De qué color es esto? 🔴" → opciones: ["red", "blue", "green", "yellow"]
 ` : ''}
 
 ${params.level === 'A2' ? `
-NIVEL A2 - ELEMENTAL:
-1. "What does 'stream' mean in 'I stream movies on Netflix'?" → opciones: ["transmitir/ver", "descargar", "comprar", "grabar"]
-2. "I _____ working from home since 2020." → opciones: ["have been", "am", "was", "will be"]
-3. "¿Cómo se dice 'hacer un pedido'?" → opciones: ["place an order", "make a call", "send a message", "write a text"]
-4. "She _____ never _____ sushi before." → opciones: ["has / eaten", "have / eaten", "is / eating", "was / eating"]
-5. "¿Cómo se dice 'estoy de acuerdo'?" → opciones: ["I agree", "I understand", "I know", "I think"]
-6. "They _____ to the gym every Monday." → opciones: ["go", "goes", "going", "went"]
-7. "Text: 'Maria orders food on Uber Eats every Friday. She loves Italian food.' Question: How often does Maria order food?" → opciones: ["every Friday", "every day", "every Monday", "never"]
-8. "What does 'upload' mean in 'upload a photo to Instagram'?" → opciones: ["subir", "bajar", "ver", "compartir"]
+NIVEL A2 - ELEMENTAL Y BILINGÜE:
+1. "What does 'breakfast' mean? / ¿Qué significa 'breakfast'?" → opciones: ["desayuno", "almuerzo", "cena", "merienda"]
+2. "She _____ to work every day. / Ella va al trabajo todos los días." → opciones: ["goes", "go", "going", "went"]
+3. "¿Cómo se dice 'me gusta leer'? / How do you say 'me gusta leer'?" → opciones: ["I like reading", "I love books", "I read always", "I want read"]
+4. "They _____ at home yesterday. / Ellos estuvieron en casa ayer." → opciones: ["were", "was", "are", "is"]
+5. "¿Cómo se dice 'tengo que trabajar'? / How do you say 'tengo que trabajar'?" → opciones: ["I have to work", "I want to work", "I like to work", "I can work"]
+6. "He _____ his homework every night. / Él hace su tarea todas las noches." → opciones: ["does", "do", "doing", "did"]
+7. "Texto: 'Tom works at a school. He teaches math.' / Tom trabaja en una escuela. Enseña matemáticas. ¿Qué enseña Tom? / What does Tom teach?" → opciones: ["math", "English", "science", "history"]
+8. "What does 'tired' mean? / ¿Qué significa 'tired'?" → opciones: ["cansado", "feliz", "triste", "enojado"]
 ` : ''}
 
 INSTRUCCIONES DE VALIDACIÓN INTERNA:
@@ -281,17 +284,24 @@ FORMATO JSON REQUERIDO (array de 8 ejercicios):
 {
   "exercises": [
     {
-      "question": "[Pregunta lógica única #1]",
+      "question": "[Pregunta bilingüe: English question / Pregunta en español]",
       "instruction": "Selecciona la respuesta correcta",
       "options": ["opción1", "opción2", "opción3", "opción4"],
       "correctAnswer": 0,
-      "explanation": "🎯 [Explicación pedagógica específica]",
-      "topic": "[tema específico]"
+      "explanation": "🎯 [Explicación COMPLETA en español para principiantes]",
+      "topic": "[tema básico]"
     }
   ]
 }
 
-¡GENERA 8 EJERCICIOS ÚNICOS, LÓGICOS Y EDUCATIVOS QUE REALMENTE ENSEÑEN INGLÉS!`;
+🚨 RECORDATORIO CRÍTICO PARA PRINCIPIANTES:
+- TODAS las preguntas deben tener formato: "English question / Pregunta en español"
+- TODAS las explicaciones deben estar en español claro
+- Vocabulario debe ser BÁSICO (casa, familia, comida, colores, números)
+- NO usar palabras técnicas como "seamless", "bandwidth", "workload"
+- Contextos familiares: hogar, familia, comida, trabajo básico
+
+¡GENERA 8 EJERCICIOS ÚNICOS, BILINGÜES Y EDUCATIVOS PARA PRINCIPIANTES!`;
 
     try {
       const model = this.genAI.getGenerativeModel({
