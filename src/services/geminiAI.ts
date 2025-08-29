@@ -214,133 +214,8 @@ EJEMPLOS DE PREGUNTAS BUENAS:
     completedLessons?: number;
   }): Promise<SmartExercise[]> {
 
-    const enhancedPrompt = `Eres un profesor EXPERTO que crea ejercicios REALMENTE ÚTILES para hispanohablantes nivel ${params.level}.
-
-🎯 OBJETIVO: Generar 8 ejercicios que REALMENTE enseñen inglés práctico y útil.
-
-NIVEL DEL ESTUDIANTE: ${params.level}
-EJERCICIOS COMPLETADOS: ${params.completedLessons || 0}
-DEBILIDADES: ${params.userWeaknesses?.join(', ') || 'ninguna detectada'}
-
-❌ PROHIBIDO ABSOLUTO - EJERCICIOS INÚTILES:
-- Vocabulario obvio ("What does 'sister' mean?" → hermana)
-- Preguntas donde la respuesta está literal en el texto
-- Colores básicos, números, familia (son demasiado básicos)
-- Traducción directa palabra por palabra
-- Ejercicios que no enseñan inglés REAL
-
-✅ OBLIGATORIO - EJERCICIOS EDUCATIVOS ÚTILES:
-
-**TIPO 1: CONSTRUCCIÓN DE ORACIONES (25% de ejercicios)**
-Ejemplo: "Ordena las palabras para formar una oración correcta:"
-- Palabras desordenadas: [every, go, I, to, day, work]
-- Respuesta: "I go to work every day"
-- Opciones: ["I go to work every day", "Every day I work go to", "Work I go every day to", "To work every I go day"]
-
-**TIPO 2: GRAMÁTICA EN CONTEXTO REAL (25% de ejercicios)**
-Ejemplo: "Complete the conversation between friends:"
-- "Hi! How _____ your weekend?"
-- Opciones: ["was", "were", "is", "are"]
-- Contexto: Conversación real entre amigos
-
-**TIPO 3: SITUACIONES PRÁCTICAS (25% de ejercicios)**
-Ejemplo: "You're at a restaurant. How do you ask for the menu?"
-- Opciones: ["Can I have the menu, please?", "Where is food?", "Give me eating", "Menu I want"]
-- Enseña inglés que SÍ se usa en la vida real
-
-**TIPO 4: COMPRENSIÓN CON INFERENCIA (25% de ejercicios)**
-Ejemplo: "Sarah says 'I'm exhausted!' after running. What does 'exhausted' probably mean?"
-- Opciones: ["very tired", "very happy", "very hungry", "very cold"]
-- Enseña vocabulario por CONTEXTO, no memorización
-
-REGLAS PEDAGÓGICAS CRÍTICAS:
-1. Cada ejercicio debe enseñar algo NUEVO y ÚTIL
-2. Enfocar en ESTRUCTURAS que se usan diariamente
-3. Crear SITUACIONES REALES (restaurante, trabajo, amigos)
-4. Opciones deben ser TODAS plausibles (no obvias)
-5. Enseñar por CONTEXTO e INFERENCIA, no memorización
-
-VOCABULARIO ÚTIL PARA NIVEL ${params.level}:
-${params.level === 'A1' ? `
-- Verbos de acción: want, need, like, have, go, come, see, hear
-- Situaciones: ordering food, asking directions, shopping, making friends
-- Estructuras: "Can I...?", "I would like...", "How much is...?"
-` : ''}
-
-${params.level === 'A2' ? `
-- Tiempos verbales: present perfect, past continuous, future plans
-- Situaciones: job interviews, making appointments, explaining problems
-- Estructuras: "I have been...", "I was doing...", "I'm going to..."
-` : ''}
-
-EJEMPLOS ESPECÍFICOS POR NIVEL:
-
-${params.level === 'A1' ? `
-NIVEL A1 - INGLÉS PRÁCTICO Y ÚTIL:
-1. "At a restaurant, how do you ask for water? / En un restaurante, ¿cómo pides agua?" → opciones: ["Can I have water, please?", "Water me give", "I want water now", "Where water is?"]
-2. "Complete the conversation: 'Hi! How _____ you?' / Completa la conversación: '¡Hola! ¿Cómo _____ tú?'" → opciones: ["are", "is", "am", "be"]
-3. "You're lost. How do you ask for directions? / Estás perdido. ¿Cómo pides direcciones?" → opciones: ["Excuse me, where is...?", "Tell me place now", "I need go there", "Direction please give"]
-4. "Order these words to make a sentence: [want, I, to, home, go] / Ordena estas palabras para hacer una oración:" → opciones: ["I want to go home", "Want I to go home", "Home I want go to", "Go home I want to"]
-5. "At a store, the clerk says 'Can I help you?' What does this mean? / En una tienda, el empleado dice 'Can I help you?' ¿Qué significa esto?" → opciones: ["¿Puedo ayudarte?", "¿Tienes dinero?", "¿Qué quieres comprar?", "¿De dónde eres?"]
-6. "Complete: 'I _____ coffee every morning.' / Completa: 'Yo _____ café cada mañana.'" → opciones: ["drink", "drinks", "drinking", "drank"]
-7. "Someone says 'Nice to meet you!' What do you respond? / Alguien dice '¡Mucho gusto!' ¿Qué respondes?" → opciones: ["Nice to meet you too!", "Thank you very much!", "I am fine, thanks!", "See you later!"]
-8. "You want to buy something but don't know the price. What do you ask? / Quieres comprar algo pero no sabes el precio. ¿Qué preguntas?" → opciones: ["How much is this?", "What price this?", "Money how much?", "Cost what is?"]
-` : ''}
-
-${params.level === 'A2' ? `
-NIVEL A2 - INGLÉS PRÁCTICO AVANZADO:
-1. "At a job interview, they ask 'What are your strengths?' How do you respond? / En una entrevista de trabajo, preguntan '¿Cuáles son tus fortalezas?' ¿Cómo respondes?" → opciones: ["I am hardworking and reliable", "I like work very much", "I have many good things", "Work is good for me"]
-2. "Complete the conversation: 'I _____ working here since 2020.' / Completa la conversación: 'Yo _____ trabajando aquí desde 2020.'" → opciones: ["have been", "am", "was", "will be"]
-3. "You need to reschedule a meeting. What do you say? / Necesitas reprogramar una reunión. ¿Qué dices?" → opciones: ["Can we reschedule for tomorrow?", "Meeting change tomorrow please", "I no can meeting today", "Tomorrow better for meeting"]
-4. "Order these words: [going, I'm, to, the, visit, museum] / Ordena estas palabras:" → opciones: ["I'm going to visit the museum", "Going I'm to visit the museum", "The museum I'm going to visit", "Visit the museum I'm going to"]
-5. "Someone says 'I'm feeling under the weather.' What do they mean? / Alguien dice 'I'm feeling under the weather.' ¿Qué quieren decir?" → opciones: ["I'm feeling sick", "I'm feeling cold", "I'm feeling happy", "I'm feeling confused"]
-6. "Complete: 'If I _____ time, I would travel more.' / Completa: 'Si yo _____ tiempo, viajaría más.'" → opciones: ["had", "have", "has", "having"]
-7. "You're explaining a problem at work. How do you start? / Estás explicando un problema en el trabajo. ¿Cómo empiezas?" → opciones: ["I've been having an issue with...", "Problem I have with...", "Bad thing happen with...", "Issue is with..."]
-8. "Someone asks 'How long have you been studying English?' You started 2 years ago. What do you answer? / Alguien pregunta '¿Cuánto tiempo has estado estudiando inglés?' Empezaste hace 2 años. ¿Qué respondes?" → opciones: ["I've been studying for 2 years", "I study English 2 years", "2 years I am studying", "Since 2 years I study"]
-` : ''}
-
-INSTRUCCIONES DE VALIDACIÓN INTERNA:
-1. ¿Cada pregunta enseña inglés ÚTIL para la vida real?
-2. ¿Las situaciones son PRÁCTICAS (restaurante, trabajo, tienda)?
-3. ¿Las opciones enseñan ESTRUCTURAS que se usan diariamente?
-4. ¿Evita vocabulario obvio como colores, números, familia?
-5. ¿Enseña por CONTEXTO e INFERENCIA, no memorización?
-6. ¿Las opciones son TODAS plausibles pero solo una correcta?
-7. ¿Realmente prepara al estudiante para USAR inglés real?
-
-❌ PROHIBIDO ABSOLUTO - OPCIONES SIMILARES:
-- "Me gusta las manzanas" y "Me gustan las manzanas" (demasiado similares)
-- "I am happy" y "I'm happy" (son lo mismo)
-- "big house" y "large house" (sinónimos confusos para principiantes)
-
-✅ OBLIGATORIO - OPCIONES DISTINTIVAS:
-- Cada opción debe ser CLARAMENTE diferente en significado
-- Para gramática: usar tiempos COMPLETAMENTE diferentes (am/was/will be)
-- Para vocabulario: usar palabras de CATEGORÍAS diferentes (apple/car/house/red)
-- Para traducción: opciones que NO se parezcan fonéticamente
-
-FORMATO JSON REQUERIDO - 8 ejercicios ÚNICOS y ÚTILES:
-{
-  "exercises": [
-    {
-      "question": "[Situación real práctica en inglés / Situación en español]",
-      "instruction": "[Instrucción clara de qué hacer]",
-      "options": ["[opción útil 1]", "[opción útil 2]", "[opción útil 3]", "[opción útil 4]"],
-      "correctAnswer": 0,
-      "explanation": "🎯 [Por qué esta estructura es útil en inglés real + cuándo usarla]",
-      "topic": "[gramática práctica, conversación real, situaciones útiles]"
-    }
-  ]
-}
-
-🚨 RECORDATORIO CRÍTICO PARA INGLÉS PRÁCTICO:
-- TODAS las preguntas deben enseñar inglés que se USA en la vida real
-- TODAS las explicaciones deben explicar CUÁNDO y CÓMO usar la estructura
-- Situaciones REALES: restaurante, tienda, trabajo, conversaciones
-- NO vocabulario obvio: evitar colores, números, familia básica
-- Contextos ÚTILES: pedir ayuda, hacer preguntas, expresar necesidades
-
-¡GENERA 8 EJERCICIOS QUE REALMENTE ENSEÑEN INGLÉS ÚTIL PARA LA VIDA REAL!`;
+    // 🚨 PROMPTS COMPLETAMENTE DIFERENTES POR NIVEL
+    const enhancedPrompt = this.getLevelSpecificPrompt(params.level, params);
 
     try {
       const model = this.genAI.getGenerativeModel({
@@ -503,6 +378,205 @@ FORMATO JSON REQUERIDO - 8 ejercicios ÚNICOS y ÚTILES:
     
     console.log(`✅ Ejercicio ${exerciseNumber}: Validación APROBADA`);
     return true;
+  }
+
+  // 🚨 PROMPTS ESPECÍFICOS POR NIVEL - COMPLETAMENTE DIFERENTES
+  private getLevelSpecificPrompt(level: string, params: any): string {
+    const baseInfo = `
+NIVEL DEL ESTUDIANTE: ${params.level}
+EJERCICIOS COMPLETADOS: ${params.completedLessons || 0}
+DEBILIDADES: ${params.userWeaknesses?.join(', ') || 'ninguna detectada'}
+`;
+
+    switch(level) {
+      case 'A1':
+        return `Eres un profesor de inglés para PRINCIPIANTES ABSOLUTOS hispanohablantes.
+
+${baseInfo}
+
+🎯 NIVEL A1 - SUPERVIVENCIA EN INGLÉS BÁSICO:
+Estudiante que NO SABE NADA de inglés. Necesita inglés para SOBREVIVIR en situaciones básicas.
+
+✅ OBLIGATORIO - SOLO ESTAS SITUACIONES A1:
+1. **SALUDOS Y CORTESÍA BÁSICA** (25%)
+   - "How do you respond to 'Good morning'?" → ["Good morning", "Good night", "Goodbye", "See you later"]
+   - "Someone says 'Thank you'. What do you say?" → ["You're welcome", "Good morning", "How are you", "My name is"]
+
+2. **NECESIDADES BÁSICAS** (25%)
+   - "You're hungry. What do you say?" → ["I'm hungry", "I'm happy", "I'm tired", "I'm cold"]
+   - "You need the bathroom. How do you ask?" → ["Where is the bathroom?", "What is your name?", "How are you?", "I like coffee"]
+
+3. **INFORMACIÓN PERSONAL MUY BÁSICA** (25%)
+   - "Someone asks 'What's your name?' You respond:" → ["My name is...", "I'm fine", "Nice to meet you", "How are you?"]
+   - "How do you ask someone's age?" → ["How old are you?", "What's your name?", "Where are you from?", "Do you like coffee?"]
+
+4. **NÚMEROS Y TIEMPO BÁSICO** (25%)
+   - "It's 3:00 PM. How do you say this time?" → ["It's three o'clock", "It's three thirty", "It's four o'clock", "It's two o'clock"]
+   - "You want to buy something for $5. How do you ask the price?" → ["How much is this?", "What time is it?", "Where is the store?", "I don't understand"]
+
+❌ PROHIBIDO PARA A1:
+- Tiempos verbales complejos (present perfect, past continuous)
+- Vocabulario avanzado (business, technology, abstract concepts)
+- Oraciones largas o complejas
+- Situaciones profesionales o académicas
+
+FORMATO JSON REQUERIDO - 8 ejercicios A1 básicos:
+{
+  "exercises": [
+    {
+      "question": "[Situación básica en inglés / Situación en español]",
+      "instruction": "Selecciona la respuesta correcta",
+      "options": ["[opción correcta]", "[opción incorrecta]", "[opción incorrecta]", "[opción incorrecta]"],
+      "correctAnswer": 0,
+      "explanation": "🎯 [Explicación en español de por qué es importante para supervivencia]",
+      "topic": "[saludos, necesidades básicas, información personal, tiempo básico]"
+    }
+  ]
+}
+
+🎯 GENERAR EXACTAMENTE 8 EJERCICIOS A1 BÁSICOS Y ÚTILES PARA SUPERVIVENCIA.`;
+
+      case 'A2':
+        return `Eres un profesor de inglés para estudiantes ELEMENTALES hispanohablantes.
+
+${baseInfo}
+
+🎯 NIVEL A2 - INGLÉS ELEMENTAL PARA COMUNICACIÓN BÁSICA:
+Estudiante que sabe lo básico y necesita comunicarse en situaciones cotidianas simples.
+
+✅ OBLIGATORIO - SOLO ESTAS SITUACIONES A2:
+1. **CONVERSACIONES SIMPLES** (25%)
+   - "Your friend asks 'What did you do yesterday?' You respond:" → ["I went to work", "I go to work", "I will go to work", "I am going to work"]
+   - "How do you ask about someone's weekend?" → ["How was your weekend?", "What is your weekend?", "Where is your weekend?", "When is your weekend?"]
+
+2. **RUTINAS Y ACTIVIDADES PASADAS** (25%)
+   - "Complete: 'I _____ TV last night.'" → ["watched", "watch", "watching", "will watch"]
+   - "How do you say you exercise every day?" → ["I exercise every day", "I exercised yesterday", "I will exercise tomorrow", "I am exercising now"]
+
+3. **PLANES Y FUTURO SIMPLE** (25%)
+   - "You have plans for tomorrow. How do you express this?" → ["I'm going to visit my family", "I visit my family", "I visited my family", "I have visited my family"]
+   - "Complete: 'Next week I _____ to the doctor.'" → ["will go", "go", "went", "have gone"]
+
+4. **EXPERIENCIAS Y PRESENT PERFECT BÁSICO** (25%)
+   - "How do you say you've been to Mexico?" → ["I have been to Mexico", "I go to Mexico", "I went to Mexico", "I will go to Mexico"]
+   - "Complete: 'I _____ this movie before.'" → ["have seen", "see", "saw", "will see"]
+
+❌ PROHIBIDO PARA A2:
+- Gramática muy avanzada (subjunctive, complex conditionals)
+- Vocabulario técnico o profesional avanzado
+- Situaciones de negocios complejas
+- Literatura o temas abstractos
+
+FORMATO JSON REQUERIDO - 8 ejercicios A2 elementales:
+{
+  "exercises": [
+    {
+      "question": "[Situación cotidiana en inglés / Situación en español]",
+      "instruction": "Selecciona la respuesta correcta",
+      "options": ["[opción correcta]", "[opción incorrecta]", "[opción incorrecta]", "[opción incorrecta]"],
+      "correctAnswer": 0,
+      "explanation": "🎯 [Explicación en español de la gramática y cuándo usarla]",
+      "topic": "[conversaciones simples, rutinas pasadas, planes futuros, experiencias básicas]"
+    }
+  ]
+}
+
+🎯 GENERAR EXACTAMENTE 8 EJERCICIOS A2 ELEMENTALES PARA COMUNICACIÓN COTIDIANA.`;
+
+      case 'B1':
+        return `Eres un profesor de inglés para estudiantes INTERMEDIOS hispanohablantes.
+
+${baseInfo}
+
+🎯 NIVEL B1 - INGLÉS INTERMEDIO PARA INDEPENDENCIA:
+Estudiante que puede comunicarse pero necesita fluidez en situaciones más complejas.
+
+✅ OBLIGATORIO - SOLO ESTAS SITUACIONES B1:
+1. **TRABAJO Y PROFESIÓN** (25%)
+   - "In a job interview, they ask 'Why do you want this job?' Best response:" → ["I believe I can contribute to the team", "I need money", "I like jobs", "This is a good company"]
+   - "How do you ask for a day off?" → ["Could I take tomorrow off?", "I no work tomorrow", "Tomorrow I don't go", "I want day free"]
+
+2. **PROBLEMAS Y SOLUCIONES** (25%)
+   - "Your internet isn't working. How do you explain this to tech support?" → ["I'm having trouble with my internet connection", "My internet no work", "Internet is bad", "I don't like internet"]
+   - "Complete: 'If I _____ more time, I would travel more.'" → ["had", "have", "will have", "am having"]
+
+3. **OPINIONES Y ARGUMENTOS** (25%)
+   - "How do you politely disagree with someone?" → ["I see your point, but I think...", "You are wrong", "That's stupid", "No, no, no"]
+   - "Express your opinion about online shopping:" → ["I think online shopping is convenient because...", "Online shopping good", "I like buy things", "Internet shopping OK"]
+
+4. **SITUACIONES HIPOTÉTICAS** (25%)
+   - "Complete: 'What would you do if you _____ the lottery?'" → ["won", "win", "will win", "have won"]
+   - "How do you express a hypothetical situation?" → ["If I were you, I would...", "You should do...", "I think you...", "Maybe you..."]
+
+❌ PROHIBIDO PARA B1:
+- Temas demasiado académicos o técnicos
+- Vocabulario extremadamente avanzado
+- Situaciones que requieren C1/C2
+
+FORMATO JSON REQUERIDO - 8 ejercicios B1 intermedios:
+{
+  "exercises": [
+    {
+      "question": "[Situación profesional/compleja en inglés / Situación en español]",
+      "instruction": "Selecciona la respuesta correcta",
+      "options": ["[opción correcta]", "[opción incorrecta]", "[opción incorrecta]", "[opción incorrecta]"],
+      "correctAnswer": 0,
+      "explanation": "🎯 [Explicación en español de estructuras intermedias y uso profesional]",
+      "topic": "[trabajo y profesión, problemas y soluciones, opiniones y argumentos, situaciones hipotéticas]"
+    }
+  ]
+}
+
+🎯 GENERAR EXACTAMENTE 8 EJERCICIOS B1 INTERMEDIOS PARA INDEPENDENCIA COMUNICATIVA.`;
+
+      case 'B2':
+        return `Eres un profesor de inglés para estudiantes AVANZADOS hispanohablantes.
+
+${baseInfo}
+
+🎯 NIVEL B2 - INGLÉS AVANZADO PARA FLUIDEZ:
+Estudiante que necesita refinamiento y fluidez en situaciones complejas y profesionales.
+
+✅ OBLIGATORIO - SOLO ESTAS SITUACIONES B2:
+1. **COMUNICACIÓN PROFESIONAL AVANZADA** (25%)
+   - "In a business meeting, how do you present a counterargument?" → ["While I understand your perspective, I'd like to propose an alternative approach", "I think you're wrong", "That's not good", "I don't agree with you"]
+   - "How do you diplomatically suggest changes to a colleague's proposal?" → ["Have you considered incorporating...", "Your idea is bad", "Change this please", "I don't like this"]
+
+2. **VOCABULARIO SOFISTICADO Y MATICES** (25%)
+   - "Which word best describes someone who adapts easily to change?" → ["versatile", "good", "nice", "happy"]
+   - "Complete: 'The new policy has had _____ consequences for our department.'" → ["far-reaching", "big", "many", "some"]
+
+3. **ESTRUCTURAS GRAMATICALES COMPLEJAS** (25%)
+   - "Complete: 'Had I known about the traffic, I _____ earlier.'" → ["would have left", "will leave", "leave", "left"]
+   - "Which sentence uses the subjunctive correctly?" → ["I suggest that he be more careful", "I suggest that he is more careful", "I suggest he careful", "I suggest he be careful"]
+
+4. **ANÁLISIS Y CRÍTICA** (25%)
+   - "How do you analyze the pros and cons of remote work?" → ["While remote work offers flexibility, it may impact collaboration", "Remote work good and bad", "I like work from home", "Office better than home"]
+   - "Express a nuanced opinion about social media:" → ["Social media serves as a double-edged sword in modern communication", "Social media good and bad", "I like Facebook", "Internet is useful"]
+
+❌ PROHIBIDO PARA B2:
+- Ejercicios demasiado básicos (A1/A2 level)
+- Situaciones que no requieren fluidez avanzada
+
+FORMATO JSON REQUERIDO - 8 ejercicios B2 avanzados:
+{
+  "exercises": [
+    {
+      "question": "[Situación profesional avanzada en inglés / Situación en español]",
+      "instruction": "Selecciona la respuesta correcta",
+      "options": ["[opción correcta sofisticada]", "[opción incorrecta]", "[opción incorrecta]", "[opción incorrecta]"],
+      "correctAnswer": 0,
+      "explanation": "🎯 [Explicación en español de matices avanzados y uso profesional]",
+      "topic": "[comunicación profesional avanzada, vocabulario sofisticado, gramática compleja, análisis y crítica]"
+    }
+  ]
+}
+
+🎯 GENERAR EXACTAMENTE 8 EJERCICIOS B2 AVANZADOS PARA FLUIDEZ PROFESIONAL.`;
+
+      default:
+        return this.getLevelSpecificPrompt('A1', params);
+    }
   }
 
   // ✅ NUEVA FUNCIÓN: Generar ejercicios prácticos específicos
