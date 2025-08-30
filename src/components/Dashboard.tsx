@@ -678,6 +678,16 @@ const Dashboard: React.FC<DashboardProps> = ({ user }) => {
         </div>
       </main>
       
+      {showLessonSession && apiKey && (
+        <LessonSessionComponent
+          apiKey={apiKey}
+          userProgress={userProgress}
+          userId={user.uid}
+          onSessionComplete={handleSessionComplete}
+          onExit={() => setShowLessonSession(false)}
+        />
+      )}
+
       {showLevelUpCelebration && (
         <LevelUpCelebration
           newLevel={celebrationLevel}
